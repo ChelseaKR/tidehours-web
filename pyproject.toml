@@ -1,0 +1,63 @@
+[project]
+name = "tidehours"
+version = "0.1.0"
+description = "tidehours.com: free NOAA tide predictions for every US tide station, computed with the Tide Hours app's engine, as a static site."
+readme = "README.md"
+authors = [
+    { name = "Chelsea Kelly-Reif (she/her)", email = "3114598+ChelseaKR@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "jinja2>=3.1",
+    "numpy>=2.1",
+]
+
+[project.scripts]
+tidehours = "tidehours.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tidehours"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.15.0",
+    "mypy>=1.18",
+    "pip-audit>=2.7",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "S", "C90", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003"]
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = true
+warn_return_any = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config --import-mode=importlib"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

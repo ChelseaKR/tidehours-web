@@ -1,0 +1,313 @@
+"""Renders the static site: a page per station (today and tomorrow), state
+and region indexes, the king-tide pages, about, privacy, 404, sitemap and
+robots.txt. Every number on a page is computed at build time from NOAA's
+constants (docs/DECISIONS.md 0002); nothing is fetched while building."""
+
+from __future__ import annotations
+
+import datetime as dt
+import json
+import math
+import re
+import shutil
+from collections import defaultdict
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
+from xml.sax.saxutils import escape
+
+import numpy as np
+from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
+
+from . import kingtides, ktformat
+from .catalog import DATA_DIR, Catalog, Station
+from .days import Day, feet, local_today, long_date, short_date, station_day
+
+DEFAULT_BASE_URL = "https://tidehours.com/"
+# Analytics regions where analytics_storage defaults to denied (EEA, UK, CH),
+# as on the portfolio's other sites.
+GA4_DENIED_REGIONS = [
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IS", "IE", "IT", "LV",
+    "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB", "CH",
+]  # fmt: skip
+
+STATE_NAMES = {
+    "AK": "Alaska", "AL": "Alabama", "AS": "American Samoa", "CA": "California", "CT": "Connecticut",
+    "DC": "District of Columbia", "DE": "Delaware", "FL": "Florida", "GA": "Georgia", "GU": "Guam",
+    "HI": "Hawaii", "LA": "Louisiana", "MA": "Massachusetts", "MD": "Maryland", "ME": "Maine",
+    "MS": "Mississippi", "NC": "North Carolina", "NH": "New Hampshire", "NJ": "New Jersey", "NY": "New York",
+    "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico", "RI": "Rhode Island", "SC": "South Carolina",
+    "TX": "Texas", "VA": "Virginia", "VI": "U.S. Virgin Islands", "WA": "Washington",
+}  # fmt: skip
+OTHER = "other"
+OTHER_NAME = "Stations without a state"
+
+
+def slug(text: str) -> str:
+    s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return s or "region"
+
+
+@dataclass
+class Config:
+    base_url: str = DEFAULT_BASE_URL
+    ga4_measurement_id: str = ""
+    app_store_url: str = ""
+    states: set[str] | None = None  # None builds every state
+
+
+@dataclass
+class Region:
+    state: str
+    name: str
+    slug: str
+    stations: list[Station] = field(default_factory=list)
+
+    @property
+    def path(self) -> str:
+        return f"states/{self.state.lower()}/{self.slug}/"
+
+
+@dataclass
+class State:
+    code: str
+    name: str
+    regions: list[Region]
+    unregioned: list[Station]
+
+    @property
+    def path(self) -> str:
+        return f"states/{self.code.lower()}/"
+
+    @property
+    def count(self) -> int:
+        return sum(len(r.stations) for r in self.regions) + len(self.unregioned)
+
+
+def group(stations: list[Station]) -> list[State]:
+    by_state: dict[str, list[Station]] = defaultdict(list)
+    for s in stations:
+        by_state[s.state or OTHER].append(s)
+    out: list[State] = []
+    for code in sorted(by_state, key=lambda c: (c == OTHER, STATE_NAMES.get(c, c))):
+        regions: dict[str, Region] = {}
+        unregioned: list[Station] = []
+        for s in sorted(by_state[code], key=lambda s: s.name.lower()):
+            if s.region is None:
+                unregioned.append(s)
+                continue
+            r = regions.get(s.region)
+            if r is None:
+                r = regions[s.region] = Region(code, s.region, slug(s.region))
+            r.stations.append(s)
+        slugs = [r.slug for r in regions.values()]
+        if len(slugs) != len(set(slugs)):
+            raise ValueError(f"{code}: two regions share a URL slug")
+        name = OTHER_NAME if code == OTHER else STATE_NAMES.get(code)
+        if name is None:
+            raise ValueError(f"no name for state code {code!r}")
+        out.append(State(code, name, sorted(regions.values(), key=lambda r: r.name.lower()), unregioned))
+    return out
+
+
+def distance_km(a: Station, b: Station) -> float:
+    la1, la2 = math.radians(a.lat), math.radians(b.lat)
+    dla, dlo = la2 - la1, math.radians(b.lon - a.lon)
+    h = math.sin(dla / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin(dlo / 2) ** 2
+    return 6371.0 * 2 * math.asin(math.sqrt(min(1.0, h)))
+
+
+def nearby(station: Station, pool: list[Station], n: int = 6) -> list[tuple[Station, float]]:
+    near = sorted(((s, distance_km(station, s)) for s in pool if s.id != station.id), key=lambda x: (x[1], x[0].id))
+    return near[:n]
+
+
+class Nearby:
+    """nearby() for every station at once, vectorized: the same haversine."""
+
+    def __init__(self, pool: list[Station]) -> None:
+        self.pool = pool
+        self.lat = np.radians(np.array([s.lat for s in pool]))
+        self.lon = np.radians(np.array([s.lon for s in pool]))
+
+    def __call__(self, station: Station, n: int = 6) -> list[tuple[Station, float]]:
+        la1, lo1 = math.radians(station.lat), math.radians(station.lon)
+        h = np.sin((self.lat - la1) / 2) ** 2 + math.cos(la1) * np.cos(self.lat) * np.sin((self.lon - lo1) / 2) ** 2
+        km = 6371.0 * 2 * np.arcsin(np.sqrt(np.minimum(1.0, h)))
+        order = np.lexsort((np.array([s.id for s in self.pool]), km))
+        out: list[tuple[Station, float]] = []
+        for i in order:
+            if self.pool[i].id != station.id:
+                out.append((self.pool[i], float(km[i])))
+            if len(out) == n:
+                break
+        return out
+
+
+def env() -> Environment:
+    e = Environment(
+        loader=PackageLoader("tidehours", "templates"),
+        autoescape=select_autoescape(["html", "xml", "jinja"]),
+        undefined=StrictUndefined,
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    e.filters["feet"] = feet
+    e.filters["short_date"] = short_date
+    e.filters["long_date"] = long_date
+    e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
+    e.globals.update(
+        fill=ktformat.fill,
+        fmt_date=ktformat.fmt_date,
+        fmt_long_date=ktformat.fmt_long_date,
+        fmt_range=ktformat.fmt_range,
+        fmt_time=ktformat.fmt_time,
+        fmt_feet=ktformat.fmt_feet,
+    )
+    return e
+
+
+@dataclass
+class Page:
+    path: str  # "" for home, "stations/9414290/" etc.
+    html: str
+
+
+def king_tide_context(cat: Catalog) -> dict[str, Any]:
+    datums_raw = json.loads((DATA_DIR / "datums.json").read_text(encoding="utf-8"))
+    datums = {k: float(v["mhhwAboveMllwFt"]) for k, v in datums_raw["datums"].items()}
+    seasons = kingtides.season(cat, datums)
+    first, last = kingtides.window()
+    copy = json.loads((Path(__file__).parent / "copy" / "king_tides.json").read_text(encoding="utf-8"))
+    return {
+        "seasons": seasons,
+        "window_start": first,
+        "window_end": last,
+        "datums_retrieved": datums_raw["retrieved"],
+        "copy": copy,
+    }
+
+
+def next_series(season: kingtides.StationSeason, today: dt.date) -> list[kingtides.Day] | None:
+    for series in season.series:
+        if dt.date.fromisoformat(series[-1].date) >= today:
+            return series
+    return None
+
+
+def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
+    if now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+    e = env()
+    stations = [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
+    if not stations:
+        raise ValueError("no stations selected")
+    states = group(stations)
+    by_id = {s.id: s for s in stations}
+    kt = king_tide_context(cat)
+    kt_by_id = {s.id: s for s in kt["seasons"]}
+    base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
+    common: dict[str, Any] = {
+        "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
+        "base_url": base,
+        "ga4_measurement_id": cfg.ga4_measurement_id,
+        "ga4_denied_regions": GA4_DENIED_REGIONS,
+        "app_store_url": cfg.app_store_url,
+        "retrieved": cat.retrieved,
+        "built": now.astimezone(dt.UTC).date().isoformat(),
+        "station_count": len(cat.stations),
+    }
+    region_of: dict[str, tuple[State, Region | None]] = {}
+    for st in states:
+        for r in st.regions:
+            for s in r.stations:
+                region_of[s.id] = (st, r)
+        for s in st.unregioned:
+            region_of[s.id] = (st, None)
+
+    near = Nearby(stations)
+    pages: list[Page] = []
+
+    def page(path: str, template: str, **ctx: Any) -> None:
+        pages.append(Page(path, e.get_template(template).render(**common, path=path, **ctx)))
+
+    page("", "index.html.jinja", states=states, partial=cfg.states is not None)
+    page("about/", "about.html.jinja")
+    page("privacy/", "privacy.html.jinja")
+    for lang in ("en", "es"):
+        page(
+            "king-tides/" if lang == "en" else "es/king-tides/",
+            "king_tides.html.jinja",
+            lang=lang,
+            c=kt["copy"][lang],
+            **kt,
+        )
+    for st in states:
+        page(st.path, "state.html.jinja", state=st)
+        for r in st.regions:
+            page(r.path, "region.html.jinja", state=st, region=r)
+    for s in stations:
+        today = local_today(s, now)
+        p = cat.predictor(s.id)
+        days: list[Day] = [
+            station_day(s, p, today, "Today"),
+            station_day(s, p, today + dt.timedelta(days=1), "Tomorrow"),
+        ]
+        st, region = region_of[s.id]
+        ref = cat.station(s.reference_id) if s.reference_id else None
+        season = kt_by_id.get(s.id)
+        page(
+            f"stations/{s.id}/",
+            "station.html.jinja",
+            station=s,
+            state=st,
+            region=region,
+            days=days,
+            reference=ref,
+            reference_listed=ref is not None and ref.id in by_id,
+            nearby=near(s),
+            king_season=season,
+            king_next=next_series(season, today) if season else None,
+        )
+    return pages
+
+
+def sitemap(pages: list[Page], base: str, built: str) -> str:
+    rows = [
+        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{built}</lastmod></url>" for p in pages if p.path != "404"
+    ]
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(rows) + "\n</urlset>\n"
+    )
+
+
+def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
+    """Builds into `out` (replaced). Returns the number of HTML pages."""
+    pages = render(cat, cfg, now)
+    e = env()
+    base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
+    built = now.astimezone(dt.UTC).date().isoformat()
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    for p in pages:
+        target = out / p.path / "index.html"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(p.html, encoding="utf-8")
+    copy = json.loads((Path(__file__).parent / "copy" / "king_tides.json").read_text(encoding="utf-8"))
+    common = {
+        "ui": {lang: copy[lang]["chrome"] for lang in ("en", "es")},
+        "base_url": base,
+        "ga4_measurement_id": cfg.ga4_measurement_id,
+        "ga4_denied_regions": GA4_DENIED_REGIONS,
+        "app_store_url": cfg.app_store_url,
+        "retrieved": cat.retrieved,
+        "built": built,
+        "station_count": len(cat.stations),
+    }
+    (out / "404.html").write_text(e.get_template("404.html.jinja").render(**common, path="404"), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
+    (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
+    shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
+    return len(pages) + 1

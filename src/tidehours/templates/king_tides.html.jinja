@@ -1,0 +1,90 @@
+{% extends "base.html.jinja" %}
+{% block title %}{{ c.title }} | Tide Hours{% endblock %}
+{% block description %}{{ c.description }}{% endblock %}
+{% block alternates %}
+<link rel="alternate" hreflang="en" href="{{ base_url }}king-tides/">
+<link rel="alternate" hreflang="es" href="{{ base_url }}es/king-tides/">
+<link rel="alternate" hreflang="x-default" href="{{ base_url }}king-tides/">
+{% endblock %}
+{% block content %}
+<p class="lang"><a href="/{{ c.otherLang.href }}" hreflang="{{ c.otherLang.hreflang }}" lang="{{ c.otherLang.hreflang }}">{{ c.otherLang.label }}</a></p>
+<h1>{{ c.heading }}</h1>
+<p class="lead">{{ c.lead }}</p>
+<p class="meta">{{ fill(c.updated, date=fmt_long_date(retrieved, lang, c)) }}</p>
+
+<section aria-labelledby="kt-california">
+  <h2 id="kt-california">{{ c.california.heading }}</h2>
+  {% for p in c.california.body %}<p>{{ p }}</p>{% endfor %}
+  <p><a href="https://www.coastal.ca.gov/kingtides/">{{ c.california.projectLink }}</a></p>
+  <h3>{{ c.california.otherHeading }}</h3>
+  <p>{{ c.california.otherBody }}</p>
+  <ul>
+    <li><a href="https://waseagrant.uw.edu/our-programs/coastal-hazards-climate-resilience/king-tides/king-tides-calendar/">{{ c.california.waLink }}</a></li>
+    <li><a href="https://www.oregonkingtides.net/">{{ c.california.orLink }}</a></li>
+  </ul>
+</section>
+
+<section class="callout warning" aria-labelledby="kt-safety">
+  <h2 id="kt-safety">{{ c.safety.heading }}</h2>
+  {% for p in c.safety.body %}<p>{{ p }}</p>{% endfor %}
+  <p><a href="https://www.weather.gov/">{{ c.safety.nwsLink }}</a></p>
+</section>
+
+<section aria-labelledby="kt-stations">
+  <h2 id="kt-stations">{{ c.stations.heading }}</h2>
+  <p>{{ fill(c.stations.intro, start=fmt_long_date(window_start, lang, c), end=fmt_long_date(window_end, lang, c)) }}</p>
+  <p>{{ c.stations.aboveNote }}</p>
+  {% for region in ["WA", "OR", "CA"] %}
+  <section aria-labelledby="kt-{{ region }}">
+    <h3 id="kt-{{ region }}">{{ c.stations.regions[region] }}</h3>
+    {% for s in seasons if s.state == region %}
+    <section class="kt-station" id="station-{{ s.id }}" aria-labelledby="kt-h-{{ s.id }}">
+      <h4 id="kt-h-{{ s.id }}">{{ s.place }}</h4>
+      <div class="table-scroll">
+      <table class="events">
+        <caption class="vh">{{ fill(c.stations.caption, place=s.place, id=s.id) }}</caption>
+        <thead><tr>
+          <th scope="col">{{ c.stations.cols.days }}</th>
+          <th scope="col">{{ c.stations.cols.peak }}</th>
+          <th scope="col">{{ c.stations.cols.height }}</th>
+          <th scope="col">{{ c.stations.cols.above }}</th>
+        </tr></thead>
+        <tbody>
+        {% for series in s.series %}
+          {% set peak = series|max(attribute="height") %}
+          <tr>
+            <th scope="row">{{ fmt_range(series[0].date, series[-1].date, lang, c) }}{% if series[-1].date == window_end %}<span class="note">{{ fill(c.stations.clipped, end=fmt_long_date(window_end, lang, c)) }}</span>{% endif %}</th>
+            <td>{{ fmt_date(peak.date, lang, c) }}, {{ fmt_time(peak.time, lang) }}</td>
+            <td>{{ fmt_feet(peak.height, lang, c) }}</td>
+            <td>{{ fmt_feet(s.above_mhhw(peak), lang, c, true) }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      <details>
+        <summary>{{ fill(c.stations.everyDay, place=s.place) }}</summary>
+        <ul>
+        {% for series in s.series %}{% for d in series %}
+          <li>{{ fmt_date(d.date, lang, c) }}: {{ fmt_time(d.time, lang) }}, {{ fmt_feet(d.height, lang, c) }}</li>
+        {% endfor %}{% endfor %}
+        </ul>
+      </details>
+      <p class="meta"><a href="/stations/{{ s.id }}/">{{ fill(c.stations.siteLink, place=s.place) }}</a> · <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ s.id }}">{{ fill(c.stations.noaaLink, id=s.id) }}</a></p>
+    </section>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</section>
+
+<section aria-labelledby="kt-method">
+  <h2 id="kt-method">{{ c.method.heading }}</h2>
+  {% for p in c.method.body %}<p>{{ p }}</p>{% endfor %}
+  <h3>{{ c.method.sourcesHeading }}</h3>
+  <ul>
+  {% for src in c.method.sources %}<li><a href="{{ src.href }}">{{ src.label }}</a></li>{% endfor %}
+  </ul>
+  <p>{{ c.method.attribution }}</p>
+  <p>{{ c.app.body }}</p>
+</section>
+{% endblock %}

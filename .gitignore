@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+/site/
+/dist/
+tools/site-checks/node_modules/
+.DS_Store

@@ -1,0 +1,115 @@
+{% extends "base.html.jinja" %}
+{% set today = days[0] %}
+{% block title %}{{ station.display_name }} tide times today | Tide Hours{% endblock %}
+{% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% endblock %}
+{% block jsonld %}
+<script type="application/ld+json">{{ {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": station.display_name ~ " tide times",
+  "url": base_url ~ path,
+  "dateModified": built,
+  "about": {"@type": "Place", "name": station.display_name,
+            "geo": {"@type": "GeoCoordinates", "latitude": station.lat, "longitude": station.lon}},
+  "isBasedOn": "https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=" ~ station.id
+}|tojson }}</script>
+{% endblock %}
+{% block main_attrs %} data-station-date="{{ today.date.isoformat() }}" data-tz="{{ station.tz }}"{% endblock %}
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="/">Home</a></li>
+    <li><a href="/{{ state.path }}">{{ state.name }}</a></li>
+    {% if region %}<li><a href="/{{ region.path }}">{{ region.name }}</a></li>{% endif %}
+  </ol>
+</nav>
+<h1>{{ station.display_name }} tide times</h1>
+<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. Times are local ({{ station.tz }}); heights are feet above mean lower low water (MLLW).</p>
+<p class="stale" id="stale" role="status" hidden></p>
+
+{% if station.is_subordinate %}
+<div class="callout">
+  <p><strong>Highs and lows from a nearby reference station.</strong> NOAA predicts this station from
+  {% if reference %}{% if reference_listed %}<a href="/stations/{{ reference.id }}/">{{ reference.display_name }}</a>{% else %}{{ reference.display_name }}{% endif %} (station {{ reference.id }}){% else %}station {{ station.reference_id }}{% endif %}
+  with published time and height corrections. The curve between highs and lows is an estimate, drawn dashed.</p>
+</div>
+{% endif %}
+
+{% for day in days %}
+<section class="day" aria-labelledby="day-{{ loop.index }}">
+  <h2 id="day-{{ loop.index }}"><span class="day-label">{{ day.label }}</span>, <time datetime="{{ day.date.isoformat() }}">{{ day.long_date }}</time></h2>
+  {% if day.events %}
+  <table class="events">
+    <caption class="vh">High and low tides at {{ station.display_name }}, {{ day.long_date }}</caption>
+    <thead><tr><th scope="col">Tide</th><th scope="col">Time</th><th scope="col">Height</th></tr></thead>
+    <tbody>
+    {% for e in day.events %}
+      <tr class="ev-{{ e.kind|lower }}"><th scope="row">{{ e.kind }}</th><td><time datetime="{{ e.iso }}">{{ e.time }}</time></td><td>{{ e.height_ft }} <span class="m">({{ e.height_m }})</span></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="none">No high or low tide is predicted at this station on this day.</p>
+  {% endif %}
+  {% if day.svg %}
+  <figure class="chart">
+    {{ day.svg|safe }}
+    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}: {{ day.summary() }}.</figcaption>
+  </figure>
+  {% else %}
+  <p class="none">No tide curve can be drawn for this day.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="upsell" aria-labelledby="week">
+  <h2 id="week">The rest of the week</h2>
+  <p>The 7-day table, favorites, widgets and offline use are in the Tide Hours iPhone app.
+  {% if app_store_url %}<a href="{{ app_store_url }}">Get Tide Hours on the App Store</a>.{% else %}<strong>Coming soon to the App Store.</strong>{% endif %}
+  NOAA also publishes its own <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ station.id }}">predictions for station {{ station.id }}</a>.</p>
+</section>
+
+{% if king_season %}
+<section aria-labelledby="king">
+  <h2 id="king">King tides</h2>
+  {% if king_next %}
+  {% set peak = king_next|max(attribute="height") %}
+  <p>The next run of this station's highest predicted tides this season: {{ king_next[0].date|short_date_iso }}{% if king_next|length > 1 %} to {{ king_next[-1].date|short_date_iso }}{% endif %}, peaking at {{ peak.height|feet }} ({{ (king_season.above_mhhw(peak))|feet }} above a normal high tide). <a href="/king-tides/#station-{{ station.id }}">All king tide dates</a>.</p>
+  {% else %}
+  <p><a href="/king-tides/#station-{{ station.id }}">This season's king tide dates</a>.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section aria-labelledby="near">
+  <h2 id="near">Nearby stations</h2>
+  <ul class="near">
+  {% for s, km in nearby %}
+    <li><a href="/stations/{{ s.id }}/">{{ s.display_name }}</a> <span class="dist">{{ "%.0f"|format(km * 0.621371) }} mi</span></li>
+  {% endfor %}
+  </ul>
+</section>
+
+<section class="about-numbers" aria-labelledby="what">
+  <h2 id="what">What these numbers are</h2>
+  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
+  <p class="meta">Station {{ station.id }} · {{ "%.4f"|format(station.lat) }}, {{ "%.4f"|format(station.lon) }} · NOAA data retrieved {{ retrieved }} · page built {{ built }} (UTC)</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var main = document.getElementById("main");
+  var built = main.getAttribute("data-station-date");
+  var today;
+  try {
+    today = new Intl.DateTimeFormat("en-CA", { timeZone: main.getAttribute("data-tz") }).format(new Date());
+  } catch (e) { return; }
+  if (!today || today <= built) return;
+  var box = document.getElementById("stale");
+  box.textContent = "This page was last updated for " + built + ", and it is " + today +
+    " at this station now. Check the date above each table; the site updates once a day.";
+  box.hidden = false;
+})();
+</script>
+{% endblock %}

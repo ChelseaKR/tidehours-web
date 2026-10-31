@@ -1,0 +1,26 @@
+{% extends "base.html.jinja" %}
+{% block title %}Tide times today for every US tide station | Tide Hours{% endblock %}
+{% block description %}Free tide times for today and tomorrow at {{ "{:,}".format(station_count) }} NOAA tide prediction stations in the US, with high and low tides and a tide curve, computed from NOAA harmonic constants.{% endblock %}
+{% block content %}
+<h1>Tide times for every NOAA tide station in the US</h1>
+<p class="lead">Today's and tomorrow's high and low tides, with a tide curve, for {{ "{:,}".format(station_count) }} NOAA tide prediction stations from Alaska to Puerto Rico and Guam. Free, no account.</p>
+{% if partial %}
+<p class="callout">This build covers only some states; the full site lists every station.</p>
+{% endif %}
+<section aria-labelledby="states">
+  <h2 id="states">Choose a state or territory</h2>
+  <ul class="states">
+  {% for st in states %}
+    <li><a href="/{{ st.path }}">{{ st.name }}</a> <span class="count">{{ st.count }} station{{ "s" if st.count != 1 }}</span></li>
+  {% endfor %}
+  </ul>
+</section>
+<section aria-labelledby="kt">
+  <h2 id="kt">King tides 2026–27</h2>
+  <p>The highest predicted tides of the season at 31 stations in Washington, Oregon and California. <a href="/king-tides/">King tide dates and heights</a>.</p>
+</section>
+<section aria-labelledby="what">
+  <h2 id="what">What these numbers are</h2>
+  <p>Every page shows predicted astronomical tides, computed from NOAA CO-OPS harmonic constants, datums and station offsets with the same method as the Tide Hours iPhone app, and checked against NOAA's own published predictions. They are predictions, not observations, and not for navigation. Tide Hours is not a NOAA product. <a href="/about/">More about the method and the checks</a>.</p>
+</section>
+{% endblock %}

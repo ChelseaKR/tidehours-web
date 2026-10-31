@@ -1,0 +1,56 @@
+name: site-checks
+
+# Accessibility: axe-core (WCAG 2.0/2.1/2.2 A and AA, plus a 320px reflow
+# check) and pa11y-ci (WCAG2AA, axe runner) on a sample of 127 pages of the
+# full build. Same script as local: tools/site-checks/run.sh.
+#
+# Pull requests only, and GitHub-hosted: it needs Chrome, which has no build
+# for the self-hosted linux/arm64 Mac runners, and hosted minutes cost money
+# on a private repository. Google Analytics is blocked in every browser it
+# starts.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: install node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: tools/site-checks/.nvmrc
+          cache: npm
+          cache-dependency-path: tools/site-checks/package-lock.json
+
+      - name: install the checkers and their Chrome
+        working-directory: tools/site-checks
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npx puppeteer browsers install chrome
+
+      - name: build the site and run the gates
+        run: tools/site-checks/run.sh

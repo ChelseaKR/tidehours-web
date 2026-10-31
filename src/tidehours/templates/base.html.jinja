@@ -1,0 +1,67 @@
+{% set lang = lang if lang is defined else "en" %}
+{% set t = ui[lang] %}
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Tide Hours{% endblock %}</title>
+<meta name="description" content="{% block description %}{% endblock %}">
+<link rel="canonical" href="{{ base_url }}{{ path }}">
+{% block alternates %}{% endblock %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tide Hours">
+<meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="{{ self.description() }}">
+<meta property="og:url" content="{{ base_url }}{{ path }}">
+<meta name="theme-color" content="#0b4f6c">
+<link rel="stylesheet" href="/style.css">
+{% block jsonld %}{% endblock %}
+{% if ga4_measurement_id %}{% include "_ga4.html.jinja" %}{% endif %}
+</head>
+<body>
+<a class="skip" href="#main">{{ t.skip }}</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">Tide Hours</a>
+    <nav aria-label="{{ 'Sitio' if lang == 'es' else 'Site' }}">
+      <ul>
+        <li><a href="/#states">{{ t.states }}</a></li>
+        <li><a href="/{{ 'es/' if lang == 'es' }}king-tides/">{{ t.kingTides }}</a></li>
+        <li><a href="/about/">{{ t.about }}</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<p class="notice"><span class="wrap">{{ t.notice }}</span></p>
+<main id="main" class="wrap"{% block main_attrs %}{% endblock %}>
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <section class="app" aria-labelledby="app-heading">
+      <h2 id="app-heading">{{ "Tide Hours para iPhone" if lang == "es" else "Tide Hours for iPhone" }}</h2>
+      {% if lang == "es" %}
+      <p>Tablas de 7 días, favoritos, widgets y funciona sin conexión. Hoy y mañana son gratis aquí.</p>
+      {% else %}
+      <p>7-day tide tables, favorites, Home Screen and Lock Screen widgets, and it works offline. Today and tomorrow are free here.</p>
+      {% endif %}
+      {% if app_store_url %}
+      <p><a class="button" href="{{ app_store_url }}">{{ t.appLink }}</a></p>
+      {% else %}
+      <p class="soon">{{ t.appSoon }}</p>
+      {% endif %}
+    </section>
+    <p>{{ t.notice }} {{ t.credit }} <a href="https://tidesandcurrents.noaa.gov/">NOAA Tides and Currents</a></p>
+    <p><a href="/privacy/">{{ t.privacy }}</a> · <a href="/about/">{{ t.about }}</a></p>
+    {% if ga4_measurement_id %}
+    <div id="analytics-choice" hidden>
+      <button type="button" id="analytics-opt-out" hidden>Opt out of analytics</button>
+      <span id="analytics-status" role="status"></span>
+    </div>
+    {% endif %}
+  </div>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

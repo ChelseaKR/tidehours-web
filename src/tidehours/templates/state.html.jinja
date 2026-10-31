@@ -1,0 +1,28 @@
+{% extends "base.html.jinja" %}
+{% block title %}{{ state.name }} tide times: {{ state.count }} stations | Tide Hours{% endblock %}
+{% block description %}Today's tide times at {{ state.count }} NOAA tide stations {% if state.code == "other" %}that NOAA lists without a state{% else %}in {{ state.name }}{% endif %}, by region: high and low tides and a tide curve for each.{% endblock %}
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li></ol></nav>
+<h1>{% if state.code == "other" %}{{ state.name }}{% else %}{{ state.name }} tide times{% endif %}</h1>
+{% if state.code == "other" %}
+<p class="lead">NOAA's station list gives these {{ state.count }} stations no state. They are grouped here by NOAA's region name.</p>
+{% else %}
+<p class="lead">{{ state.count }} NOAA tide prediction stations, grouped by NOAA's regions.</p>
+{% endif %}
+{% for r in state.regions %}
+<section aria-labelledby="r-{{ r.slug }}">
+  <h2 id="r-{{ r.slug }}"><a href="/{{ r.path }}">{{ r.name }}</a></h2>
+  <ul class="stations">
+  {% for s in r.stations %}<li><a href="/stations/{{ s.id }}/">{{ s.name }}</a></li>{% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% if state.unregioned %}
+<section aria-labelledby="r-none">
+  <h2 id="r-none">Stations without a region in NOAA's list</h2>
+  <ul class="stations">
+  {% for s in state.unregioned %}<li><a href="/stations/{{ s.id }}/">{{ s.name }}</a></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

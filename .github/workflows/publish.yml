@@ -1,0 +1,67 @@
+name: publish
+
+# The daily build: every station's today and tomorrow, at 11:20 UTC, when
+# every US station's local date is the same day (docs/DECISIONS.md 0002).
+#
+# It builds and checks the site and deploys NOTHING: hosting, the domain and
+# the AWS member account are owner steps (README). A scheduled run is skipped
+# until the repository variable PUBLISH_ENABLED is "true", so the schedule
+# alone costs and changes nothing. A manual run always builds, checks, and
+# uploads the site as a one-day artifact for review.
+#
+# Runs on the self-hosted Mac runner named by CI_RUNS_ON (the owner's
+# brief: hosted minutes cost money). When a deploy step is added, it needs
+# credentials the shared runner must not hold; move that job to a hosted
+# runner with OIDC then (CI-CD-STANDARD: deploy jobs stay hosted).
+#
+# Optional variables: GA4_MEASUREMENT_ID (empty: no analytics) and
+# APP_STORE_URL (empty: "Coming soon to the App Store").
+
+on:
+  schedule:
+    - cron: "20 11 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'schedule' || vars.PUBLISH_ENABLED == 'true'
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: install dependencies
+        run: uv sync --frozen
+
+      - name: build every station for today
+        env:
+          GA4_MEASUREMENT_ID: ${{ vars.GA4_MEASUREMENT_ID }}
+          APP_STORE_URL: ${{ vars.APP_STORE_URL }}
+        run: |
+          set -euo pipefail
+          uv run --frozen tidehours --out site \
+            --ga4-id "$GA4_MEASUREMENT_ID" --app-store-url "$APP_STORE_URL"
+          uv run --frozen python scripts/check_site.py site
+
+      - name: upload the site for review (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site
+          path: site
+          retention-days: 1

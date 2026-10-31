@@ -1,0 +1,130 @@
+{
+  "source": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{id}/datums.json?units=english (NOAA CO-OPS)",
+  "retrieved": "2026-10-31",
+  "datums": {
+    "9449424": {
+      "mhhwAboveMllwFt": 9.15,
+      "epoch": "1983-2001"
+    },
+    "9449880": {
+      "mhhwAboveMllwFt": 7.76,
+      "epoch": "1983-2001"
+    },
+    "9444090": {
+      "mhhwAboveMllwFt": 7.07,
+      "epoch": "1983-2001"
+    },
+    "9444900": {
+      "mhhwAboveMllwFt": 8.52,
+      "epoch": "1983-2001"
+    },
+    "9447659": {
+      "mhhwAboveMllwFt": 11.09,
+      "epoch": "1983-2001"
+    },
+    "9447130": {
+      "mhhwAboveMllwFt": 11.36,
+      "epoch": "1983-2001"
+    },
+    "9446484": {
+      "mhhwAboveMllwFt": 11.78,
+      "epoch": "1983-2001"
+    },
+    "9446807": {
+      "mhhwAboveMllwFt": 14.5,
+      "epoch": "1983-2001"
+    },
+    "9443090": {
+      "mhhwAboveMllwFt": 7.96,
+      "epoch": "1983-2001"
+    },
+    "9440910": {
+      "mhhwAboveMllwFt": 8.92,
+      "epoch": "1983-2001"
+    },
+    "9439040": {
+      "mhhwAboveMllwFt": 8.61,
+      "epoch": "1983-2001"
+    },
+    "9437540": {
+      "mhhwAboveMllwFt": 8.32,
+      "epoch": "1983-2001"
+    },
+    "9435380": {
+      "mhhwAboveMllwFt": 8.34,
+      "epoch": "1983-2001"
+    },
+    "9432780": {
+      "mhhwAboveMllwFt": 7.62,
+      "epoch": "1983-2001"
+    },
+    "9431647": {
+      "mhhwAboveMllwFt": 7.28,
+      "epoch": "1983-2001"
+    },
+    "9419750": {
+      "mhhwAboveMllwFt": 6.87,
+      "epoch": "1983-2001"
+    },
+    "9418767": {
+      "mhhwAboveMllwFt": 6.85,
+      "epoch": "1983-2001"
+    },
+    "9416841": {
+      "mhhwAboveMllwFt": 5.87,
+      "epoch": "1983-2001"
+    },
+    "9415020": {
+      "mhhwAboveMllwFt": 5.76,
+      "epoch": "1983-2001"
+    },
+    "9414290": {
+      "mhhwAboveMllwFt": 5.84,
+      "epoch": "1983-2001"
+    },
+    "9414750": {
+      "mhhwAboveMllwFt": 6.6,
+      "epoch": "1983-2001"
+    },
+    "9414523": {
+      "mhhwAboveMllwFt": 8.2,
+      "epoch": "1983-2001"
+    },
+    "9414131": {
+      "mhhwAboveMllwFt": 5.6,
+      "epoch": "1983-2001"
+    },
+    "9413450": {
+      "mhhwAboveMllwFt": 5.34,
+      "epoch": "1983-2001"
+    },
+    "9412110": {
+      "mhhwAboveMllwFt": 5.33,
+      "epoch": "1983-2001"
+    },
+    "9411340": {
+      "mhhwAboveMllwFt": 5.39,
+      "epoch": "1983-2001"
+    },
+    "9410840": {
+      "mhhwAboveMllwFt": 5.43,
+      "epoch": "1983-2001"
+    },
+    "9410660": {
+      "mhhwAboveMllwFt": 5.49,
+      "epoch": "1983-2001"
+    },
+    "9410580": {
+      "mhhwAboveMllwFt": 5.41,
+      "epoch": "1983-2001"
+    },
+    "9410230": {
+      "mhhwAboveMllwFt": 5.32,
+      "epoch": "1983-2001"
+    },
+    "9410170": {
+      "mhhwAboveMllwFt": 5.73,
+      "epoch": "1983-2001"
+    }
+  }
+}

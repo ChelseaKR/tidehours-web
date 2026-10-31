@@ -1,0 +1,38 @@
+{% extends "base.html.jinja" %}
+{% block title %}How Tide Hours predicts tides | Tide Hours{% endblock %}
+{% block description %}How tidehours.com computes tide predictions from NOAA harmonic constants, how they are checked against NOAA's published predictions, and what they are not.{% endblock %}
+{% block content %}
+<h1>How these predictions are made</h1>
+<section aria-labelledby="method">
+  <h2 id="method">The method</h2>
+  <p>Each page is computed when the site is built, once a day, from NOAA CO-OPS data: the harmonic constants and datums of {{ "{:,}".format(1232) }} harmonic stations, and the published time and height corrections of the subordinate stations predicted from them. This is the same data and the same method as the Tide Hours iPhone app, which computes the same numbers on the phone.</p>
+  <ul>
+    <li><strong>Harmonic stations:</strong> the tide is the sum of up to 120 constituents, each a cosine with NOAA's amplitude and phase, adjusted for the year's lunar node (Schureman, NOAA Special Publication 98). Highs and lows are where the predicted tide stops rising or falling.</li>
+    <li><strong>Subordinate stations:</strong> NOAA's method. The reference station's highs and lows are moved by the published minutes and scaled or offset by the published heights. NOAA does not publish a curve for these stations, so the curve here is an estimate between the highs and lows, drawn dashed.</li>
+    <li><strong>Stands:</strong> where the water barely moves for an hour or two, the math can find a low and a high less than two hours apart and a few hundredths of a foot apart. NOAA's published tables leave those pairs out, and so does this site.</li>
+  </ul>
+  <p>Heights are in feet above mean lower low water (MLLW), the datum on NOAA charts, with meters alongside. Times are local to each station, with daylight saving time where it applies.</p>
+</section>
+<section aria-labelledby="checked">
+  <h2 id="checked">How they are checked</h2>
+  <p>Before each change to the site, its tests compare these predictions with NOAA's own published predictions:</p>
+  <ul>
+    <li>A month (November 2026) of every published high and low at 81 stations, 50 harmonic and 31 subordinate, in every state and territory on this site. Of NOAA's 8,406 highs and lows, 8,366 are within 3 minutes and 0.05 ft. Another 39 are at very flat highs or lows, where the time of the peak is uncertain by a few minutes: those are within 15 minutes, and the predicted tide at NOAA's minute is within 0.01 ft. One is a flat double high (two peaks 0.005 ft apart), where this site picks the other peak. This site also shows three small stands that NOAA leaves out.</li>
+    <li>Hourly heights at 42 harmonic stations, all within 0.05 ft.</li>
+    <li>King tide dates at 31 West Coast stations, against NOAA's published predictions and the dates the California Coastal Commission and Washington Sea Grant publish.</li>
+  </ul>
+</section>
+<section aria-labelledby="not">
+  <h2 id="not">What these numbers are not</h2>
+  <p>They are predicted astronomical tides: where the moon and sun alone would put the water. They are not observations or forecasts, and they are not for navigation. Wind, storms, river flow and air pressure can push the real water well above or below them; check the <a href="https://www.weather.gov/">National Weather Service</a> for warnings. Heights are relative to NOAA's 1983–2001 tidal epoch, and the sea is higher now at many stations.</p>
+  <p>Tide Hours is not a NOAA product and is not endorsed by NOAA. NOAA's data is U.S. Government work in the public domain; this site uses the station data NOAA CO-OPS retrieved on {{ retrieved }}.</p>
+</section>
+<section aria-labelledby="sources">
+  <h2 id="sources">Sources</h2>
+  <ul>
+    <li><a href="https://api.tidesandcurrents.noaa.gov/mdapi/prod/">NOAA CO-OPS Metadata API</a>: harmonic constants, datums, subordinate offsets and region names</li>
+    <li><a href="https://tidesandcurrents.noaa.gov/tide_predictions.html">NOAA CO-OPS tide predictions</a>: the published predictions used as the check</li>
+    <li><a href="https://tidesandcurrents.noaa.gov/disclaimers.html">NOAA CO-OPS disclaimers</a></li>
+  </ul>
+</section>
+{% endblock %}

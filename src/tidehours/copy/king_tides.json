@@ -1,0 +1,266 @@
+{
+  "en": {
+    "title": "King tides 2026–27: WA, OR and CA dates and heights",
+    "description": "Predicted king tide dates, times and heights for 2026–27 at 31 NOAA stations in Washington, Oregon and California, from NOAA tide predictions.",
+    "heading": "King tides 2026–27 on the West Coast",
+    "lead": "The days with the highest predicted tides of the year at 31 NOAA tide stations from Bellingham to San Diego, with times and heights.",
+    "updated": "Computed from NOAA CO-OPS harmonic constants retrieved {date}.",
+    "california": {
+      "heading": "California's 2026–27 king tide dates",
+      "body": [
+        "The California Coastal Commission's King Tides Project lists November 24 to 26 and December 23 to 25, 2026, and January 21 to 22, 2027. It says Northern California may also see them on December 22, January 20 and January 23.",
+        "The project asks people to photograph the shoreline during king tides, because today's king tides show where everyday high tides will reach as the sea rises. You can add photos to its map."
+      ],
+      "projectLink": "California King Tides Project (California Coastal Commission)",
+      "otherHeading": "Washington and Oregon",
+      "otherBody": "Washington Sea Grant publishes a king tides calendar for Washington stations, and the Oregon King Tides Project covers Oregon.",
+      "waLink": "Washington Sea Grant king tides calendar",
+      "orLink": "Oregon King Tides Project"
+    },
+    "safety": {
+      "heading": "A prediction, not a flood forecast",
+      "body": [
+        "Every number on this page is a predicted astronomical tide: where the moon and sun alone would put the water. Wind, storms, high surf, low air pressure and river flow can push the real water level higher.",
+        "The Coastal Commission says scientists expect a historically strong El Niño in California this winter, which can bring storms and water above the predictions. Check the National Weather Service for warnings, and don't go out for photos unless it's safe."
+      ],
+      "nwsLink": "National Weather Service"
+    },
+    "stations": {
+      "heading": "Dates and heights by station",
+      "intro": "Each station's list covers {start} to {end}. On the West Coast most king tides fall between November and February; some stations also have runs in summer, usually at night. Times are local. Heights are in feet above mean lower low water (MLLW), the datum on NOAA charts.",
+      "regions": {
+        "WA": "Washington",
+        "OR": "Oregon",
+        "CA": "California"
+      },
+      "caption": "Highest predicted tides at {place}, NOAA station {id}",
+      "cols": {
+        "days": "Days",
+        "peak": "Highest tide",
+        "height": "Height",
+        "above": "Above a normal high tide"
+      },
+      "everyDay": "Every day's highest tide at {place}",
+      "noaaLink": "NOAA's tide predictions for station {id}",
+      "clipped": "This list ends {end}; the run may continue past it.",
+      "aboveNote": "“Above a normal high tide” is the height above mean higher high water (MHHW), the average of each day's higher high tide at that station.",
+      "siteLink": "Today's tides at {place}"
+    },
+    "method": {
+      "heading": "How these dates were picked",
+      "body": [
+        "For each station, this page computes every predicted high tide in the twelve months from NOAA's harmonic constants, with the same method as the Tide Hours app, and keeps each day's highest one. The 20 highest days are grouped into runs of nearby days, the five runs with the highest peaks are kept, and each run is widened to neighboring days that come within 3% of the station's tidal range of its peak.",
+        "That is the same ranking the next version of Tide Hours uses on the phone, so the app and this page agree.",
+        "Checked against NOAA's own published predictions: at all 31 stations the same days are picked, the times agree within a minute and the heights within 0.02 ft.",
+        "Two checks against published lists: at San Francisco, the winter runs here are exactly the Coastal Commission's dates plus its three optional Northern California days, and every California station on this page includes all eight statewide days. At Seattle, all 20 dates in Washington Sea Grant's 2026–27 calendar fall inside these runs, and the heights match its table.",
+        "Heights are relative to NOAA's 1983–2001 tidal epoch. The sea is higher now than that average at many stations, so real water can run above these predictions even on a calm day. NOAA's own predictions have the same property."
+      ],
+      "sourcesHeading": "Sources",
+      "sources": [
+        {
+          "label": "NOAA CO-OPS harmonic constants and datums (Metadata API)",
+          "href": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/"
+        },
+        {
+          "label": "NOAA CO-OPS tide predictions, used as the check",
+          "href": "https://tidesandcurrents.noaa.gov/tide_predictions.html"
+        },
+        {
+          "label": "NOAA CO-OPS station datums (MHHW and MLLW)",
+          "href": "https://tidesandcurrents.noaa.gov/datum_options.html"
+        },
+        {
+          "label": "NOAA: What is a king tide?",
+          "href": "https://oceanservice.noaa.gov/facts/kingtide.html"
+        },
+        {
+          "label": "California Coastal Commission King Tides Project",
+          "href": "https://www.coastal.ca.gov/kingtides/"
+        }
+      ],
+      "attribution": "NOAA data is U.S. Government work in the public domain. This page is not a NOAA product and is not endorsed by NOAA or the Coastal Commission."
+    },
+    "app": {
+      "heading": "Tide Hours for iPhone",
+      "body": "Tide Hours computes tide predictions on the phone for every NOAA tide station in the US and works with no signal. King tides are coming in a later version."
+    },
+    "months": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "monthsLong": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "ft": "ft",
+    "otherLang": {
+      "label": "En español",
+      "href": "es/king-tides/",
+      "hreflang": "es"
+    },
+    "chrome": {
+      "skip": "Skip to content",
+      "home": "Home",
+      "states": "States",
+      "kingTides": "King tides",
+      "about": "About",
+      "notice": "Predictions, not observations. Not for navigation. Tide Hours is not a NOAA product.",
+      "credit": "Predictions computed from NOAA CO-OPS harmonic constants, datums and station offsets (public domain).",
+      "privacy": "Privacy",
+      "appSoon": "Coming soon to the App Store",
+      "appLink": "Download on the App Store"
+    }
+  },
+  "es": {
+    "title": "Mareas reales (king tides) 2026–27: WA, OR y CA",
+    "description": "Fechas, horas y alturas previstas de las mareas reales 2026–27 en 31 estaciones de NOAA en Washington, Oregón y California.",
+    "heading": "Mareas reales (king tides) 2026–27 en la costa oeste",
+    "lead": "Los días con las mareas previstas más altas del año en 31 estaciones mareográficas de NOAA, de Bellingham a San Diego, con horas y alturas.",
+    "updated": "Calculado con las constantes armónicas de NOAA CO-OPS obtenidas el {date}.",
+    "california": {
+      "heading": "Fechas de las mareas reales 2026–27 en California",
+      "body": [
+        "El King Tides Project de la Comisión Costera de California indica del 24 al 26 de noviembre y del 23 al 25 de diciembre de 2026, y del 21 al 22 de enero de 2027. Añade que el norte de California también puede tenerlas el 22 de diciembre, el 20 de enero y el 23 de enero.",
+        "El proyecto pide fotografiar la costa durante las mareas reales, porque muestran hasta dónde llegarán las mareas altas de todos los días a medida que sube el mar. Puede añadir sus fotos a su mapa."
+      ],
+      "projectLink": "California King Tides Project (Comisión Costera de California, en inglés)",
+      "otherHeading": "Washington y Oregón",
+      "otherBody": "Washington Sea Grant publica un calendario de mareas reales para las estaciones de Washington, y el Oregon King Tides Project cubre Oregón.",
+      "waLink": "Calendario de mareas reales de Washington Sea Grant (en inglés)",
+      "orLink": "Oregon King Tides Project (en inglés)"
+    },
+    "safety": {
+      "heading": "Una predicción, no un pronóstico de inundaciones",
+      "body": [
+        "Cada número de esta página es una marea astronómica prevista: donde pondrían el agua solo la luna y el sol. El viento, las tormentas, el oleaje fuerte, la baja presión y el caudal de los ríos pueden subir el nivel real del agua.",
+        "La Comisión Costera dice que los científicos esperan un El Niño históricamente fuerte en California este invierno, que puede traer tormentas y agua por encima de lo previsto. Consulte los avisos del Servicio Meteorológico Nacional y no salga a tomar fotos si no es seguro."
+      ],
+      "nwsLink": "Servicio Meteorológico Nacional (en inglés)"
+    },
+    "stations": {
+      "heading": "Fechas y alturas por estación",
+      "intro": "La lista de cada estación va del {start} al {end}. En la costa oeste, la mayoría de las mareas reales caen entre noviembre y febrero; algunas estaciones también tienen series en verano, por lo general de noche. Las horas son locales. Las alturas están en pies sobre la bajamar media inferior (MLLW), el datum de las cartas de NOAA.",
+      "regions": {
+        "WA": "Washington",
+        "OR": "Oregón",
+        "CA": "California"
+      },
+      "caption": "Mareas previstas más altas en {place}, estación de NOAA {id}",
+      "cols": {
+        "days": "Días",
+        "peak": "Marea más alta",
+        "height": "Altura",
+        "above": "Sobre una pleamar normal"
+      },
+      "everyDay": "La marea más alta de cada día en {place}",
+      "noaaLink": "Predicciones de NOAA para la estación {id} (en inglés)",
+      "clipped": "Esta lista termina el {end}; la serie puede continuar después.",
+      "aboveNote": "«Sobre una pleamar normal» es la altura sobre la pleamar media superior (MHHW), el promedio de la pleamar más alta de cada día en esa estación.",
+      "siteLink": "Mareas de hoy en {place} (en inglés)"
+    },
+    "method": {
+      "heading": "Cómo se eligieron estas fechas",
+      "body": [
+        "Para cada estación, esta página calcula todas las pleamares previstas en los doce meses a partir de las constantes armónicas de NOAA, con el mismo método que la app Tide Hours, y se queda con la más alta de cada día. Los 20 días más altos se agrupan en series de días cercanos, se conservan las cinco series con los picos más altos, y cada serie se amplía a los días vecinos que quedan a menos del 3 % del rango de marea de la estación respecto a su pico.",
+        "Es la misma clasificación que usa en el teléfono la próxima versión de Tide Hours, así que la app y esta página coinciden.",
+        "Comprobado con las predicciones que publica NOAA: en las 31 estaciones se eligen los mismos días, las horas coinciden con menos de un minuto de diferencia y las alturas con menos de 0,02 pies.",
+        "Dos comprobaciones con listas publicadas: en San Francisco, las series de invierno de esta página son exactamente las fechas de la Comisión Costera más sus tres días opcionales del norte de California, y cada estación de California de esta página incluye los ocho días estatales. En Seattle, las 20 fechas del calendario 2026–27 de Washington Sea Grant caen dentro de estas series, y las alturas coinciden con su tabla.",
+        "Las alturas se refieren a la época mareal 1983–2001 de NOAA. Hoy el mar está más alto que ese promedio en muchas estaciones, así que el agua real puede superar estas predicciones incluso con buen tiempo. Las predicciones de NOAA tienen la misma propiedad."
+      ],
+      "sourcesHeading": "Fuentes",
+      "sources": [
+        {
+          "label": "Constantes armónicas y datums de NOAA CO-OPS (Metadata API; en inglés)",
+          "href": "https://api.tidesandcurrents.noaa.gov/mdapi/prod/"
+        },
+        {
+          "label": "Predicciones de mareas de NOAA CO-OPS, usadas como comprobación (en inglés)",
+          "href": "https://tidesandcurrents.noaa.gov/tide_predictions.html"
+        },
+        {
+          "label": "Datums de las estaciones de NOAA CO-OPS (MHHW y MLLW; en inglés)",
+          "href": "https://tidesandcurrents.noaa.gov/datum_options.html"
+        },
+        {
+          "label": "NOAA: ¿Qué es una marea real? (en inglés)",
+          "href": "https://oceanservice.noaa.gov/facts/kingtide.html"
+        },
+        {
+          "label": "King Tides Project de la Comisión Costera de California (en inglés)",
+          "href": "https://www.coastal.ca.gov/kingtides/"
+        }
+      ],
+      "attribution": "Los datos de NOAA son obra del Gobierno de EE. UU. y de dominio público. Esta página no es un producto de NOAA y no cuenta con el respaldo de NOAA ni de la Comisión Costera."
+    },
+    "app": {
+      "heading": "Tide Hours para iPhone",
+      "body": "Tide Hours calcula las predicciones de mareas en el teléfono para todas las estaciones mareográficas de NOAA en EE. UU. y funciona sin señal. Las mareas reales llegarán en una versión posterior."
+    },
+    "months": [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sept",
+      "oct",
+      "nov",
+      "dic"
+    ],
+    "monthsLong": [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre"
+    ],
+    "ft": "pies",
+    "otherLang": {
+      "label": "In English",
+      "href": "king-tides/",
+      "hreflang": "en"
+    },
+    "chrome": {
+      "skip": "Saltar al contenido",
+      "home": "Inicio",
+      "states": "Estados",
+      "kingTides": "Mareas reales",
+      "about": "Acerca de",
+      "notice": "Predicciones, no observaciones. No sirven para la navegación. Tide Hours no es un producto de NOAA.",
+      "credit": "Predicciones calculadas con las constantes armónicas, datums y correcciones de estaciones de NOAA CO-OPS (dominio público).",
+      "privacy": "Privacidad",
+      "appSoon": "Próximamente en la App Store",
+      "appLink": "Descargar en la App Store"
+    }
+  }
+}

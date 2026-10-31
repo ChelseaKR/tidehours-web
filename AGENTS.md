@@ -7,8 +7,9 @@ Follow /Users/chelsea/portfolio/AGENTS.md first. In this repository:
   Never push to `main` directly (the initial scaffold was the one exception).
 - **The gate is `make verify`.** Run it before every push and never bypass
   it. `make site-checks` (accessibility) also runs on pull requests.
-- **No deploys, DNS, domain or AWS changes** from an agent. Hosting is an
-  owner step (README).
+- **No DNS, domain or AWS changes** from an agent unless the owner asks.
+  Hosting is `infra/site.yaml` (infra/README.md); the daily deploy is
+  `publish.yml`. Never put AWS credentials on the shared Mac runner.
 - **Never weaken the NOAA accuracy tests** (`tests/test_golden.py`). If the
   engine changes and a divergence appears, measure it and record it in
   `KNOWN_DIVERGENCES` with what it is, and in docs/DECISIONS.md.

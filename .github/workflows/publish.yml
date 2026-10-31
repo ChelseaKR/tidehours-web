@@ -1,21 +1,25 @@
 name: publish
 
-# The daily build: every station's today and tomorrow, at 11:20 UTC, when
-# every US station's local date is the same day (docs/DECISIONS.md 0002).
+# The daily build and deploy: every station's today and tomorrow, at 11:20
+# UTC, when every US station's local date is the same day
+# (docs/DECISIONS.md 0002), then tidehours.com (DECISIONS 0009).
 #
-# It builds and checks the site and deploys NOTHING: hosting, the domain and
-# the AWS member account are owner steps (README). A scheduled run is skipped
-# until the repository variable PUBLISH_ENABLED is "true", so the schedule
-# alone costs and changes nothing. A manual run always builds, checks, and
-# uploads the site as a one-day artifact for review.
+# Two jobs. `build` runs on the self-hosted Mac runner named by CI_RUNS_ON
+# (hosted minutes cost money), builds and checks the site, and uploads it as
+# a one-day artifact. It holds no AWS credentials. `deploy` runs on a HOSTED
+# runner, assumes the deploy role through GitHub OIDC (the role trusts only
+# this repository's main branch), and runs scripts/deploy.sh: sync with
+# --delete, Cache-Control per type, invalidate, then checks the live home
+# page is the one it just built.
 #
-# Runs on the self-hosted Mac runner named by CI_RUNS_ON (the owner's
-# brief: hosted minutes cost money). When a deploy step is added, it needs
-# credentials the shared runner must not hold; move that job to a hosted
-# runner with OIDC then (CI-CD-STANDARD: deploy jobs stay hosted).
+# PUBLISH_ENABLED gates both: a scheduled run is skipped unless it is
+# "true", and a manual run with it unset builds and uploads for review but
+# deploys nothing.
 #
-# Optional variables: GA4_MEASUREMENT_ID (empty: no analytics) and
-# APP_STORE_URL (empty: "Coming soon to the App Store").
+# Variables: PUBLISH_ENABLED, AWS_DEPLOY_ROLE_ARN, SITE_BUCKET,
+# CLOUDFRONT_DISTRIBUTION_ID (infra/README.md), and optional
+# GA4_MEASUREMENT_ID (empty: no analytics) and APP_STORE_URL (empty:
+# "Coming soon to the App Store").
 
 on:
   schedule:
@@ -58,10 +62,67 @@ jobs:
             --ga4-id "$GA4_MEASUREMENT_ID" --app-store-url "$APP_STORE_URL"
           uv run --frozen python scripts/check_site.py site
 
-      - name: upload the site for review (manual runs)
-        if: github.event_name == 'workflow_dispatch'
+      - name: upload the site
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: site
           path: site
           retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    if: vars.PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SITE_BUCKET: ${{ vars.SITE_BUCKET }}
+      DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+    steps:
+      # No GitHub environment: it would change the OIDC subject the role
+      # trusts (repo:ChelseaKR/tidehours-web:ref:refs/heads/main).
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/deploy.sh
+          sparse-checkout-cone-mode: false
+
+      - name: download the site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: site
+          path: site
+
+      - name: configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@517a711dbcd0e402f90c77e7e2f81e849156e31d # v6.2.2
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: sync and invalidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SITE_BUCKET"
+          test -n "$DISTRIBUTION_ID"
+          scripts/deploy.sh site "$SITE_BUCKET" "$DISTRIBUTION_ID"
+
+      - name: check the live home page is this build
+        shell: bash
+        run: |
+          set -euo pipefail
+          want=$(sha256sum site/index.html | cut -d' ' -f1)
+          got=$(curl -sSf --retry 3 --retry-all-errors https://tidehours.com/ | sha256sum | cut -d' ' -f1)
+          if [ "$want" != "$got" ]; then
+            echo "::error::https://tidehours.com/ is not the page this run built"
+            exit 1
+          fi
+          station=$(curl -sS -o /dev/null -w '%{http_code}' https://tidehours.com/stations/9414290/)
+          missing=$(curl -sS -o /dev/null -w '%{http_code}' https://tidehours.com/no-such-page/)
+          if [ "$station" != "200" ] || [ "$missing" != "404" ]; then
+            echo "::error::station page $station (want 200), missing page $missing (want 404)"
+            exit 1
+          fi

@@ -10,3 +10,5 @@
   `make verify` against NOAA's published predictions at 81 stations.
 - Removes NOAA-style stands that the app's engine shows (DECISIONS 0004).
 - GA4 hook, off by default. Sitemap, robots.txt, canonical URLs.
+- Hosting as code (`infra/site.yaml`: S3, CloudFront, ACM, Route 53, the
+  OIDC deploy role) and a deploy job in `publish.yml` (DECISIONS 0009).

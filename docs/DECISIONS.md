@@ -122,8 +122,12 @@ Notice's implementation: `--ga4-id` (empty by default) adds the GA4 tag with
 Global Privacy Control and Do Not Track respected, an opt-out button in the
 footer, consent mode denied in the EEA, UK and Switzerland, and Google
 signals and ad personalization off. The privacy page describes analytics
-only when the ID is set, and says "collects nothing" when it is not. No
-property exists yet; creating one is an owner step.
+only when the ID is set, and says "collects nothing" when it is not.
+
+The property is "Tide Hours" (properties/561756091, stream G-JCCFJNV1CV),
+created 2026-10-31 with Lake Notice's settings: Pacific time, USD, Google
+signals off, 14-month retention, `purchase` as a key event. Its ID is the
+repository variable `GA4_MEASUREMENT_ID`.
 
 ## 0008: CI on the Mac runner; hosting is the owner's
 
@@ -135,7 +139,38 @@ site-checks`; in CI they need Chrome, which the arm64 Mac runners do not
 have, so `site-checks` runs on pull requests only, on a hosted runner, and
 on a sample.
 
-`publish` builds the whole site daily at 11:20 UTC and runs the build checks.
-It deploys nothing: hosting, the domain, DNS and the AWS member account are
-owner steps (README). Until then a scheduled run is inert unless the
-repository variable `PUBLISH_ENABLED` is `true`.
+`publish` builds the whole site daily at 11:20 UTC, runs the build checks,
+and deploys it (0009). A scheduled run is inert unless the repository
+variable `PUBLISH_ENABLED` is `true`.
+
+## 0009: Hosting: S3 and CloudFront in the tidehours account (owner, 2026-10-31)
+
+The owner approved putting tidehours.com live on 2026-10-31. The site is
+served from a private S3 bucket behind CloudFront in its own AWS member
+account, `tidehours` (932775612205), per the portfolio's one-account-per-app
+rule. All of it is one CloudFormation stack, `infra/site.yaml`
+(infra/README.md). CloudFormation rather than CDK: this is a Python
+repository, and one template needs no Node toolchain and no CDK bootstrap
+resources in the account.
+
+- **Pattern:** the same as chelseakr.com's `ChelseaStaticSiteStack`: Origin
+  Access Control, a viewer-request function for www and directory indexes,
+  a response-headers policy, the 404 page for 403 and 404, and a GitHub OIDC
+  role that can only sync this bucket and invalidate this distribution.
+- **Trust:** the role trusts `repo:ChelseaKR/tidehours-web:ref:refs/heads/main`
+  only, with no GitHub environment (an environment would change that
+  subject).
+- **Who holds credentials:** `build` stays on the shared Mac runner with no
+  AWS access; `deploy` runs on a hosted runner (about 2 minutes a day).
+- **Caching:** pages change daily, so browsers keep HTML 10 minutes and
+  CloudFront a day, and every deploy invalidates `/*` (one path, inside the
+  free 1,000 a month). `style.css` is not fingerprinted, so an hour and a day.
+- **Canonical URLs:** `/path` redirects to `/path/` (the form the canonical
+  links and sitemap use), www redirects to the apex, http to https.
+- **CSP:** enforced, not report-only. Scripts and styles allow
+  `'unsafe-inline'` because the pages carry small inline scripts (the
+  analytics guard and the stale-date note) and inline SVG curves. Network
+  access is this site plus Google Analytics.
+- **Not used:** a logging bucket and WAF (cost; the owner's brief).
+- **Cost:** about $1.20 a month (infra/README.md), plus the domain.
+

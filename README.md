@@ -1,6 +1,6 @@
 # tidehours-web
 
-The website for Tide Hours at **tidehours.com** (not live yet): free tide
+The website for Tide Hours at **tidehours.com** (live since 2026-10-31): free tide
 predictions for every NOAA tide prediction station in the US, computed with
 the Tide Hours iPhone app's engine, as a static site.
 
@@ -48,20 +48,21 @@ Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 - `site-checks`: the accessibility gates, pull requests only, hosted
   (Chrome has no build for the arm64 Mac runners).
 - `publish`: the full daily build at 11:20 UTC with its checks, on the Mac
-  runner. It deploys nothing yet, and a scheduled run is skipped until the
-  variable `PUBLISH_ENABLED` is `true`.
+  runner, then a deploy job on a hosted runner (OIDC, no AWS credentials on
+  the Mac runner) that syncs to S3, invalidates CloudFront and checks the
+  live home page. Both are skipped unless the variable `PUBLISH_ENABLED` is
+  `true`. Hosting: [infra/README.md](infra/README.md), DECISIONS 0009.
 
-## Owner steps before launch
+## Owner steps
 
-1. Buy tidehours.com (in progress).
-2. Hosting: an AWS member account for Tide Hours (the portfolio's
-   one-account-per-app rule), an S3 bucket and CloudFront distribution, and a
-   deploy job in `publish.yml`. Nothing here creates AWS resources.
-3. DNS for tidehours.com to that distribution.
-4. A GA4 property, then its ID in the repository variable the publish job
-   passes to `--ga4-id`.
-5. Search Console: verify tidehours.com and submit `/sitemap.xml`.
-6. A `protect-main` ruleset with the `verify` check required.
-7. After the app is approved: its App Store URL in `--app-store-url`.
-8. After tidehours.com is live: merge the personal-site branch that
-   redirects `/tide-hours/king-tides` here.
+Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
+(`infra/site.yaml`, live), the GA4 property (G-JCCFJNV1CV), and the
+`protect-main` ruleset requiring `verify`.
+
+1. Search Console: verify `sc-domain:tidehours.com` and submit
+   `https://tidehours.com/sitemap.xml`.
+2. GA4: accept the Data Processing Terms and turn off data sharing, as for
+   Lake Notice.
+3. After the app is approved: its App Store URL in `APP_STORE_URL`.
+4. Merge the personal-site branch that redirects `/tide-hours/king-tides`
+   here.

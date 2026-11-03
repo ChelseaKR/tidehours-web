@@ -127,6 +127,7 @@
       "notice": "Predictions, not observations. Not for navigation. Tide Hours is not a NOAA product.",
       "credit": "Predictions computed from NOAA CO-OPS harmonic constants, datums and station offsets (public domain).",
       "privacy": "Privacy",
+      "terms": "Terms",
       "appSoon": "Coming soon to the App Store",
       "appLink": "Download on the App Store"
     }
@@ -259,6 +260,7 @@
       "notice": "Predicciones, no observaciones. No sirven para la navegación. Tide Hours no es un producto de NOAA.",
       "credit": "Predicciones calculadas con las constantes armónicas, datums y correcciones de estaciones de NOAA CO-OPS (dominio público).",
       "privacy": "Privacidad",
+      "terms": "Términos de uso",
       "appSoon": "Próximamente en la App Store",
       "appLink": "Descargar en la App Store"
     }

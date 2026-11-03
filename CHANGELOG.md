@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- A plain-language terms of use page at /terms/ (English, like the privacy
+  and about pages), linked from every page's footer next to Privacy, with
+  the link label in Spanish on the Spanish king-tide page. It names who runs
+  the site, says in bold that the predictions are not for navigation, says
+  they can be wrong or late, and sets California law. Not reviewed by an
+  attorney.
 - After each deploy, the pages whose HTML changed are announced to IndexNow
   (Bing and the other participating engines), so they are crawled sooner.
   The build writes `lastmod.json`, a SHA-256 per page, to compare with the

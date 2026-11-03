@@ -1,0 +1,39 @@
+{% extends "base.html.jinja" %}
+{% block title %}Terms of use | Tide Hours{% endblock %}
+{% block description %}The terms for using tidehours.com: who runs it, what its tide predictions are and are not, and the limits of what it promises.{% endblock %}
+{% block content %}
+<h1>Terms of use</h1>
+<p>These terms cover the tidehours.com website. By using the site you accept them. They are short on purpose. If anything here is unclear, email <a href="mailto:chelsea@chelseakr.com">chelsea@chelseakr.com</a>.</p>
+<p>Last updated 2026-11-03.</p>
+
+<h2 id="who">Who runs this site</h2>
+<p>Tide Hours is run by one person, Chelsea Kelly-Reif, in California. You can reach me at <a href="mailto:chelsea@chelseakr.com">chelsea@chelseakr.com</a>.</p>
+
+<h2 id="what">What this site is, and is not</h2>
+<p>The site shows tide predictions that it computes itself from public-domain NOAA CO-OPS data: harmonic constants, datums and station offsets. It is not a NOAA product, and it is not affiliated with or endorsed by NOAA or any other agency.</p>
+<p><strong>The predictions are not for navigation.</strong> They are predicted astronomical tides, not observations or forecasts. Wind, storms, river flow and air pressure can push the real water well above or below them. Do not rely on this site for boating, anchoring, crossing a bar, walking out on a beach or tide flat, or any other decision where a wrong time or height could hurt someone. For those, use NOAA's own products, nautical charts, National Weather Service forecasts and warnings, posted signs and local knowledge.</p>
+
+<h2 id="data">The predictions can be wrong</h2>
+<p>The site's tests compare its predictions with NOAA's own published predictions, and the <a href="/about/">about page</a> says how closely they match. They can still differ from NOAA's, NOAA's source data can change or contain errors, a station's corrections are only estimates, and a bug can make a page wrong. The site is rebuilt on a schedule, so a page can be out of date.</p>
+
+<h2 id="warranty">No warranty</h2>
+<p>The site is provided "as is" and "as available," without any warranty, express or implied, including any warranty of accuracy, completeness or fitness for a particular purpose. It may be unavailable, slow or wrong at any time.</p>
+
+<h2 id="liability">Limit of liability</h2>
+<p>To the fullest extent the law allows, I am not liable for any loss, injury or damage that comes from using or relying on this site, including damage to a boat or property, or any indirect or consequential loss. Where the law does not allow that, my total liability is limited to US$50.</p>
+
+<h2 id="app">The iPhone app</h2>
+<p>The Tide Hours iPhone app {% if app_store_url %}is{% else %}will be{% endif %} sold through Apple's App Store. Apple handles payment, refunds and the app license under its own terms. What this page says about the predictions applies to the app too.</p>
+
+<h2 id="trademarks">Names and trademarks</h2>
+<p>NOAA, other agency names, Apple and App Store are the names and trademarks of their owners. They appear here only to say where data comes from or where a link goes. Their owners do not sponsor or endorse this site.</p>
+
+<h2 id="use">Using the site</h2>
+<p>You are welcome to read the site, link to it and share it. Please do not use it in a way that harms it or other people, such as automated requests heavy enough to slow it down.</p>
+
+<h2 id="changes">Changes to these terms</h2>
+<p>I may update these terms. When I do, the date at the top of this page changes. If you keep using the site after that, the new version applies.</p>
+
+<h2 id="law">Governing law</h2>
+<p>These terms are governed by the laws of the State of California, USA. If something goes wrong, please email me first, and I will try to fix it.</p>
+{% endblock %}

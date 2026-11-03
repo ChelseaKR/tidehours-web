@@ -4,9 +4,12 @@ name: publish
 # UTC, when every US station's local date is the same day
 # (docs/DECISIONS.md 0002), then tidehours.com (DECISIONS 0009).
 #
-# Two jobs. `build` runs on the self-hosted Mac runner named by CI_RUNS_ON
-# (hosted minutes cost money), builds and checks the site, and uploads it as
-# a one-day artifact. It holds no AWS credentials. `deploy` runs on a HOSTED
+# Two jobs. `build` runs on a hosted runner, builds and checks the site, and
+# uploads it as a one-day artifact. It holds no AWS credentials. It used the
+# self-hosted Mac runner until 2026-11-02, but the Mac sleeps at 11:20 UTC
+# (4:20 AM Pacific), so the scheduled build failed on 11-01 and 11-02 with
+# "the self-hosted runner lost communication" (DECISIONS 0010). The build
+# takes about a minute, well inside the free hosted minutes. `deploy` runs on a HOSTED
 # runner, assumes the deploy role through GitHub OIDC (the role trusts only
 # this repository's main branch), and runs scripts/deploy.sh: sync with
 # --delete, Cache-Control per type, invalidate, then checks the live home
@@ -36,7 +39,7 @@ concurrency:
 jobs:
   build:
     if: github.event_name != 'schedule' || vars.PUBLISH_ENABLED == 'true'
-    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read

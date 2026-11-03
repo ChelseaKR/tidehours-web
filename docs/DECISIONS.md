@@ -174,3 +174,17 @@ resources in the account.
 - **Not used:** a logging bucket and WAF (cost; the owner's brief).
 - **Cost:** about $1.20 a month (infra/README.md), plus the domain.
 
+
+## 0010: The daily build runs on a hosted runner (2026-11-02)
+
+The scheduled publish failed on 2026-11-01 and 11-02 with "The self-hosted
+runner lost communication with the server". The Mac was asleep on battery at
+11:20 UTC (4:20 AM Pacific), so the `build` job on the Mac runner never ran
+and the live tide tables went a day stale. The schedule can't move, because
+11:20 UTC is the only hour when every US station's local date is the same day
+(0002).
+
+`build` now runs on `ubuntu-latest`. The build takes about a minute, about
+45 hosted minutes a month, well inside the plan's free minutes. CI on pull
+requests stays on the Mac runner (0008), since a missed CI run only delays a
+merge and never leaves the live site stale.

@@ -14,7 +14,12 @@ Parameters:
     Description: The tidehours.com hosted zone created by domain registration.
   GitHubSubjects:
     Type: CommaDelimitedList
-    Default: "repo:ChelseaKR/tidehours-web:ref:refs/heads/main"
+    # GitHub issues this repository's tokens with an immutable subject (owner
+    # and repository ids; GET /repos/ChelseaKR/tidehours-web/actions/oidc/customization/sub
+    # shows use_immutable_subject: true), so the legacy name-only form alone
+    # never matched and the first deploy failed (DECISIONS 0012). Both forms
+    # name main only.
+    Default: "repo:ChelseaKR@3114598/tidehours-web@1441166194:ref:refs/heads/main,repo:ChelseaKR/tidehours-web:ref:refs/heads/main"
     Description: OIDC `sub` claims allowed to assume the deploy role (main only).
 
 Resources:

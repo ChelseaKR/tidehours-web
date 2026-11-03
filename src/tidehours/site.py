@@ -6,6 +6,7 @@ constants (docs/DECISIONS.md 0002); nothing is fetched while building."""
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import math
 import re
@@ -14,12 +15,13 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
 
-from . import kingtides, ktformat
+from . import indexnow, kingtides, ktformat
 from .catalog import DATA_DIR, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
 
@@ -310,4 +312,26 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
     (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
+    (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
+    # The IndexNow ownership file (indexnow.py), served from the domain's
+    # root. Public by design. Only a build for tidehours.com carries it,
+    # because the key proves ownership of that one host; find_key reads the
+    # templates directory, which holds exactly one such file.
+    if urlsplit(base).hostname == urlsplit(DEFAULT_BASE_URL).hostname:
+        indexnow.copy_key_file(Path(__file__).parent / "templates", out)
     return len(pages) + 1
+
+
+def page_manifest(pages: list[Page]) -> str:
+    """Each sitemap page's path and a SHA-256 of its HTML (schema 1, as read
+    by indexnow.py's "manifest" kind). The sitemap's lastmod is the build date
+    on every page, so it cannot tell a changed page from an unchanged one;
+    this can, because a rebuild of the same day is byte-identical. The next
+    build compares its manifest with the live one and announces only the pages
+    whose HTML changed (docs/DECISIONS.md 0011)."""
+    entries = {
+        "/" + p.path: {"fingerprint": hashlib.sha256(p.html.encode("utf-8")).hexdigest()}
+        for p in pages
+        if p.path != "404"
+    }
+    return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

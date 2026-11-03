@@ -2,6 +2,10 @@
 
 ## 0.1.0 (unreleased)
 
+- After each deploy, the pages whose HTML changed are announced to IndexNow
+  (Bing and the other participating engines), so they are crawled sooner.
+  The build writes `lastmod.json`, a SHA-256 per page, to compare with the
+  live one; a failed announcement only logs a notice (DECISIONS 0011).
 - The daily build runs on a hosted runner, because the Mac runner is asleep
   at 4:20 AM Pacific and missed two days (DECISIONS 0010).
 - First version: a page per NOAA tide prediction station (3,256) with today's

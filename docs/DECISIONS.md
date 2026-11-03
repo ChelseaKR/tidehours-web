@@ -188,3 +188,31 @@ and the live tide tables went a day stale. The schedule can't move, because
 45 hosted minutes a month, well inside the plan's free minutes. CI on pull
 requests stays on the Mac runner (0008), since a missed CI run only delays a
 merge and never leaves the live site stale.
+
+
+## 0011: Announce new and changed pages to IndexNow after each deploy (2026-11-03)
+
+ChatGPT search leans on Bing's index, and IndexNow is how a site tells Bing
+(and the other participating engines) that a page is new or changed instead
+of waiting for the next crawl. Trout Truck and Next Home Game have run the
+same `indexnow.py` since 2026-10-23 and get HTTP 200 on their daily runs.
+
+What changed is judged by each page's HTML, not the sitemap: every sitemap
+`lastmod` is the build date, so it would call every page changed every day.
+The build now writes `lastmod.json`, a SHA-256 per sitemap page, and the next
+build compares its own with the live one. Measured on two builds a day apart
+(2026-11-01 and 11-02): 3,256 of 3,741 pages differed (every station page,
+because today's and tomorrow's tides are new), and the 485 state, home, about,
+privacy and king-tide pages did not; a rebuild of the same day differed in
+none. So a normal day announces about 3,256 URLs, under the 10,000 per
+request limit, and the first deploy with this change announces every page
+once, because there is no live `lastmod.json` yet.
+
+`publish.yml` picks the list in `build`, before `deploy` replaces the live
+site, and a separate `indexnow` job submits it only after `deploy` and its
+live check succeeded. If the live manifest cannot be read, nothing is
+announced. The script exits 0 on any problem and prints a notice, so there is
+no `continue-on-error` (the standards ban it) and the deploy is never blocked.
+The job holds no AWS credentials and no secret: the key file at the site root
+is public by design, and only a tidehours.com build carries it. To stop
+announcing, delete the `indexnow` job and the two IndexNow steps.

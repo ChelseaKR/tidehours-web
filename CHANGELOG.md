@@ -2,6 +2,8 @@
 
 ## 0.1.0 (unreleased)
 
+- The daily build runs on a hosted runner, because the Mac runner is asleep
+  at 4:20 AM Pacific and missed two days (DECISIONS 0010).
 - First version: a page per NOAA tide prediction station (3,256) with today's
   and tomorrow's highs, lows and tide curve; state and region pages; the
   2026-27 West Coast king-tide pages in English and Spanish, computed rather

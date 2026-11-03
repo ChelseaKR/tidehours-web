@@ -216,3 +216,12 @@ no `continue-on-error` (the standards ban it) and the deploy is never blocked.
 The job holds no AWS credentials and no secret: the key file at the site root
 is public by design, and only a tidehours.com build carries it. To stop
 announcing, delete the `indexnow` job and the two IndexNow steps.
+
+## 0012: The deploy role trusts GitHub's immutable OIDC subject (2026-11-02)
+
+The first automated deploy failed with "Not authorized to perform
+sts:AssumeRoleWithWebIdentity". This repository's OIDC tokens use GitHub's
+immutable subject, which carries the owner and repository ids
+(`repo:ChelseaKR@3114598/tidehours-web@1441166194:ref:refs/heads/main`), but
+the role trusted only the legacy name form. `GitHubSubjects` now lists both,
+and both name main only, so the scope is unchanged.

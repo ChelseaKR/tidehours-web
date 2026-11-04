@@ -6,14 +6,18 @@ config switches (GA4, App Store link) do what they say."""
 from __future__ import annotations
 
 import datetime as dt
+import importlib.util
+import json
 import re
+import shutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from tidehours import cli, site
-from tidehours.catalog import Station, load
+from tidehours.catalog import Station, load, tidy_name
 from tidehours.days import feet, meters, no_negative_zero, station_day
 
 NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
@@ -52,7 +56,7 @@ def test_every_page_has_the_promises(built: Path) -> None:
 
 def test_station_pages(built: Path) -> None:
     sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
-    assert "SAN FRANCISCO (Golden Gate), CA tide times" in sf
+    assert "San Francisco (Golden Gate), CA tide times" in sf and "SAN FRANCISCO" not in sf
     assert "Sunday, November 1, 2026" in sf and "Monday, November 2, 2026" in sf
     assert sf.count('<svg class="tide-chart"') == 2
     assert "stroke-dasharray" not in sf
@@ -81,7 +85,9 @@ def test_indexes_sitemap_robots(built: Path) -> None:
         .getroot()
         .iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
     ]
-    assert len(urls) == len(pages(built)) - 1  # every page but 404.html
+    noindex = [f for f in pages(built) if 'name="robots" content="noindex' in f.read_text(encoding="utf-8")]
+    assert noindex and all(f.parts[-3] == "stations" for f in noindex)
+    assert len(urls) == len(pages(built)) - 1 - len(noindex)  # every indexable page but 404.html
     assert "https://tidehours.com/es/king-tides/" in urls
     assert "Sitemap: https://tidehours.com/sitemap.xml" in (built / "robots.txt").read_text(encoding="utf-8")
     assert (built / "style.css").exists()
@@ -187,3 +193,75 @@ def test_terms_page_and_footer_link(tmp_path: Path, built: Path) -> None:
     cli.main(["--out", str(out), "--now", NOW, "--states", "GU",
               "--app-store-url", "https://apps.apple.com/app/id1"])  # fmt: skip
     assert "app is sold through" in " ".join((out / "terms/index.html").read_text(encoding="utf-8").split())
+
+
+def test_tidy_name() -> None:
+    assert tidy_name("SAN FRANCISCO (Golden Gate)") == "San Francisco (Golden Gate)"
+    assert tidy_name("PORT O'CONNOR, MATAGORDA BAY") == "Port O'Connor, Matagorda Bay"
+    assert tidy_name("CHARLOTTE AMALIE, ST. THOMAS ISLAND") == "Charlotte Amalie, St. Thomas Island"
+    # Abbreviations stay in capitals; names already in mixed case are untouched.
+    assert tidy_name("VACA KEY, USCG STATION, FLORIDA BAY") == "Vaca Key, USCG Station, Florida Bay"
+    assert tidy_name("Shinn Point, ICWW") == "Shinn Point, ICWW"
+    assert tidy_name("Cox WC-53 Platform") == "Cox WC-53 Platform"
+    assert tidy_name("Seaside Heights, N.J.") == "Seaside Heights, N.J."
+
+
+def test_subordinate_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> None:
+    """DECISIONS 0013: a subordinate station's page is served and linked but
+    asks not to be indexed, and is in neither the sitemap nor lastmod.json
+    (so IndexNow never announces it); a harmonic station's page is indexed."""
+    robots = '<meta name="robots" content="noindex,follow">'
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+    sub = (built / "stations/9413878/index.html").read_text(encoding="utf-8")
+    assert robots in sub
+    assert "/stations/9413878/<" not in sitemap and "/stations/9413878/" not in manifest
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    assert "noindex" not in sf
+    assert "https://tidehours.com/stations/9414290/</loc>" in sitemap and "/stations/9414290/" in manifest
+    # The reference page links each station predicted from it, with its time corrections.
+    assert "Stations predicted from this one" in sf and 'href="/stations/9413878/"' in sf
+    assert re.search(r"high tide (at the same time|\d+ (h|min)[^,]* (later|earlier))", sf)
+    cat = load()
+    for f in built.glob("stations/*/index.html"):
+        s = cat.station(f.parent.name)
+        assert s is not None
+        assert (robots in f.read_text(encoding="utf-8")) == s.is_subordinate == (not site.indexable(s)), s.id
+
+
+def test_offset_phrase() -> None:
+    assert site.offset_phrase(0.2) == "at the same time"
+    assert site.offset_phrase(12) == "12 min later"
+    assert site.offset_phrase(-75) == "1 h 15 min earlier"
+    assert site.offset_phrase(120) == "2 h later"
+
+
+def _check_site() -> object:
+    spec = importlib.util.spec_from_file_location("check_site", Path(__file__).parent.parent / "scripts/check_site.py")
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_check_site_catches_an_indexing_mistake(tmp_path: Path, built: Path) -> None:
+    """Negative control: the gate's noindex, sitemap and lastmod.json checks
+    pass on the build and fail once a subordinate page loses its noindex."""
+    check: Any = _check_site()
+    site_dir = tmp_path / "site"
+    shutil.copytree(built, site_dir)
+    stations = load().stations
+
+    def problems() -> list[str]:
+        found: list[str] = check.check_indexing(site_dir, sorted(site_dir.rglob("*.html")), stations)
+        return found
+
+    assert problems() == []
+    page = site_dir / "stations/9413878/index.html"
+    html = page.read_text(encoding="utf-8")
+    page.write_text(html.replace('<meta name="robots" content="noindex,follow">', ""), encoding="utf-8")
+    assert "noindex" not in page.read_text(encoding="utf-8")  # the sabotage applied
+    found = problems()
+    assert "stations/9413878: a subordinate station needs noindex" in found
+    assert any(p.startswith("sitemap lists") for p in found)
+    assert any(p.startswith("lastmod.json lists") for p in found)

@@ -24,6 +24,7 @@ from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescap
 from . import indexnow, kingtides, ktformat
 from .catalog import DATA_DIR, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
+from .engine import Offsets
 
 DEFAULT_BASE_URL = "https://tidehours.com/"
 # Analytics regions where analytics_storage defaults to denied (EEA, UK, CH),
@@ -43,6 +44,17 @@ STATE_NAMES = {
 }  # fmt: skip
 OTHER = "other"
 OTHER_NAME = "Stations without a state"
+
+
+def indexable(station: Station) -> bool:
+    """Whether a station's page asks search engines to index it.
+
+    Harmonic stations are indexed. A subordinate station's highs and lows are
+    its reference station's, moved by fixed minutes and scaled, so its page is
+    a near-copy of another page on this site; it is served, linked and
+    followed, but carries ``noindex`` and is left out of the sitemap (and so of
+    IndexNow) until the site has earned some trust (docs/DECISIONS.md 0013)."""
+    return not station.is_subordinate
 
 
 def slug(text: str) -> str:
@@ -146,6 +158,16 @@ class Nearby:
         return out
 
 
+def offset_phrase(minutes: float) -> str:
+    """A subordinate station's published time correction, in words."""
+    m = round(minutes)
+    if m == 0:
+        return "at the same time"
+    h, rest = divmod(abs(m), 60)
+    span = f"{h} h {rest} min" if h and rest else f"{h} h" if h else f"{rest} min"
+    return f"{span} {'later' if m > 0 else 'earlier'}"
+
+
 def env() -> Environment:
     e = Environment(
         loader=PackageLoader("tidehours", "templates"),
@@ -159,6 +181,7 @@ def env() -> Environment:
     e.filters["long_date"] = long_date
     e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
     e.globals.update(
+        minutes=offset_phrase,
         fill=ktformat.fill,
         fmt_date=ktformat.fmt_date,
         fmt_long_date=ktformat.fmt_long_date,
@@ -173,6 +196,16 @@ def env() -> Environment:
 class Page:
     path: str  # "" for home, "stations/9414290/" etc.
     html: str
+    index: bool = True  # False: served with noindex, not in the sitemap or lastmod.json
+
+
+@dataclass(frozen=True)
+class Derived:
+    """A subordinate station predicted from the page's station."""
+
+    station: Station
+    offsets: Offsets
+    km: float
 
 
 def king_tide_context(cat: Catalog) -> dict[str, Any]:
@@ -195,6 +228,18 @@ def next_series(season: kingtides.StationSeason, today: dt.date) -> list[kingtid
         if dt.date.fromisoformat(series[-1].date) >= today:
             return series
     return None
+
+
+def derived_from(cat: Catalog, by_id: dict[str, Station]) -> dict[str, list[Derived]]:
+    """Reference station id -> the built subordinate stations predicted from
+    it, nearest first."""
+    out: dict[str, list[Derived]] = defaultdict(list)
+    for s in by_id.values():
+        if s.reference_id is not None and s.reference_id in by_id:
+            out[s.reference_id].append(Derived(s, cat.offsets(s.id), distance_km(by_id[s.reference_id], s)))
+    for subs in out.values():
+        subs.sort(key=lambda d: (d.km, d.station.id))
+    return out
 
 
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
@@ -230,8 +275,11 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     near = Nearby(stations)
     pages: list[Page] = []
 
-    def page(path: str, template: str, **ctx: Any) -> None:
-        pages.append(Page(path, e.get_template(template).render(**common, path=path, **ctx)))
+    def page(path: str, template: str, index: bool = True, **ctx: Any) -> None:
+        html = e.get_template(template).render(**common, path=path, noindex=not index, **ctx)
+        pages.append(Page(path, html, index))
+
+    derived = derived_from(cat, by_id)
 
     page("", "index.html.jinja", states=states, partial=cfg.states is not None)
     page("about/", "about.html.jinja")
@@ -262,6 +310,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         page(
             f"stations/{s.id}/",
             "station.html.jinja",
+            index=indexable(s),
             station=s,
             state=st,
             region=region,
@@ -269,6 +318,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             reference=ref,
             reference_listed=ref is not None and ref.id in by_id,
             nearby=near(s),
+            derived=derived.get(s.id, []),
             king_season=season,
             king_next=next_series(season, today) if season else None,
         )
@@ -277,7 +327,9 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
 
 def sitemap(pages: list[Page], base: str, built: str) -> str:
     rows = [
-        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{built}</lastmod></url>" for p in pages if p.path != "404"
+        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{built}</lastmod></url>"
+        for p in pages
+        if p.path != "404" and p.index
     ]
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -329,10 +381,11 @@ def page_manifest(pages: list[Page]) -> str:
     on every page, so it cannot tell a changed page from an unchanged one;
     this can, because a rebuild of the same day is byte-identical. The next
     build compares its manifest with the live one and announces only the pages
-    whose HTML changed (docs/DECISIONS.md 0011)."""
+    whose HTML changed (docs/DECISIONS.md 0011). Noindex pages are left out,
+    as they are from the sitemap (0013)."""
     entries = {
         "/" + p.path: {"fingerprint": hashlib.sha256(p.html.encode("utf-8")).hexdigest()}
         for p in pages
-        if p.path != "404"
+        if p.path != "404" and p.index
     }
     return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

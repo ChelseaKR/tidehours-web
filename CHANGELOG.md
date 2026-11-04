@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Search engines are asked to index the 1,232 harmonic station pages and the
+  hub pages, not yet the 2,024 subordinate station pages, which are near
+  copies of their reference station's page. Those keep their URLs and links
+  but carry `noindex,follow` and are left out of the sitemap and IndexNow.
+  Reference station pages list the stations predicted from them, with the
+  time corrections, and NOAA names in capitals ("SAN FRANCISCO") are shown
+  as place names (DECISIONS 0013).
 - A plain-language terms of use page at /terms/ (English, like the privacy
   and about pages), linked from every page's footer next to Privacy, with
   the link label in Spanish on the Spanish king-tide page. It names who runs

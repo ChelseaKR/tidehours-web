@@ -6,6 +6,7 @@ way TideCore's StationCatalog decodes it, plus NOAA's region names.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,58 @@ DATA_DIR = Path(__file__).resolve().parent / "data"
 
 class CatalogError(ValueError):
     pass
+
+
+# Abbreviations in NOAA's station names that stay in capitals. Everything else
+# NOAA writes in capitals (its convention for the long-running reference
+# stations, "SAN FRANCISCO (Golden Gate)", "BOSTON") is a place name.
+ACRONYMS = frozenset(
+    [
+        "AFB",
+        "AK",
+        "ANVSA",
+        "CBBT",
+        "GNSS",
+        "GPS",
+        "ICW",
+        "ICWW",
+        "LAWMA",
+        "MA",
+        "MARAD",
+        "MSF",
+        "NAB",
+        "NAS",
+        "NC",
+        "NE",
+        "NERR",
+        "NOAA",
+        "NW",
+        "NY",
+        "PGA",
+        "RR",
+        "SE",
+        "SW",
+        "US",
+        "USCG",
+        "USS",
+    ]
+)
+_CAPS_WORD = re.compile(r"\b[A-Z][A-Z']+\b(?![&-])")
+
+
+def tidy_name(name: str) -> str:
+    """NOAA's name with words in capitals written as place names
+    ("SAN FRANCISCO (Golden Gate)" -> "San Francisco (Golden Gate)").
+    Abbreviations (ICWW, USCG, and dotted ones like N.J. or D.C.) are kept.
+    Display only: ids, URLs and the data file keep NOAA's name (DECISIONS 0013)."""
+
+    def fix(m: re.Match[str]) -> str:
+        w = m.group(0)
+        if w in ACRONYMS:
+            return w
+        return "'".join(part[:1] + part[1:].lower() for part in w.split("'"))
+
+    return _CAPS_WORD.sub(fix, name)
 
 
 @dataclass(frozen=True)
@@ -60,6 +113,9 @@ class Catalog:
             return self._harmonic[station_id]
         return SubordinatePredictor(self._harmonic[station.reference_id], self._offsets[station_id])
 
+    def offsets(self, station_id: str) -> Offsets:
+        return self._offsets[station_id]
+
     def harmonic(self, station_id: str) -> HarmonicPredictor:
         return self._harmonic[station_id]
 
@@ -100,7 +156,9 @@ def load(
             amp.append(float(term[1]))
             ph.append(float(term[2]))
         harmonic[h["id"]] = HarmonicPredictor(float(h["z0"]), idx, amp, ph, speeds, years)
-        stations.append(Station(h["id"], h["n"], h["st"], h["la"], h["lo"], h["tz"], None, regions.get(h["id"])))
+        stations.append(
+            Station(h["id"], tidy_name(h["n"]), h["st"], h["la"], h["lo"], h["tz"], None, regions.get(h["id"]))
+        )
     for s in raw["subordinate"]:
         # TideCore skips a subordinate station whose reference or heights are
         # missing; so does the site, and it reports the count.
@@ -108,7 +166,9 @@ def load(
             skipped.append(s["id"])
             continue
         offsets[s["id"]] = Offsets(s["ref"], s["k"], float(s["th"]), float(s["tl"]), float(s["hh"]), float(s["hl"]))
-        stations.append(Station(s["id"], s["n"], s["st"], s["la"], s["lo"], s["tz"], s["ref"], regions.get(s["id"])))
+        stations.append(
+            Station(s["id"], tidy_name(s["n"]), s["st"], s["la"], s["lo"], s["tz"], s["ref"], regions.get(s["id"]))
+        )
     by_id: dict[str, Station] = {}
     for st in stations:
         by_id.setdefault(st.id, st)

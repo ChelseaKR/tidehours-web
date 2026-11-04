@@ -162,3 +162,28 @@ def test_grouping_and_nearby() -> None:
 def test_group_rejects_unknown_state() -> None:
     with pytest.raises(ValueError, match="no name"):
         site.group([Station("1", "X", "ZZ", 0, 0, "UTC", None, "R")])
+
+
+def test_terms_page_and_footer_link(tmp_path: Path, built: Path) -> None:
+    terms = (built / "terms/index.html").read_text(encoding="utf-8")
+    text = " ".join(re.sub(r"<[^>]+>", " ", terms).split())
+    for want in (
+        "Chelsea Kelly-Reif",
+        "chelsea@chelseakr.com",
+        "The predictions are not for navigation.",
+        "not a NOAA product",
+        "laws of the State of California",
+        "will be sold through",
+    ):
+        assert want in text, want
+    assert len(text.split()) < 700
+    for f in built.rglob("*.html"):
+        if f.name != "404.html":
+            assert '<a href="/terms/">' in f.read_text(encoding="utf-8"), f
+    es = (built / "es/king-tides/index.html").read_text(encoding="utf-8")
+    assert '<a href="/terms/">Términos de uso</a>' in es
+    assert "/terms/</loc>" in (built / "sitemap.xml").read_text(encoding="utf-8")
+    out = tmp_path / "live"
+    cli.main(["--out", str(out), "--now", NOW, "--states", "GU",
+              "--app-store-url", "https://apps.apple.com/app/id1"])  # fmt: skip
+    assert "app is sold through" in " ".join((out / "terms/index.html").read_text(encoding="utf-8").split())

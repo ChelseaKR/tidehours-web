@@ -1,5 +1,5 @@
 """Renders the static site: a page per station (today and tomorrow), state
-and region indexes, the king-tide pages, about, privacy, 404, sitemap and
+and region indexes, the king-tide pages, about, privacy, terms, 404, sitemap and
 robots.txt. Every number on a page is computed at build time from NOAA's
 constants (docs/DECISIONS.md 0002); nothing is fetched while building."""
 
@@ -236,6 +236,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     page("", "index.html.jinja", states=states, partial=cfg.states is not None)
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
+    page("terms/", "terms.html.jinja")
     for lang in ("en", "es"):
         page(
             "king-tides/" if lang == "en" else "es/king-tides/",

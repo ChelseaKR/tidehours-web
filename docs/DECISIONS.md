@@ -225,3 +225,56 @@ immutable subject, which carries the owner and repository ids
 (`repo:ChelseaKR@3114598/tidehours-web@1441166194:ref:refs/heads/main`), but
 the role trusted only the legacy name form. `GitHubSubjects` now lists both,
 and both name main only, so the scope is unchanged.
+
+## 0013: Index the harmonic stations first; subordinate pages are noindex (2026-11-03)
+
+Measured 2026-11-03, three days after launch. Search Console had downloaded
+the sitemap (3,740 URLs, 0 errors) and listed 0 indexed, but URL Inspection
+on 32 pages found 17 already indexed, all crawled that day, and 15 not yet
+known to Google. Google was indexing the site page by page that day, so what
+it was about to index mattered.
+
+What it was about to index: 3,256 station pages from one template. Measured
+on a full build, about 87% of the words on a median station page are words
+that appear on at least half of all station pages; what differs is the name,
+the numbers and the nearby list. 2,024 of the 3,256 are subordinate
+stations, whose highs and lows are one of 91 reference stations' moved by
+fixed minutes and scaled, so each is close to a copy of another page here
+(the top reference has 149). 1,070 stations have another station within 2
+miles. Trout Truck, a young domain with about 1,300 indexed template pages,
+lost about 97% of its Google impressions in one sitewide re-rank on
+2026-10-22 (growth/tt-google-drop-2026-11-03.md). Its cause is not
+determined, but a young site made mostly of near-identical template pages
+is the leading explanation.
+
+So, for now:
+
+- **Indexed:** home, about, privacy, terms, the king-tide pages, the 30
+  state and 449 region pages, and the 1,232 harmonic station pages: 1,717
+  pages, all in the sitemap.
+- **Served but noindex:** the 2,024 subordinate station pages carry
+  `noindex,follow` and are left out of the sitemap and `lastmod.json`, so
+  IndexNow (0011) never announces them. They keep their URLs and canonical
+  links, and are linked from their state and region pages and from their
+  reference station's page.
+- **Reference pages list them:** each harmonic page that NOAA uses as a
+  reference lists the stations predicted from it, nearest first, with the
+  published time corrections ("Santa Cruz, Monterey Bay, CA, 25 mi: high
+  tide 6 min earlier"). That is real data a visitor can use, and it makes
+  those 91 pages different from every other page.
+- **Names:** 105 NOAA names are written in capitals (NOAA's convention for
+  the long-running reference stations: "SAN FRANCISCO (Golden Gate)",
+  "BOSTON", "HONOLULU"), which put capitals in the titles of the most
+  searched pages. `catalog.tidy_name` writes those words as place names and
+  keeps abbreviations (ICWW, USCG, N.J.). Display only: ids, URLs and the
+  data file are NOAA's. The app shows NOAA's names as they are.
+
+The cost: some well-known places exist here only as subordinate stations
+(Santa Cruz, Tybee Light, East Pass (Destin), Daytona Beach Shores and
+Ocean Beach, NJ), so those pages will not be found in search until the
+rule changes. `site.indexable` is the one place to change it.
+
+When to widen: when the indexed pages earn impressions for four straight
+weeks without a sitewide drop, allow subordinate pages back, a state or a
+named list at a time, and re-measure. Allowing a page back is a code change
+that adds it to the sitemap and `lastmod.json`, so IndexNow announces it.

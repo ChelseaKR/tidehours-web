@@ -8,6 +8,8 @@
 <title>{% block title %}Tide Hours{% endblock %}</title>
 <meta name="description" content="{% block description %}{% endblock %}">
 <link rel="canonical" href="{{ base_url }}{{ path }}">
+{% if noindex is defined and noindex %}<meta name="robots" content="noindex,follow">
+{% endif %}
 {% block alternates %}{% endblock %}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tide Hours">

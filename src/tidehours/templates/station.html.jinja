@@ -81,6 +81,18 @@
 </section>
 {% endif %}
 
+{% if derived %}
+<section aria-labelledby="derived">
+  <h2 id="derived">Stations predicted from this one</h2>
+  <p>NOAA predicts the highs and lows at {{ derived|length }} other station{{ "s" if derived|length != 1 }} from this station's, with published time and height corrections. The time corrections{% if derived|length > 1 %}, nearest station first{% endif %}:</p>
+  <ul class="derived">
+  {% for d in derived %}
+    <li><a href="/stations/{{ d.station.id }}/">{{ d.station.display_name }}</a> <span class="dist">{{ "%.0f"|format(d.km * 0.621371) }} mi</span>: high tide {{ minutes(d.offsets.high_time_minutes) }}, low tide {{ minutes(d.offsets.low_time_minutes) }}</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 <section aria-labelledby="near">
   <h2 id="near">Nearby stations</h2>
   <ul class="near">

@@ -51,8 +51,10 @@
 {% endif %}
 
 {% for day in days %}
-<section class="day" aria-labelledby="day-{{ loop.index }}">
-  <h2 id="day-{{ loop.index }}"><span class="day-label">{{ day.label }}</span>, <time datetime="{{ day.date.isoformat() }}">{{ day.long_date }}</time></h2>
+<section class="day" aria-labelledby="day-{{ loop.index }}" data-date="{{ day.date.isoformat() }}">
+  {#- The heading is the date, which is true whenever the page is read. The
+      script below adds "Today" or "Tomorrow" from the station's own clock. -#}
+  <h2 id="day-{{ loop.index }}"><span class="day-label"></span><time datetime="{{ day.date.isoformat() }}">{{ day.long_date }}</time></h2>
   {% if day.events %}
   <table class="events">
     <caption class="vh">High and low tides at {{ station.display_name }}, {{ day.long_date }}</caption>
@@ -133,18 +135,71 @@
 {% endblock %}
 {% block scripts %}
 <script>
+// The page is built once a day at 11:20 UTC, so the days on it are the
+// station's dates at that moment. Which one is "today" depends on when it is
+// read: before dawn on the East Coast, and for most of the day in Guam, the
+// first day on the page is already yesterday. Label the days from the
+// station's own clock (its IANA zone), hide the ones that have passed, and say
+// plainly when today is not on the page. Without the script, or if the zone
+// is unknown to the browser, the headings stay plain dates, which are true.
+var tidehoursDays = (function () {
+  function isoDay(tz, now) {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(now);
+  }
+  function addDays(iso, n) {
+    var d = new Date(iso + "T12:00:00Z");
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function words(iso) {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "UTC", weekday: "long", month: "long", day: "numeric", year: "numeric"
+    }).format(new Date(iso + "T12:00:00Z"));
+  }
+  // dates: the ISO dates on the page, in order. Returns, per date, its label
+  // ("Today", "Tomorrow" or "" for a plain date) and whether to hide it, and
+  // a message when the station's today is not among them.
+  function plan(dates, tz, now) {
+    var today = isoDay(tz, now);
+    var tomorrow = addDays(today, 1);
+    var days = dates.map(function (d) {
+      return {
+        date: d,
+        hide: d < today,
+        label: d === today ? "Today" : d === tomorrow ? "Tomorrow" : ""
+      };
+    });
+    var message = "";
+    if (dates.indexOf(today) < 0) {
+      var shown = dates.map(words).join(" and ");
+      message = "Today, " + words(today) + ", is not on this page yet. It has " + shown +
+        (dates[dates.length - 1] < today ? ", which have passed" : "") +
+        ". The site updates once a day; NOAA's own predictions for this station are linked below.";
+    }
+    return { today: today, days: days, message: message };
+  }
+  return { plan: plan };
+})();
 (function () {
   var main = document.getElementById("main");
-  var built = main.getAttribute("data-station-date");
-  var today;
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section.day[data-date]"));
+  var result;
   try {
-    today = new Intl.DateTimeFormat("en-CA", { timeZone: main.getAttribute("data-tz") }).format(new Date());
+    result = tidehoursDays.plan(sections.map(function (s) { return s.getAttribute("data-date"); }),
+      main.getAttribute("data-tz"), new Date());
   } catch (e) { return; }
-  if (!today || today <= built) return;
-  var box = document.getElementById("stale");
-  box.textContent = "This page was last updated for " + built + ", and it is " + today +
-    " at this station now. Check the date above each table; the site updates once a day.";
-  box.hidden = false;
+  sections.forEach(function (s, i) {
+    var day = result.days[i];
+    if (day.label) s.querySelector(".day-label").textContent = day.label + ", ";
+    if (day.hide) s.hidden = true;
+  });
+  if (result.message) {
+    var box = document.getElementById("stale");
+    box.textContent = result.message;
+    box.hidden = false;
+  }
 })();
 </script>
 {% endblock %}

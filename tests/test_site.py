@@ -399,7 +399,6 @@ def test_filed_stations_pages(tmp_path: Path) -> None:
     assert "Cape Hatteras" not in other and "Wales Island" in other and "Saipan" not in other and "Apia" in other
     for old, new, where in [
         ("states/other/outer-banks/", "states/nc/outer-banks/", "North Carolina"),  # was a live region page
-        ("states/other/northern-marianas-islands/", "states/mp/northern-marianas-islands/", "Northern Mariana Islands"),
         ("states/gu/northern-marianas-islands/", "states/mp/northern-marianas-islands/", "Northern Mariana Islands"),
         ("states/other/marshall-islands/", "states/um/wake-island/", "U.S. Minor Outlying Islands"),
     ]:
@@ -407,6 +406,33 @@ def test_filed_stations_pages(tmp_path: Path) -> None:
         assert f'<meta http-equiv="refresh" content="0; url=/{new}">' in stub, old
         assert 'content="noindex,follow"' in stub and f"listed under {where}" in stub, old
         assert f"https://tidehours.com/{old}" not in sitemap and f"https://tidehours.com/{new}" in sitemap, old
+    # A region that split lists each part, with its stations, and sends no one
+    # to just one of them (Midway is not Johnston Atoll; Guam is not the CNMI).
+    for old, parts in [
+        (
+            "states/other/hawaiin-islands/",
+            {"states/um/johnston-atoll/": ["1619000"], "states/um/midway-islands/": ["1619910"]},
+        ),
+        (
+            "states/other/northern-marianas-islands/",
+            {
+                "states/gu/guam/": ["1630000", "1631428"],
+                "states/mp/northern-marianas-islands/": ["TPT2621", "TPT2623", "TPT2625", "TPT2627"],
+            },
+        ),
+    ]:
+        split = (out / old / "index.html").read_text(encoding="utf-8")
+        assert "http-equiv" not in split and 'content="noindex,follow"' in split, old
+        assert f'<link rel="canonical" href="https://tidehours.com/{old}">' in split, old
+        assert "now listed in 2 places" in split and f"https://tidehours.com/{old}" not in sitemap, old
+        sections = [p.split("</section>")[0] for p in split.split('aria-labelledby="to-')[1:]]
+        assert len(sections) == len(parts), old
+        for section, (new, ids) in zip(sections, parts.items(), strict=True):
+            assert f'href="/{new}"' in section, new
+            assert sorted(re.findall(r'href="/stations/([^/]+)/"', section)) == ids, new
+    assert "Johnston Atoll, U.S. Minor Outlying Islands" in (out / "states/other/hawaiin-islands/index.html").read_text(
+        encoding="utf-8"
+    )
     # A region that still has a station without a state keeps its own page, not a stub.
     southeast = (out / "states/other/southeast-coast/index.html").read_text(encoding="utf-8")
     assert "http-equiv" not in southeast and "Sunset Beach Bridge" in southeast

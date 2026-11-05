@@ -1,9 +1,24 @@
 {% extends "base.html.jinja" %}
+{#- One destination: the region moved whole, so this page sends visitors there.
+    More than one: NOAA's region split, so this page lists each part. -#}
+{% set whole = destinations|length == 1 and canonical_path is defined %}
 {% block title %}{{ name }} has moved | Tide Hours{% endblock %}
-{% block description %}{{ name }} tide stations are now listed under {{ state_name }}.{% endblock %}
-{% block alternates %}<meta http-equiv="refresh" content="0; url=/{{ canonical_path }}">
-{% endblock %}
+{% block description %}{% if whole %}{{ name }} tide stations are now listed under {{ destinations[0][1].name }}.{% else %}{{ name }} tide stations are now listed in {{ destinations|length }} places.{% endif %}{% endblock %}
+{% block alternates %}{% if whole %}<meta http-equiv="refresh" content="0; url=/{{ canonical_path }}">
+{% endif %}{% endblock %}
 {% block content %}
 <h1>{{ name }} has moved</h1>
-<p>These stations are now listed under {{ state_name }}. <a href="/{{ canonical_path }}">Go to {{ name }}, {{ state_name }}</a>.</p>
+{% if whole %}
+<p>These stations are now listed under {{ destinations[0][1].name }}. <a href="/{{ canonical_path }}">Go to {{ destinations[0][0].name }}, {{ destinations[0][1].name }}</a>.</p>
+{% else %}
+<p>The stations in NOAA's {{ name }} region are now listed in {{ destinations|length }} places.</p>
+{% for region, state, stations in destinations %}
+<section aria-labelledby="to-{{ loop.index }}">
+  <h2 id="to-{{ loop.index }}"><a href="/{{ region.path }}">{{ region.name }}, {{ state.name }}</a></h2>
+  <ul class="stations">
+  {% for s in stations %}<li><a href="/stations/{{ s.id }}/">{{ s.name }}</a></li>{% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endif %}
 {% endblock %}

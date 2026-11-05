@@ -539,9 +539,14 @@ from NOAA's UTC-10 offset, which has no daylight saving time, so their summer
 times were an hour early. They take `America/Adak` (`catalog.ALEUTIAN_TZ`),
 as the app already does for stations NOAA codes AK. URLs: station pages stay at
 `/stations/<id>/`. Each region page whose stations all moved, by NOAA's own
-state and region for them, is built as a noindex stub to the new region
-page (`site.moved_regions`, the same stub as 0017); a region that still has a
-station keeps its page.
+state and region for them, is built as a noindex stub (`site.moved_regions`,
+`moved.html.jinja`). If the region moved whole, the stub sends visitors to its
+new page, as in 0017. If it split, the stub does not pick one part: it lists
+each new region page with the stations it holds, with no redirect and its
+own canonical URL. NOAA's "Hawaiin Islands" split into Johnston Atoll and
+Midway Islands; "Northern Marianas Islands" (without a state) into Guam and
+the Northern Mariana Islands; and the stateless "Columbia River" stations into
+Oregon and Washington. A region that still has a station keeps its page.
 
 The data files are not edited. The same rules belong in the app's pipeline
 (ChelseaKR/tide-hours, `pipeline/build_bundle.py`); until then this is a

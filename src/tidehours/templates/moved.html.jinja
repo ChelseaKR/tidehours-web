@@ -11,7 +11,7 @@
 {% if whole %}
 <p>These stations are now listed under {{ destinations[0][1].name }}. <a href="/{{ canonical_path }}">Go to {{ destinations[0][0].name }}, {{ destinations[0][1].name }}</a>.</p>
 {% else %}
-<p>The stations in NOAA's {{ name }} region are now listed in {{ destinations|length }} places.</p>
+<p data-split-region>The stations in NOAA's {{ name }} region are now listed in {{ destinations|length }} places.</p>
 {% for region, state, stations in destinations %}
 <section aria-labelledby="to-{{ loop.index }}">
   <h2 id="to-{{ loop.index }}"><a href="/{{ region.path }}">{{ region.name }}, {{ state.name }}</a></h2>

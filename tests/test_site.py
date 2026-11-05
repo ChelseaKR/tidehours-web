@@ -702,3 +702,32 @@ def test_check_site_catches_a_wrong_king_tide_summary(tmp_path: Path, built: Pat
     assert "stations/1612340: king-tide link ['x'], expected none" in found
     assert not any(p.startswith("es/king-tides") for p in found)
     assert len(found) == 4
+
+
+def _site_sample() -> Any:
+    spec = importlib.util.spec_from_file_location(
+        "site_sample", Path(__file__).parent.parent / "scripts/site_sample.py"
+    )
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_site_checks_sample_skips_redirect_stubs(tmp_path: Path) -> None:
+    # The axe and reflow checks lost their page context on a stub's meta
+    # refresh (DECISIONS 0018). Redirect stubs are left out of the sample;
+    # split-region pages, which do not redirect, are put in it.
+    out = tmp_path / "site"
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "NC,GU,MP,UM,PR,VI,other"]) == 0
+    sample_mod = _site_sample()
+    picked: list[str] = sample_mod.sample(out)
+    stubs = [p for p in out.glob("states/*/*/index.html") if sample_mod.redirects(p)]
+    assert len(stubs) >= 5  # the outer banks, marshall islands and PR island stubs, at least
+    assert "states/other/outer-banks/" not in picked and "states/pr/st-croix-island/" not in picked
+    assert not any(sample_mod.redirects(out / p / "index.html") for p in picked if p.startswith("states/"))
+    assert {"states/other/hawaiin-islands/", "states/other/northern-marianas-islands/"} <= set(picked)
+    assert "states/nc/outer-banks/" in [
+        p.parent.relative_to(out).as_posix() + "/" for p in out.glob("states/*/*/index.html")
+    ]
+    assert "states/nc/" in picked and "stations/1630000/" in picked

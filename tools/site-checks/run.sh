@@ -7,11 +7,14 @@
 #      320px reflow check on a sample of pages (axe.mjs).
 #   4. pa11y-ci with the axe runner, WCAG2AA, on the same sample.
 #
-# The sample: every page that is not a station or region page (home, about,
-# privacy, both king-tide pages, 404, every state page), every 25th region
-# page, and the station pages of the golden-test fixtures (a harmonic and a
-# subordinate station in every state). Station pages share one template, so
-# the sample covers each shape: harmonic, subordinate, no state, no region.
+# The sample (scripts/site_sample.py): every page that is not a station or
+# region page (home, about, privacy, both king-tide pages, 404, every state
+# page), every 25th region page, every split-region page, and the station
+# pages of the golden-test fixtures (a harmonic and a subordinate station in
+# every state). Station pages share one template, so the sample covers each
+# shape: harmonic, subordinate, no state, no region. Moved region pages that
+# redirect are left out: they navigate away mid-check and have nothing of
+# their own to audit.
 #
 # Google Analytics is blocked in every browser this starts.
 #
@@ -35,22 +38,7 @@ echo "== build the site"
 (cd "$root" && uv run --frozen tidehours --out "$work/site" --now 2026-11-01T11:20:00Z)
 
 pages_file="$work/pages.txt"
-(cd "$root" && uv run --frozen python - "$work/site" > "$pages_file" <<'PY'
-import json, sys
-from pathlib import Path
-site = Path(sys.argv[1])
-fx = Path("tests/fixtures")
-ids = []
-for name in ("golden-app.json", "golden-sample.json"):
-    d = json.loads((fx / name).read_text(encoding="utf-8"))
-    ids += list(d["harmonic"]) + list(d["subordinate"])
-pages = ["./", "about/", "privacy/", "king-tides/", "es/king-tides/", "404.html"]
-states = sorted(p.parent.relative_to(site).as_posix() + "/" for p in site.glob("states/*/index.html"))
-regions = sorted(p.parent.relative_to(site).as_posix() + "/" for p in site.glob("states/*/*/index.html"))
-pages += states + regions[::25] + [f"stations/{i}/" for i in dict.fromkeys(ids)]
-print("\n".join(pages))
-PY
-)
+(cd "$root" && uv run --frozen python scripts/site_sample.py "$work/site" > "$pages_file")
 page_count="$(wc -l < "$pages_file" | tr -d ' ')"
 if [ "$page_count" -lt 100 ]; then
   echo "site-checks: only $page_count page(s) in the sample; refusing to pass" >&2

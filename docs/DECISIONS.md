@@ -546,3 +546,52 @@ station keeps its page.
 The data files are not edited. The same rules belong in the app's pipeline
 (ChelseaKR/tide-hours, `pipeline/build_bundle.py`); until then this is a
 difference between the site and the app.
+
+## 0020: Correct NOAA's station names for display, and fit titles in 60 characters (owner, 2026-11-05)
+
+(0019 is reserved for another branch.) An audit of every station page
+(2026-11-05) found NOAA spelling and punctuation slips in the names, lost
+diacritics, two pairs of indexed stations with the same title, and 380 of
+the 1,232 indexed titles over 60 characters, where search results cut them
+off. The owner chose the recommended fix for each:
+
+- **Names** (`tidehours/names.py`, applied after `tidy_name`): 88 stations,
+  each entry pinned to the exact name NOAA gives now, so a refresh that
+  changes the name drops the correction and fails `tests/test_names.py`.
+  - 40 misspellings, each backed by the USGS GNIS official name of a
+    feature near the station ("Chicahomny" to "Chickahominy", "Serguis" to
+    "Sergius", "Fredericksted" to "Frederiksted"). For Beacon (8518934),
+    GNIS has no "Flushkill", so the station takes NOAA's harmonic-constants
+    name, "Beacon, Hudson River".
+  - Spanish diacritics for 5 Puerto Rico names (Peñuelas, Guánica, Boquerón,
+    Bahía Salinas, Mayagüez) and Hawaiian ʻokina and kahakō for 13 Hawaii
+    stations (Nāwiliwili, Hanapēpē, Waiʻanae and others), as GNIS writes
+    them. Names GNIS does not confirm are left alone.
+  - 12 casing or truncated words ("Myrtle beach", "Vineyard Hvn Hbr",
+    "Deception Pass St. Park", where St. is State), 4 punctuation slips
+    ("Brighton Beach. May River", "St, Croix", a period after a full word),
+    and 8 names written "St." for Saint ("Port Saint Joe", "St Croix").
+  - 6 names that told no two stations apart, with NOAA's own current name or
+    region for each: "Freeport" (8772440) next to "Freeport Harbor"
+    (8772471), "Anchor Point, Cook Inlet" and "Anchor Point, Wrangell
+    Narrows", "Little Torch Key", and "Tinicum National Wildlife Refuge 3"
+    and "4". No two station pages now share a title.
+- **Titles:** the longest of "{name} tide times today | Tide Hours", "{name}
+  tide times today" and "{name} tide times" that fits in 60 characters
+  (`site.station_title`). `og:title` follows; the H1 and description do not
+  change. 410 of the 1,232 indexed titles change (55 of them because the
+  name changed); 5 indexed titles stay over 60 at 61 to 64 characters.
+- **Region labels** (`site.region_label`): NOAA's region names out of
+  capitals, without its page-break "-cont." and ", etc.", without a leading
+  state part on that state's own pages ("FLORIDA, East Coast" is "East
+  Coast" on the Florida page), and with NOAA's typos fixed ("Hawaiin
+  Islands", "St. Johns Island" for St. John, and "western shore" in step
+  with "Eastern Shore"). Rename only: no regions merge, so Maine and South
+  Carolina each show two "Outer Coast" regions, and Florida two "Gulf Coast"
+  and New Jersey two "Delaware River", as NOAA splits them.
+- **URLs do not change.** Station pages stay at `/stations/<id>/`, and a
+  region page's path is still made from NOAA's region name.
+
+The state that a name ends in ("Bladensburg, Md.") is still handled by 0018.
+The same corrections belong in the app's pipeline (ChelseaKR/tide-hours);
+until then this is a difference between the site and the app.

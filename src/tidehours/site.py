@@ -11,6 +11,7 @@ import json
 import math
 import re
 import shutil
+import string
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,7 +23,7 @@ import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
 from . import affiliate, indexnow, kingtides, ktformat
-from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station
+from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
 
@@ -60,6 +61,46 @@ def indexable(station: Station) -> bool:
 def slug(text: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "region"
+
+
+# A station page's <title> (and og:title): the longest of these that fits in
+# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020).
+TITLE_MAX = 60
+TITLE_TIERS = ("{} tide times today | Tide Hours", "{} tide times today", "{} tide times")
+
+
+def station_title(name: str) -> str:
+    for tier in TITLE_TIERS:
+        title = tier.format(name)
+        if len(title) <= TITLE_MAX:
+            return title
+    return title
+
+
+# NOAA's region names with typos or case slips, written right
+# (docs/DECISIONS.md 0020). The region's URL keeps NOAA's name.
+REGION_FIXES = {
+    "Hawaiin Islands": "Hawaiian Islands",
+    "St. Johns Island": "St. John Island",
+    "Chesapeake Bay, western shore": "Chesapeake Bay, Western Shore",
+}
+REGION_SUFFIXES = ("-cont.", ", etc.")
+
+
+def region_label(region: str, state_name: str | None) -> str:
+    """How a region's name reads on the site: NOAA's typos fixed, out of
+    capitals ("MAINE and NEW HAMPSHIRE" -> "Maine and New Hampshire"),
+    without NOAA's page-break "-cont." or ", etc.", and without a leading
+    "STATE, " part on that state's own pages ("FLORIDA, East Coast" -> "East
+    Coast"). The region's page and URL are NOAA's region, unchanged."""
+    label = tidy_name(REGION_FIXES.get(region, region))
+    for suffix in REGION_SUFFIXES:
+        label = label.removesuffix(suffix)
+    head, sep, rest = label.partition(",")
+    if sep and state_name and head.strip().lower() == state_name.lower():
+        rest = rest.strip()
+        label = string.capwords(rest) if rest == rest.lower() else rest[:1].upper() + rest[1:]
+    return label
 
 
 @dataclass
@@ -115,7 +156,7 @@ def group(stations: list[Station]) -> list[State]:
                 continue
             r = regions.get(s.region)
             if r is None:
-                r = regions[s.region] = Region(code, s.region, slug(s.region))
+                r = regions[s.region] = Region(code, region_label(s.region, STATE_NAMES.get(code)), slug(s.region))
             r.stations.append(s)
         slugs = [r.slug for r in regions.values()]
         if len(slugs) != len(set(slugs)):
@@ -185,6 +226,7 @@ def env() -> Environment:
     e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
     e.globals.update(
         minutes=offset_phrase,
+        station_title=station_title,
         fill=ktformat.fill,
         fmt_date=ktformat.fmt_date,
         fmt_long_date=ktformat.fmt_long_date,

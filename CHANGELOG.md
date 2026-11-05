@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Station names are corrected for display: 40 NOAA misspellings backed by
+  USGS GNIS names (Chickahominy, Sergius Narrows, Frederiksted), Spanish and
+  Hawaiian diacritics (Mayagüez, Nāwiliwili), casing, punctuation and "St."
+  slips, and four pairs of stations that shared a title. Station titles drop
+  " | Tide Hours", then "today", when needed to fit in 60 characters. Region
+  labels read as names ("East Coast", not "FLORIDA, East Coast"; "Hawaiian
+  Islands"). No URL changes (DECISIONS 0020).
 - Stations NOAA lists without a state are filed under a state: by a hand
   map for island stations (GU, AS, and new U.S. Minor Outlying Islands and
   Northern Mariana Islands pages), by the state their NOAA name ends in, or

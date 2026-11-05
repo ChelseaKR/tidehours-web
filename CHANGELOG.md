@@ -2,7 +2,19 @@
 
 ## 0.1.0 (unreleased)
 
-- Region pages that list only one or two stations (127 of 446, about 130
+- Stations NOAA lists without a state are filed under a state: by a hand
+  map for island stations (GU, AS, and new U.S. Minor Outlying Islands and
+  Northern Mariana Islands pages), by the state their NOAA name ends in, or
+  by their reference station's state, unless a border check rules it out.
+  Tanapag Harbor, Saipan moves from GU to MP, and Apia (independent Samoa)
+  leaves American Samoa and takes Samoa's time zone. Chelsea (Arthur Kill)
+  is filed under New York. Ten western Aleutian stations now filed under
+  Alaska use America/Adak, so their summer times are no longer an hour early. 186 stations change
+  state, including Apra Harbor, Guam, Cape Hatteras and Key Largo; 11 stay on
+  "Stations without a state". Names no longer repeat their state ("Apra
+  Harbor, Guam", not "Apra Harbor, Guam, GU"). Old region pages send visitors
+  to the new ones (DECISIONS 0018).
+- Region pages that list only one or two stations (66 of 370, about 130
   words each, the same list their state page shows) carry noindex and are
   left out of the sitemap and lastmod.json. They keep their URLs and links;
   station and state pages are unchanged (DECISIONS 0022).

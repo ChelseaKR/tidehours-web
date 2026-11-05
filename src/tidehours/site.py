@@ -22,7 +22,7 @@ import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
 from . import affiliate, indexnow, kingtides, ktformat
-from .catalog import DATA_DIR, Catalog, Station
+from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
 
@@ -34,14 +34,6 @@ GA4_DENIED_REGIONS = [
     "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB", "CH",
 ]  # fmt: skip
 
-STATE_NAMES = {
-    "AK": "Alaska", "AL": "Alabama", "AS": "American Samoa", "CA": "California", "CT": "Connecticut",
-    "DC": "District of Columbia", "DE": "Delaware", "FL": "Florida", "GA": "Georgia", "GU": "Guam",
-    "HI": "Hawaii", "LA": "Louisiana", "MA": "Massachusetts", "MD": "Maryland", "ME": "Maine",
-    "MS": "Mississippi", "NC": "North Carolina", "NH": "New Hampshire", "NJ": "New Jersey", "NY": "New York",
-    "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico", "RI": "Rhode Island", "SC": "South Carolina",
-    "TX": "Texas", "VA": "Virginia", "VI": "U.S. Virgin Islands", "WA": "Washington",
-}  # fmt: skip
 OTHER = "other"
 # Region pages that moved (docs/DECISIONS.md 0017): the old path is built as a
 # noindex stub, out of the sitemap, that sends visitors to the new page. The
@@ -333,15 +325,43 @@ def region_king(region: Region, links: dict[str, KingLink], up: list[kingtides.U
     return [u for u in up if u.season.id in ids]
 
 
+def moved_regions(states: list[State]) -> dict[str, dict[str, list[Station]]]:
+    """Old region path -> each new region path its stations went to, with
+    those stations: MOVED_REGIONS, plus each region page whose stations are
+    now filed under another state or region (DECISIONS 0018), from NOAA's own
+    state and region for each station. An old region can split: NOAA's
+    "Hawaiin Islands" is now Johnston Atoll and Midway Islands."""
+    moves: dict[str, dict[str, list[Station]]] = defaultdict(lambda: defaultdict(list))
+    for st in states:
+        for r in st.regions:
+            for s in r.stations:
+                if s.noaa_region is None:
+                    continue
+                old = f"states/{(s.noaa_state or OTHER).lower()}/{slug(s.noaa_region)}/"
+                if old != r.path:
+                    moves[old][r.path].append(s)
+    for old, new in MOVED_REGIONS.items():
+        moves[old].setdefault(new, [])
+    return {old: dict(sorted(news.items())) for old, news in sorted(moves.items())}
+
+
 def moved_pages(template: Template, common: dict[str, Any], states: list[State]) -> list[Page]:
-    """A noindex stub at each moved region page's old path, sending visitors
-    to the new one, when this build has the new page and none at the old."""
-    names = {r.path: r.name for st in states for r in st.regions}
-    return [
-        Page(old, template.render(**common, path=old, noindex=True, canonical_path=new, name=names[new]), False)
-        for old, new in MOVED_REGIONS.items()
-        if new in names and old not in names
-    ]
+    """A noindex stub at each moved region page's old path, when this build
+    has no page there. A region that moved whole sends visitors to its new
+    page; one that split lists each new page and the stations it holds,
+    instead of picking one of them."""
+    regions = {r.path: (r, st) for st in states for r in st.regions}
+    pages: list[Page] = []
+    for old, news in moved_regions(states).items():
+        built = [(regions[new][0], regions[new][1], stations) for new, stations in news.items() if new in regions]
+        if old in regions or not built:
+            continue
+        name = built[0][0].name if len(news) == 1 else next(s.noaa_region for ss in news.values() for s in ss)
+        ctx: dict[str, Any] = {"path": old, "noindex": True, "name": name, "destinations": built}
+        if len(news) == 1:
+            ctx["canonical_path"] = built[0][0].path
+        pages.append(Page(old, template.render(**common, **ctx), False))
+    return pages
 
 
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:

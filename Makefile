@@ -1,7 +1,8 @@
 # The gate. CI's `verify` job runs `make verify` and nothing else, so a green
 # `make verify` locally is the same claim as a green check.
 #
-# Needs: uv >= 0.9, gitleaks 8.x and osv-scanner 2.x on PATH.
+# Needs: uv >= 0.9, Node 22+ (tests/test_today.py), gitleaks 8.x and
+# osv-scanner 2.x on PATH.
 # No recipe pipes one command into another: macOS make 3.81 ignores
 # .SHELLFLAGS, so a pipe could hide a failure.
 

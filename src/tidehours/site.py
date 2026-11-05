@@ -387,10 +387,9 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     for s in stations:
         today = local_today(s, now)
         p = cat.predictor(s.id)
-        days: list[Day] = [
-            station_day(s, p, today, "Today"),
-            station_day(s, p, today + dt.timedelta(days=1), "Tomorrow"),
-        ]
+        # The station's date at build time and the next; the page's script
+        # says which of them is "today" when it is read.
+        days: list[Day] = [station_day(s, p, today), station_day(s, p, today + dt.timedelta(days=1))]
         st, region = region_of[s.id]
         ref = cat.station(s.reference_id) if s.reference_id else None
         season = kt_by_id.get(s.id)

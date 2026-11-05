@@ -44,6 +44,12 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
+      - name: install node
+        # tests/test_today.py runs the station page's inline script under Node.
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: tools/site-checks/.nvmrc
+
       - name: install pinned gitleaks and osv-scanner
         # Release binaries checked against the hashes in their releases'
         # checksum files. The architecture follows the runner: the Mac runners

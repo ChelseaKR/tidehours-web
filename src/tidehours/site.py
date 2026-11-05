@@ -11,7 +11,7 @@ import json
 import math
 import re
 import shutil
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -40,7 +40,8 @@ STATE_NAMES = {
     "HI": "Hawaii", "LA": "Louisiana", "MA": "Massachusetts", "MD": "Maryland", "ME": "Maine",
     "MS": "Mississippi", "NC": "North Carolina", "NH": "New Hampshire", "NJ": "New Jersey", "NY": "New York",
     "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico", "RI": "Rhode Island", "SC": "South Carolina",
-    "TX": "Texas", "VA": "Virginia", "VI": "U.S. Virgin Islands", "WA": "Washington",
+    "TX": "Texas", "UM": "U.S. Minor Outlying Islands", "VA": "Virginia", "VI": "U.S. Virgin Islands",
+    "WA": "Washington",
 }  # fmt: skip
 OTHER = "other"
 # Region pages that moved (docs/DECISIONS.md 0017): the old path is built as a
@@ -317,13 +318,36 @@ def region_king(region: Region, links: dict[str, KingLink], up: list[kingtides.U
     return [u for u in up if u.season.id in ids]
 
 
+def moved_regions(states: list[State]) -> dict[str, str]:
+    """Old region path -> new one: MOVED_REGIONS, plus each region page under
+    "Stations without a state" whose stations are now filed under a state
+    (DECISIONS 0018). When an old region's stations went to more than one
+    state, the stub sends visitors to the one with the most of them."""
+    moves: dict[str, Counter[str]] = defaultdict(Counter)
+    for st in states:
+        for r in st.regions:
+            for s in r.stations:
+                if s.filed_by is not None:
+                    moves[f"states/{OTHER}/{r.slug}/"][r.path] += 1
+    out = dict(MOVED_REGIONS)
+    for old, news in sorted(moves.items()):
+        out[old] = min(news, key=lambda p: (-news[p], p))
+    return out
+
+
 def moved_pages(template: Template, common: dict[str, Any], states: list[State]) -> list[Page]:
     """A noindex stub at each moved region page's old path, sending visitors
     to the new one, when this build has the new page and none at the old."""
-    names = {r.path: r.name for st in states for r in st.regions}
+    names = {r.path: (r.name, st.name) for st in states for r in st.regions}
     return [
-        Page(old, template.render(**common, path=old, noindex=True, canonical_path=new, name=names[new]), False)
-        for old, new in MOVED_REGIONS.items()
+        Page(
+            old,
+            template.render(
+                **common, path=old, noindex=True, canonical_path=new, name=names[new][0], state_name=names[new][1]
+            ),
+            False,
+        )
+        for old, new in moved_regions(states).items()
         if new in names and old not in names
     ]
 

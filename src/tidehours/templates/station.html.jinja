@@ -24,7 +24,7 @@
   </ol>
 </nav>
 <h1>{{ station.display_name }} tide times</h1>
-<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. Times are local ({{ station.tz }}); heights are feet above mean lower low water (MLLW).</p>
+<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW).</p>
 <p class="stale" id="stale" role="status" hidden></p>
 {% if station.filed_by == "reference" %}
 <p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, the state of the reference station NOAA predicts it from.</p>

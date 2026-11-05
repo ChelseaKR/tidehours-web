@@ -21,7 +21,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat
+from . import affiliate, indexnow, kingtides, ktformat, zones
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -192,6 +192,8 @@ def env() -> Environment:
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
         fmt_months=ktformat.fmt_months,
+        zone_label=zones.label,
+        zone_unknown=zones.UNKNOWN,
     )
     return e
 

@@ -11,6 +11,7 @@ import json
 import re
 import shutil
 import xml.etree.ElementTree as ET
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -80,7 +81,7 @@ def test_indexes_sitemap_robots(built: Path) -> None:
     ca = (built / "states/ca/index.html").read_text(encoding="utf-8")
     assert 'href="/states/ca/san-francisco-bay/"' in ca
     other = (built / "states/other/index.html").read_text(encoding="utf-8")
-    assert "gives these" in other and "no state" in other
+    assert "have no state on this site" in other
     urls = [
         el.text
         for el in ET.parse(built / "sitemap.xml")  # noqa: S314 - our own build output
@@ -227,53 +228,90 @@ def test_virgin_islands_pages(tmp_path: Path) -> None:
 # reference station's state (DECISIONS 0018), checked by hand on 2026-11-05.
 STILL_WITHOUT_STATE = {
     "8218447": "AK",  # Wales Island (Cannery), Pearse Canal: British Columbia
-    "8578931": "DC",  # Clifton Beach, Smith Point, Md.
     "8659899": "SC",  # Sunset Beach Bridge: North Carolina
     "8748038": "LA",  # Wolf River, Henderson Avenue bridge: Mississippi
     "TEC3327": "GA",  # Euhaw Creek, Broad River: South Carolina
     "TEC3531": "FL",  # Below Spring Bluff, Little Satilla River: Georgia
     "TEC3541": "FL",  # Burnt Fort, Satilla River: Georgia
-    "TPT2621": "GU",  # Pagan Island: Northern Mariana Islands
-    "TPT2623": "GU",  # Saipan Harbor
-    "TPT2625": "GU",  # Tinian Island
-    "TPT2627": "GU",  # Rota Island
     "TWC0817": "CA",  # Wedderburn, Rogue River: Oregon
     "TWC0857": "CA",  # Nestucca Bay entrance: Oregon
     "TWC0863": "CA",  # Miami Cove, Tillamook Bay: Oregon
     "TWC0865": "CA",  # Bay City, Tillamook Bay: Oregon
-    "TWC0895": "OR",  # Harrington Point, Wash.
 }
+# Filed by the state their NOAA name ends in, which beats the reference
+# station's (Harrington Point is predicted from Astoria, OR; Clifton Beach
+# from Washington, DC).
+FILED_BY_NAME = {"8578931": "MD", "TWC0881": "OR", "TWC0883": "OR", "TWC0895": "WA"}
 # NOAA codes this Saipan station GU; it is the one NOAA-coded station outside
 # its own state's border checks.
 NOAA_CODED_ACROSS_BORDER = {"1633227"}
 
 
-def test_stations_without_a_state_are_filed_by_reference_station() -> None:
+def test_stations_without_a_state_are_filed() -> None:
     raw = json.loads((catalog_mod.DATA_DIR / "stations.json").read_text(encoding="utf-8"))
     noaa = {r["id"]: r["st"] for r in raw["harmonic"] + raw["subordinate"]}
     cat = load()
     by_id = {s.id: s for s in cat.stations}
-    stateless = [s for s in cat.stations if noaa[s.id] == ""]
-    assert len(stateless) == 194
+    assert sum(noaa[s.id] == "" for s in cat.stations) == 194
     for s in cat.stations:
-        if noaa[s.id]:
+        assert s.noaa_state == noaa[s.id]
+        if s.filed_by == "correction":
+            assert s.state == catalog_mod.STATE_CORRECTIONS[s.id][0] != s.noaa_state, s
+        elif noaa[s.id]:
             assert s.filed_by is None, s
         elif s.filed_by == "territory":
-            assert not s.is_subordinate and s.state == catalog_mod.TERRITORY_STATES[s.id], s
+            assert s.state == catalog_mod.TERRITORY_STATES[s.id], s
+        elif s.filed_by == "name":
+            assert s.state == FILED_BY_NAME[s.id] == catalog_mod.name_state(s.name), s
         elif s.filed_by == "reference":
             ref = by_id[s.reference_id or ""]
             assert s.state == ref.state != "" and catalog_mod.across_border(s.state, s.lat, s.lon) is None, s
         else:
             assert s.state == "" and catalog_mod.across_border(STILL_WITHOUT_STATE[s.id], s.lat, s.lon), s
-    assert sum(s.filed_by == "territory" for s in cat.stations) == 6
-    assert sum(s.filed_by == "reference" for s in cat.stations) == 172
-    assert {s.id for s in cat.stations if s.state == ""} == set(STILL_WITHOUT_STATE)
+    filed = Counter(s.filed_by for s in cat.stations)
+    assert (filed["territory"], filed["name"], filed["reference"], filed["correction"]) == (10, 4, 170, 2)
+    assert {s.id for s in cat.stations if s.state == ""} == set(STILL_WITHOUT_STATE) | {"1778000"}  # and Apia
     for sid, code in STILL_WITHOUT_STATE.items():  # each would take this state without the border check
         assert by_id[by_id[sid].reference_id or ""].state == code, sid
     named = {"TEC2789": "NC", "TEC2793": "NC", "8723667": "FL", "1630000": "GU", "1631428": "GU", "1890000": "UM"}
     assert {sid: by_id[sid].state for sid in named} == named  # Cape Hatteras, Ocracoke, Key Largo, Guam, Wake
-    assert sum(s.state == "GU" for s in cat.stations) == 3  # the two Guam stations, and NOAA's Saipan one
+    assert {s.id for s in cat.stations if s.state == "GU"} == {"1630000", "1631428"}
+    assert {s.id for s in cat.stations if s.state == "MP"} == {"1633227", "TPT2621", "TPT2623", "TPT2625", "TPT2627"}
+    assert all(s.region == "Northern Marianas Islands" for s in cat.stations if s.state == "MP")
+    assert {by_id[i].region for i in ("1630000", "1631428")} == {"Guam"}
+    assert [by_id[i].region for i in ("1619000", "1619910", "1890000")] == [
+        "Johnston Atoll",
+        "Midway Islands",
+        "Wake Island",
+    ]
+    apia = by_id["1778000"]
+    assert (apia.state, apia.noaa_state, apia.tz) == ("", "AS", "Pacific/Apia")  # independent Samoa, UTC+13
+    assert apia.correction_note is not None and "independent Samoa" in apia.correction_note
     assert by_id["TWC2303"].display_name == "Constantine Harbor, Amchitka Island, AK"
+
+
+def test_display_name_does_not_repeat_the_state() -> None:
+    cat = load()
+    names = {i: cat.station(i).display_name for i in ("1630000", "1631428", "TWC0881", "8539487", "8594900", "1890000", "1633227")}  # type: ignore[union-attr]  # fmt: skip
+    assert names == {
+        "1630000": "Apra Harbor, Guam",
+        "1631428": "Pago Bay, Guam",
+        "TWC0881": "Point Adams, Oreg.",
+        "8539487": "Fieldsboro, N.J.",
+        "8594900": "Washington, Washington Channel, D.C.",
+        "1890000": "Wake Island, UM",
+        "1633227": "Tanapag Harbor, Saipan Island, MP",
+    }
+    for s in cat.stations:
+        if s.state:
+            assert s.display_name.endswith(", " + s.state) or catalog_mod.name_state(s.display_name) == s.state, s
+    # A name's other words are not a suffix: "N.C. State Fisheries" still gets ", NC".
+    assert cat.station("TEC2831").display_name == "N.C. State Fisheries, NC"  # type: ignore[union-attr]
+    assert (
+        Station("1", "Chesapeake City, Maryland", "MD", 0, 0, "UTC", None, None).display_name
+        == "Chesapeake City, Maryland"
+    )
+    assert Station("1", "Burlington, N.J.", "PA", 0, 0, "UTC", None, None).display_name == "Burlington, N.J., PA"
 
 
 def test_border_checks() -> None:
@@ -287,10 +325,10 @@ def test_border_checks() -> None:
     # The checks apply: points just over each border fail, just inside pass.
     over = [("WA", 49.01, -122.75), ("WA", 48.45, -123.4), ("AK", 54.77, -130.55), ("CA", 42.01, -124.2),
             ("OR", 46.27, -123.65), ("FL", 30.95, -81.9), ("GA", 32.43, -80.85), ("SC", 33.88, -78.51),
-            ("LA", 30.36, -89.27), ("DC", 38.41, -77.27), ("GU", 15.2, 145.72)]  # fmt: skip
+            ("LA", 30.36, -89.27), ("DC", 38.41, -77.27), ("GU", 15.2, 145.72), ("MP", 13.44, 144.66)]  # fmt: skip
     inside = [("WA", 48.99, -122.75), ("WA", 48.37, -124.6), ("AK", 54.94, -130.34), ("CA", 41.99, -124.2),
               ("OR", 46.2, -123.95), ("FL", 30.79, -81.84), ("GA", 32.08, -81.09), ("SC", 33.1, -78.43),
-              ("LA", 29.26, -89.96), ("DC", 38.87, -77.02), ("GU", 13.44, 144.66)]  # fmt: skip
+              ("LA", 29.26, -89.96), ("DC", 38.87, -77.02), ("GU", 13.44, 144.66), ("MP", 15.2, 145.72)]  # fmt: skip
     assert all(catalog_mod.across_border(*p) for p in over)
     assert not any(catalog_mod.across_border(*p) for p in inside)
     assert catalog_mod.across_border("WA", 49.5, -123.0) == "British Columbia (49th parallel)"
@@ -309,7 +347,7 @@ def test_without_the_border_check_wales_island_would_be_alaska(monkeypatch: pyte
 
 def test_filed_stations_pages(tmp_path: Path) -> None:
     out = tmp_path / "site"
-    assert cli.main(["--out", str(out), "--now", NOW, "--states", "NC,GU,UM,other"]) == 0
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "NC,GU,MP,UM,other"]) == 0
     sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
     nc = (out / "states/nc/index.html").read_text(encoding="utf-8")
     assert 'href="/stations/TEC2789/"' in nc and 'href="/states/nc/outer-banks/"' in nc
@@ -317,18 +355,30 @@ def test_filed_stations_pages(tmp_path: Path) -> None:
     assert "Cape Hatteras, NC tide times" in hatteras
     assert "listed under North Carolina, the state of the reference station" in hatteras
     apra = (out / "stations/1630000/index.html").read_text(encoding="utf-8")
-    assert "Apra Harbor, Guam, GU" in apra and "where NOAA's station name places it" in apra
-    assert "U.S. Minor Outlying Islands" in (out / "states/um/index.html").read_text(encoding="utf-8")
+    assert "<h1>Apra Harbor, Guam tide times</h1>" in apra and "where NOAA's station name places it" in apra
+    assert 'href="/states/gu/guam/"' in apra and "Northern Marianas" not in apra
+    tanapag = (out / "stations/1633227/index.html").read_text(encoding="utf-8")
+    assert "codes this station GU. Tanapag Harbor is on Saipan" in tanapag
+    apia = (out / "stations/1778000/index.html").read_text(encoding="utf-8")
+    assert "codes this station AS. Apia is in independent Samoa" in apia and "Pacific/Apia" in apia
+    um = (out / "states/um/index.html").read_text(encoding="utf-8")
+    assert "U.S. Minor Outlying Islands" in um and "Hawaiin" not in um
+    assert "Northern Mariana Islands" in (out / "states/mp/index.html").read_text(encoding="utf-8")
     other = (out / "states/other/index.html").read_text(encoding="utf-8")
-    assert "Cape Hatteras" not in other and "Wales Island" in other and "Saipan Harbor" in other
-    stub = (out / "states/other/outer-banks/index.html").read_text(encoding="utf-8")  # was a live region page
-    assert '<meta http-equiv="refresh" content="0; url=/states/nc/outer-banks/">' in stub
-    assert 'content="noindex,follow"' in stub and "listed under North Carolina" in stub
-    assert "https://tidehours.com/states/other/outer-banks/" not in sitemap
-    assert "https://tidehours.com/states/nc/outer-banks/" in sitemap
+    assert "Cape Hatteras" not in other and "Wales Island" in other and "Saipan" not in other and "Apia" in other
+    for old, new, where in [
+        ("states/other/outer-banks/", "states/nc/outer-banks/", "North Carolina"),  # was a live region page
+        ("states/other/northern-marianas-islands/", "states/mp/northern-marianas-islands/", "Northern Mariana Islands"),
+        ("states/gu/northern-marianas-islands/", "states/mp/northern-marianas-islands/", "Northern Mariana Islands"),
+        ("states/other/marshall-islands/", "states/um/wake-island/", "U.S. Minor Outlying Islands"),
+    ]:
+        stub = (out / old / "index.html").read_text(encoding="utf-8")
+        assert f'<meta http-equiv="refresh" content="0; url=/{new}">' in stub, old
+        assert 'content="noindex,follow"' in stub and f"listed under {where}" in stub, old
+        assert f"https://tidehours.com/{old}" not in sitemap and f"https://tidehours.com/{new}" in sitemap, old
     # A region that still has a station without a state keeps its own page, not a stub.
-    marianas = (out / "states/other/northern-marianas-islands/index.html").read_text(encoding="utf-8")
-    assert "http-equiv" not in marianas and "Saipan Harbor" in marianas
+    southeast = (out / "states/other/southeast-coast/index.html").read_text(encoding="utf-8")
+    assert "http-equiv" not in southeast and "Sunset Beach Bridge" in southeast
 
 
 def test_group_rejects_unknown_state() -> None:

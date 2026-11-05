@@ -93,9 +93,51 @@ def territory(state: str, tz: str, region: str | None) -> tuple[str, str]:
     return state, tz
 
 
-# The six harmonic stations NOAA lists without a state, all on U.S. islands
-# its station names identify (DECISIONS 0018). UM is the U.S. Minor Outlying
-# Islands.
+# Two-letter codes and the names the site lists them under.
+STATE_NAMES = {
+    "AK": "Alaska", "AL": "Alabama", "AS": "American Samoa", "CA": "California", "CT": "Connecticut",
+    "DC": "District of Columbia", "DE": "Delaware", "FL": "Florida", "GA": "Georgia", "GU": "Guam",
+    "HI": "Hawaii", "LA": "Louisiana", "MA": "Massachusetts", "MD": "Maryland", "ME": "Maine",
+    "MP": "Northern Mariana Islands", "MS": "Mississippi", "NC": "North Carolina", "NH": "New Hampshire",
+    "NJ": "New Jersey", "NY": "New York", "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico",
+    "RI": "Rhode Island", "SC": "South Carolina", "TX": "Texas", "UM": "U.S. Minor Outlying Islands",
+    "VA": "Virginia", "VI": "U.S. Virgin Islands", "WA": "Washington",
+}  # fmt: skip
+# The older abbreviations NOAA ends some station names with ("Burlington,
+# N.J.", "Point Adams, Oreg."). A name that already ends in its state's name
+# or one of these does not get the code appended (DECISIONS 0018); a station
+# NOAA lists without a state takes the state its name ends in.
+STATE_ABBREVIATIONS = {
+    "AK": ("Alas.",), "AL": ("Ala.",), "CA": ("Calif.", "Cal."), "CT": ("Conn.",), "DC": ("D.C.",),
+    "DE": ("Del.",), "FL": ("Fla.",), "GA": ("Ga.",), "LA": ("La.",), "MA": ("Mass.",), "MD": ("Md.",),
+    "ME": ("Me.",), "MS": ("Miss.",), "NC": ("N.C.",), "NH": ("N.H.",), "NJ": ("N.J.",), "NY": ("N.Y.",),
+    "OR": ("Oreg.", "Ore."), "PA": ("Pa.",), "RI": ("R.I.",), "SC": ("S.C.",), "TX": ("Tex.",),
+    "VA": ("Va.",), "WA": ("Wash.",),
+}  # fmt: skip
+
+
+def _state_suffixes() -> dict[str, str]:
+    out = {name.lower(): code for code, name in STATE_NAMES.items()}
+    for code, abbrs in STATE_ABBREVIATIONS.items():
+        out.update({a.lower(): code for a in abbrs})
+    return out
+
+
+_SUFFIX_STATE = _state_suffixes()
+
+
+def name_state(name: str) -> str | None:
+    """The state a station name ends in after its last comma ("Bladensburg,
+    Md." -> "MD"), or None."""
+    if "," not in name:
+        return None
+    return _SUFFIX_STATE.get(name.rsplit(",", 1)[1].strip().lower())
+
+
+# Stations NOAA lists without a state that are on U.S. islands its station
+# names identify (DECISIONS 0018): six harmonic stations, and four
+# subordinate ones in the Northern Mariana Islands that NOAA predicts from
+# Guam.
 TERRITORY_STATES = {
     "1619000": "UM",  # JOHNSTON ATOLL
     "1619910": "UM",  # SAND ISLAND, MIDWAY ISLANDS
@@ -103,14 +145,41 @@ TERRITORY_STATES = {
     "1631428": "GU",  # Pago Bay, Guam
     "1770000": "AS",  # PAGO PAGO Harbor, Tutuila Island
     "1890000": "UM",  # WAKE ISLAND (U.S.)
+    "TPT2621": "MP",  # Pagan Island
+    "TPT2623": "MP",  # Saipan Harbor, Saipan Island
+    "TPT2625": "MP",  # Tinian Island
+    "TPT2627": "MP",  # Rota Island
 }
+# Stations NOAA codes with the wrong state (DECISIONS 0018): Tanapag Harbor is
+# on Saipan, in the Northern Mariana Islands, not Guam; Apia is in independent
+# Samoa, not American Samoa, so it has no state here and keeps Samoa's own
+# clock (UTC+13, a day ahead of American Samoa's UTC-11).
+STATE_CORRECTIONS = {
+    "1633227": ("MP", "Tanapag Harbor is on Saipan, in the Northern Mariana Islands."),
+    "1778000": (
+        "",
+        "Apia is in independent Samoa, not American Samoa, so it has no state here and its times are Samoa's.",
+    ),
+}
+TZ_CORRECTIONS = {"1778000": "Pacific/Apia"}
+# NOAA's region for these places them in another island group (Guam's
+# stations in "Northern Marianas Islands", Johnston and Midway in "Hawaiin
+# Islands"); each is listed under its own island's name instead.
+REGION_CORRECTIONS = {
+    "1630000": "Guam",
+    "1631428": "Guam",
+    "1619000": "Johnston Atoll",
+    "1619910": "Midway Islands",
+    "1890000": "Wake Island",
+}
+
 
 # Where a station's coordinates rule out a state it would take from its
 # reference station: the reference can be across a border (DECISIONS 0018).
 # Each line is the state, what is across the border, and the test on
 # (latitude, longitude). They are deliberately coarse, and every station NOAA
 # itself codes with the state passes them, except NOAA's one Saipan station
-# coded GU (tests/test_site.py).
+# coded GU, which STATE_CORRECTIONS moves to MP (tests/test_site.py).
 Border = tuple[str, str, Callable[[float, float], bool]]
 BORDERS: tuple[Border, ...] = (
     ("WA", "British Columbia (49th parallel)", lambda la, lo: la >= 49.0),
@@ -136,6 +205,7 @@ BORDERS: tuple[Border, ...] = (
     ("VA", "North Carolina (36.55 degrees north)", lambda la, lo: la < 36.54),
     ("DC", "Maryland or Virginia", lambda la, lo: not (38.79 <= la <= 39.0 and -77.13 <= lo <= -76.9)),
     ("GU", "the Northern Mariana Islands", lambda la, lo: la > 13.8),
+    ("MP", "Guam", lambda la, lo: la < 13.8),
 )
 
 
@@ -158,17 +228,33 @@ class Station:
     tz: str
     reference_id: str | None  # set for subordinate stations
     region: str | None  # NOAA's region name; None when NOAA's list has none
-    # Where `state` comes from when NOAA lists none (DECISIONS 0018):
-    # "territory" (TERRITORY_STATES) or "reference" (the reference station's).
+    # Where `state` comes from when it is not NOAA's (DECISIONS 0018):
+    # "territory" (TERRITORY_STATES), "name" (the state the name ends in),
+    # "reference" (the reference station's) or "correction" (STATE_CORRECTIONS).
     filed_by: str | None = None
+    noaa_state: str = ""  # NOAA's code, as in the bundle
+    noaa_region: str | None = None  # NOAA's region name, before REGION_CORRECTIONS
 
     @property
     def is_subordinate(self) -> bool:
         return self.reference_id is not None
 
     @property
+    def correction_note(self) -> str | None:
+        """Why the site does not use NOAA's state code, for a corrected station."""
+        return STATE_CORRECTIONS[self.id][1] if self.filed_by == "correction" else None
+
+    @property
     def display_name(self) -> str:
-        return f"{self.name}, {self.state}" if self.state else self.name
+        """The name with the state code after it, unless the name already
+        ends in that state ("Burlington, N.J.", "Apra Harbor, Guam"). "Wake
+        Island (U.S.)" drops "(U.S.)" once its code says so."""
+        name = self.name
+        if self.state and name.endswith(" (U.S.)"):
+            name = name[: -len(" (U.S.)")]
+        if not self.state or name_state(name) == self.state:
+            return name
+        return f"{name}, {self.state}"
 
 
 @dataclass
@@ -202,6 +288,34 @@ class Catalog:
         subordinate station or one missing K1, O1, M2 or S2 (DECISIONS 0014)."""
         amplitudes = self._amplitudes.get(station_id)
         return tide_type(amplitudes) if amplitudes is not None else None
+
+
+def file_state(row: dict[str, Any], ref_state: str) -> tuple[str, str | None]:
+    """The (state, filed_by) a station is listed under (DECISIONS 0018):
+    NOAA's code unless STATE_CORRECTIONS has one; for a station NOAA lists
+    without a state, the hand map, else the state its name ends in, else its
+    reference station's, each only when its coordinates are not across a
+    border from that state."""
+    sid, noaa = row["id"], row["st"]
+    if sid in STATE_CORRECTIONS:
+        return STATE_CORRECTIONS[sid][0], "correction"
+    if noaa:
+        return noaa, None
+    if sid in TERRITORY_STATES:
+        return TERRITORY_STATES[sid], "territory"
+    for code, how in ((name_state(row["n"]), "name"), (ref_state, "reference")):
+        if code and across_border(code, row["la"], row["lo"]) is None:
+            return code, how
+    return "", None
+
+
+def _station(row: dict[str, Any], ref: str | None, noaa_region: str | None, ref_state: str) -> Station:
+    filed_state, filed = file_state(row, ref_state)
+    region = REGION_CORRECTIONS.get(row["id"], noaa_region)
+    code, tz = territory(filed_state, TZ_CORRECTIONS.get(row["id"], row["tz"]), region)
+    return Station(
+        row["id"], tidy_name(row["n"]), code, row["la"], row["lo"], tz, ref, region, filed, row["st"], noaa_region
+    )
 
 
 def _compounds(raw: dict[str, Any]) -> dict[str, list[tuple[str, int]]]:
@@ -242,12 +356,7 @@ def load(
             ph.append(float(term[2]))
         amplitudes[h["id"]] = {names[i]: a for i, a in zip(idx, amp, strict=True)}
         harmonic[h["id"]] = HarmonicPredictor(float(h["z0"]), idx, amp, ph, speeds, years)
-        filed_state = h["st"] or TERRITORY_STATES.get(h["id"], "")
-        code, tz = territory(filed_state, h["tz"], regions.get(h["id"]))
-        filed = "territory" if filed_state and not h["st"] else None
-        stations.append(
-            Station(h["id"], tidy_name(h["n"]), code, h["la"], h["lo"], tz, None, regions.get(h["id"]), filed)
-        )
+        stations.append(_station(h, None, regions.get(h["id"]), ""))
     ref_state = {st.id: st.state for st in stations}
     for s in raw["subordinate"]:
         # TideCore skips a subordinate station whose reference or heights are
@@ -256,15 +365,7 @@ def load(
             skipped.append(s["id"])
             continue
         offsets[s["id"]] = Offsets(s["ref"], s["k"], float(s["th"]), float(s["tl"]), float(s["hh"]), float(s["hl"]))
-        # A station NOAA lists without a state takes its reference station's,
-        # unless its coordinates are across a border from it (0018).
-        filed_state, filed = s["st"], None
-        if not filed_state and ref_state[s["ref"]] and across_border(ref_state[s["ref"]], s["la"], s["lo"]) is None:
-            filed_state, filed = ref_state[s["ref"]], "reference"
-        code, tz = territory(filed_state, s["tz"], regions.get(s["id"]))
-        stations.append(
-            Station(s["id"], tidy_name(s["n"]), code, s["la"], s["lo"], tz, s["ref"], regions.get(s["id"]), filed)
-        )
+        stations.append(_station(s, s["ref"], regions.get(s["id"]), ref_state[s["ref"]]))
     by_id: dict[str, Station] = {}
     for st in stations:
         by_id.setdefault(st.id, st)

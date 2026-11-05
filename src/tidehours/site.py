@@ -22,7 +22,7 @@ import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
 from . import affiliate, indexnow, kingtides, ktformat
-from .catalog import DATA_DIR, Catalog, Station
+from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
 
@@ -34,15 +34,6 @@ GA4_DENIED_REGIONS = [
     "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB", "CH",
 ]  # fmt: skip
 
-STATE_NAMES = {
-    "AK": "Alaska", "AL": "Alabama", "AS": "American Samoa", "CA": "California", "CT": "Connecticut",
-    "DC": "District of Columbia", "DE": "Delaware", "FL": "Florida", "GA": "Georgia", "GU": "Guam",
-    "HI": "Hawaii", "LA": "Louisiana", "MA": "Massachusetts", "MD": "Maryland", "ME": "Maine",
-    "MS": "Mississippi", "NC": "North Carolina", "NH": "New Hampshire", "NJ": "New Jersey", "NY": "New York",
-    "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico", "RI": "Rhode Island", "SC": "South Carolina",
-    "TX": "Texas", "UM": "U.S. Minor Outlying Islands", "VA": "Virginia", "VI": "U.S. Virgin Islands",
-    "WA": "Washington",
-}  # fmt: skip
 OTHER = "other"
 # Region pages that moved (docs/DECISIONS.md 0017): the old path is built as a
 # noindex stub, out of the sitemap, that sends visitors to the new page. The
@@ -319,16 +310,19 @@ def region_king(region: Region, links: dict[str, KingLink], up: list[kingtides.U
 
 
 def moved_regions(states: list[State]) -> dict[str, str]:
-    """Old region path -> new one: MOVED_REGIONS, plus each region page under
-    "Stations without a state" whose stations are now filed under a state
-    (DECISIONS 0018). When an old region's stations went to more than one
+    """Old region path -> new one: MOVED_REGIONS, plus each region page whose
+    stations are now filed under another state or region (DECISIONS 0018),
+    from NOAA's own state and region for each station. When an old region's stations went to more than one
     state, the stub sends visitors to the one with the most of them."""
     moves: dict[str, Counter[str]] = defaultdict(Counter)
     for st in states:
         for r in st.regions:
             for s in r.stations:
-                if s.filed_by is not None:
-                    moves[f"states/{OTHER}/{r.slug}/"][r.path] += 1
+                if s.noaa_region is None:
+                    continue
+                old = f"states/{(s.noaa_state or OTHER).lower()}/{slug(s.noaa_region)}/"
+                if old != r.path:
+                    moves[old][r.path] += 1
     out = dict(MOVED_REGIONS)
     for old, news in sorted(moves.items()):
         out[old] = min(news, key=lambda p: (-news[p], p))

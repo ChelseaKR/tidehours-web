@@ -28,8 +28,10 @@
 <p class="stale" id="stale" role="status" hidden></p>
 {% if station.filed_by == "reference" %}
 <p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, the state of the reference station NOAA predicts it from.</p>
-{% elif station.filed_by == "territory" %}
+{% elif station.filed_by in ("territory", "name") %}
 <p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, where NOAA's station name places it.</p>
+{% elif station.filed_by == "correction" %}
+<p>NOAA's station list codes this station {{ station.noaa_state }}. {{ station.correction_note }}</p>
 {% endif %}
 
 {% if king_link %}

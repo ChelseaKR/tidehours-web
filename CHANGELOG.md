@@ -2,12 +2,16 @@
 
 ## 0.1.0 (unreleased)
 
-- Stations NOAA lists without a state are filed under their reference
-  station's state, and six island stations under GU, AS or UM (a new U.S.
-  Minor Outlying Islands page): 178 stations, including Apra Harbor, Guam,
-  Cape Hatteras and Key Largo. A border check keeps 16 that are across a
-  border from their reference station on "Stations without a state". Old
-  region pages there send visitors to the new ones (DECISIONS 0018).
+- Stations NOAA lists without a state are filed under a state: by a hand
+  map for island stations (GU, AS, and new U.S. Minor Outlying Islands and
+  Northern Mariana Islands pages), by the state their NOAA name ends in, or
+  by their reference station's state, unless a border check rules it out.
+  Tanapag Harbor, Saipan moves from GU to MP, and Apia (independent Samoa)
+  leaves American Samoa and takes Samoa's time zone. 186 stations change
+  state, including Apra Harbor, Guam, Cape Hatteras and Key Largo; 11 stay on
+  "Stations without a state". Names no longer repeat their state ("Apra
+  Harbor, Guam", not "Apra Harbor, Guam, GU"). Old region pages send visitors
+  to the new ones (DECISIONS 0018).
 - The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
   Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
   in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are

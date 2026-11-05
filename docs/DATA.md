@@ -21,8 +21,11 @@ on every page and says it is not a NOAA product.
   in June 2031.
 - `tests/fixtures/golden-sample.json`: one harmonic and one subordinate
   station per state code (where one exists), picked by the smallest SHA-256
-  of the station id: 30 harmonic and 27 subordinate stations, 2026-11-01 to
+  of the station id: 32 harmonic and 31 subordinate stations, 2026-11-01 to
   03, with hourly heights for the harmonic ones. `scripts/fetch_golden.py`.
+  Retrieved 2026-10-31; the 6 stations covering states that changed with
+  DECISIONS 0018 (GU, AS, MP, PR subordinate, and no state) were added on
+  2026-11-05 with `--add`.
 - `tests/fixtures/golden-month.json`: every NOAA high and low in November
   2026 at the 73 fixture stations above plus 14 small-range Gulf and
   Caribbean stations (81 distinct). `scripts/fetch_golden.py --month`.

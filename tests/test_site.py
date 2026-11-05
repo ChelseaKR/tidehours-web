@@ -206,7 +206,14 @@ def test_virgin_islands_pages(tmp_path: Path) -> None:
     vi = (out / "states/vi/index.html").read_text(encoding="utf-8")
     assert "Cruz Bay" not in pr and "St. Croix" not in pr and 'href="/states/pr/puerto-rico/"' in pr
     assert 'href="/states/vi/st-johns-island/"' in vi and "U.S. Virgin Islands" in vi
-    assert not (out / "states/pr/st-croix-island").exists()
+    for old, new in site.MOVED_REGIONS.items():  # each old PR island page sends visitors to the VI one
+        stub = (out / old / "index.html").read_text(encoding="utf-8")
+        assert f'<meta http-equiv="refresh" content="0; url=/{new}">' in stub, old
+        assert f'<link rel="canonical" href="https://tidehours.com/{new}">' in stub, old
+        assert f'<a href="/{new}">' in stub and 'content="noindex,follow"' in stub, old
+        assert (out / new / "index.html").is_file(), new
+        assert f"https://tidehours.com/{old}" not in (out / "sitemap.xml").read_text(encoding="utf-8")
+    assert len(site.MOVED_REGIONS) == 3
     cruz = (out / "stations/9751472/index.html").read_text(encoding="utf-8")  # the station URL is unchanged
     assert "Cruz Bay, St. John, VI" in cruz and "America/St_Thomas" in cruz
     sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")

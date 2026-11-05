@@ -454,7 +454,12 @@ then this is a difference between the site and the app.
 URLs: station pages stay at `/stations/<id>/`. The state page `/states/vi/`
 and its three region pages already existed and are in the sitemap; the
 moved stations join them. `/states/pr/st-croix-island/`,
-`/states/pr/st-johns-island/` and `/states/pr/st-thomas-island/` are no
-longer built and leave the sitemap. `tests/test_site.py` checks that no
+`/states/pr/st-johns-island/` and `/states/pr/st-thomas-island/` were in
+the live sitemap, so they must not 404. The site is static files on S3
+behind CloudFront, whose one viewer-request function handles only www and
+trailing slashes, and changing it is an AWS change. So each old path is
+built as a stub (`site.MOVED_REGIONS`, `moved.html.jinja`): a meta refresh,
+`rel=canonical` to the VI page, a plain link, and noindex, so it is out of
+the sitemap and lastmod.json. A stub is built only when its VI page is. `tests/test_site.py` checks that no
 station NOAA codes VI, no pinned station, and no station inside the islands'
 bounding box is listed under PR.

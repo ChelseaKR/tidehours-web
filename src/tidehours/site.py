@@ -19,7 +19,7 @@ from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
 import numpy as np
-from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
+from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
 from . import affiliate, indexnow, kingtides, ktformat
 from .catalog import DATA_DIR, Catalog, Station
@@ -43,6 +43,14 @@ STATE_NAMES = {
     "TX": "Texas", "VA": "Virginia", "VI": "U.S. Virgin Islands", "WA": "Washington",
 }  # fmt: skip
 OTHER = "other"
+# Region pages that moved (docs/DECISIONS.md 0017): the old path is built as a
+# noindex stub, out of the sitemap, that sends visitors to the new page. The
+# site is static files on S3 behind CloudFront, with no redirect rules.
+MOVED_REGIONS = {
+    "states/pr/st-croix-island/": "states/vi/st-croix-island/",
+    "states/pr/st-johns-island/": "states/vi/st-johns-island/",
+    "states/pr/st-thomas-island/": "states/vi/st-thomas-island/",
+}
 OTHER_NAME = "Stations without a state"
 
 
@@ -309,6 +317,17 @@ def region_king(region: Region, links: dict[str, KingLink], up: list[kingtides.U
     return [u for u in up if u.season.id in ids]
 
 
+def moved_pages(template: Template, common: dict[str, Any], states: list[State]) -> list[Page]:
+    """A noindex stub at each moved region page's old path, sending visitors
+    to the new one, when this build has the new page and none at the old."""
+    names = {r.path: r.name for st in states for r in st.regions}
+    return [
+        Page(old, template.render(**common, path=old, noindex=True, canonical_path=new, name=names[new]), False)
+        for old, new in MOVED_REGIONS.items()
+        if new in names and old not in names
+    ]
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
@@ -384,6 +403,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             page(
                 r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common
             )
+    pages += moved_pages(e.get_template("moved.html.jinja"), common, states)
     for s in stations:
         today = local_today(s, now)
         p = cat.predictor(s.id)

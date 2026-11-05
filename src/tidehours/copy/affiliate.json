@@ -1,0 +1,14 @@
+{
+  "label": "Affiliate links",
+  "heading": "Gear for king tide days",
+  "intro": "The Coastal Commission's King Tides Project asks for photos of the shoreline at these tides. If you go out to take them, these searches cover what people often bring.",
+  "before": "These are affiliate links. If you buy something after following one, this site earns a commission, and it costs you nothing extra.",
+  "after": "The links are Tide Hours', not NOAA's, and NOAA does not endorse them or Amazon. The California Coastal Commission does not endorse them either.",
+  "privacyLink": "How these links work",
+  "links": [
+    { "label": "Phone tripod", "terms": "phone tripod" },
+    { "label": "Waterproof phone pouch", "terms": "waterproof phone pouch" },
+    { "label": "Rubber boots", "terms": "waterproof rubber boots" },
+    { "label": "Rain jacket", "terms": "rain jacket" }
+  ]
+}

@@ -7,20 +7,26 @@ indexed: subordinate station pages carry noindex and are left out
 its own constants give one, and it is the computed one (0014). The
 king-tide pages' summary of the runs coming up, their titles, and the
 king-tide links on station pages match the computed season for the day the
-pages were built (0015).
+pages were built (0015). Amazon affiliate links appear only when a tag is
+configured, only on the English king-tide page, after its method section,
+tagged, with rel="sponsored nofollow noopener" and Amazon's disclosure right
+before them; with no tag, "amazon" appears nowhere in the build (0016).
 
-    uv run python scripts/check_site.py SITE_DIR
+    uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG]
 """
 
 from __future__ import annotations
 
+import argparse
 import datetime as dt
+import html as htmllib
 import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
-from tidehours import kingtides, ktformat, site
+from tidehours import affiliate, kingtides, ktformat, site
 from tidehours.catalog import Catalog, Station, load
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
@@ -34,6 +40,9 @@ STATION_DATE = re.compile(r'data-station-date="(\d{4}-\d{2}-\d{2})"')
 KT_NEXT = re.compile(r'data-kt-next="([^"]*)"')
 KT_RUN = re.compile(r'data-kt-run="([^"]*)"')
 TITLE = re.compile(r"<title>([^<]*)</title>")
+AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
+REL_ATTR = re.compile(r'\brel="([^"]*)"')
+JSON_LD = re.compile(r'<script type="application/ld\+json">.*?</script>', re.S)
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -138,7 +147,66 @@ def check_king_tides(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
-def main(root: Path) -> int:
+def check_affiliate(root: Path, html: list[Path], tag: str) -> list[str]:
+    """With no tag, "amazon" appears nowhere. With one, only the English
+    king-tide page links to Amazon: at most MAX_LINKS links, each a plain
+    tagged search with the configured tag and the required rel, after the
+    method section, with the exact disclosure right before the first link
+    (in the same section, no heading between). Never in JSON-LD, the sitemap,
+    robots.txt or lastmod.json."""
+    problems: list[str] = []
+    for name in ("sitemap.xml", "robots.txt", "lastmod.json"):
+        f = root / name
+        if f.exists() and "amazon" in f.read_text(encoding="utf-8").lower():
+            problems.append(f"{name}: mentions amazon")
+    for f in html:
+        rel = f.relative_to(root).as_posix()
+        text = f.read_text(encoding="utf-8")
+        if not tag:
+            if "amazon" in text.lower():
+                problems.append(f"{rel}: mentions amazon with no tag set")
+            continue
+        if any("amazon" in block.lower() for block in JSON_LD.findall(text)):
+            problems.append(f"{rel}: amazon in JSON-LD")
+        links = list(AMAZON_A.finditer(text))
+        if rel != affiliate.PAGE + "index.html":
+            if links or "amazon.com" in text.lower():
+                problems.append(f"{rel}: amazon link outside {affiliate.PAGE}")
+            continue
+        problems += _check_affiliate_page(rel, text, links, tag)
+    return problems
+
+
+def _check_affiliate_page(rel: str, text: str, links: list[re.Match[str]], tag: str) -> list[str]:
+    problems: list[str] = []
+    if not links:
+        return [f"{rel}: no amazon links with a tag set"]
+    if len(links) > affiliate.MAX_LINKS:
+        problems.append(f"{rel}: {len(links)} amazon links, at most {affiliate.MAX_LINKS}")
+    for m in links:
+        href = htmllib.unescape(m.group(1))
+        parts = urlsplit(href)
+        if f"{parts.scheme}://{parts.netloc}{parts.path}" != affiliate.SEARCH_URL:
+            problems.append(f"{rel}: {href} is not a plain Amazon search")
+        if parse_qs(parts.query).get("tag") != [tag]:
+            problems.append(f"{rel}: {href} does not carry tag {tag}")
+        rel_attr = REL_ATTR.search(m.group(0))
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if not {"sponsored", "nofollow", "noopener"} <= tokens:
+            problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
+    first = links[0].start()
+    disclosure = text.rfind(affiliate.DISCLOSURE, 0, first)
+    if disclosure < 0:
+        problems.append(f"{rel}: no disclosure before the first amazon link")
+    elif re.search(r"<h[1-6]\b|</section>", text[disclosure:first]):
+        problems.append(f"{rel}: the disclosure is not next to the links")
+    method = text.find('id="kt-method"')
+    if method < 0 or text.find("</section>", method) > first:
+        problems.append(f"{rel}: amazon links come before the end of the method section")
+    return problems
+
+
+def main(root: Path, amazon_tag: str = "") -> int:
     problems: list[str] = []
     cat = load()
     html = sorted(root.rglob("*.html"))
@@ -152,6 +220,7 @@ def main(root: Path) -> int:
     problems += check_indexing(root, html, cat.stations)
     problems += check_tide_types(root, cat)
     problems += check_king_tides(root, cat)
+    problems += check_affiliate(root, html, amazon_tag)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))
@@ -160,4 +229,8 @@ def main(root: Path) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(Path(sys.argv[1])))
+    ap = argparse.ArgumentParser(prog="check_site")
+    ap.add_argument("site_dir", type=Path)
+    ap.add_argument("--amazon-tag", default="")
+    args = ap.parse_args()
+    sys.exit(main(args.site_dir, args.amazon_tag))

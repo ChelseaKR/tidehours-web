@@ -2,6 +2,10 @@
 
 ## 0.1.0 (unreleased)
 
+- Amazon affiliate links for the English king-tide page, off by default:
+  four tagged category searches after the method section with Amazon's
+  disclosure, and matching privacy, terms and about lines, all only when
+  `--amazon-tag` (repo variable `AMAZON_ASSOCIATE_TAG`) is set (DECISIONS 0016).
 - The king-tide pages lead with the runs coming up: their title names the
   month and year ("King tides November 2026"), and the first section gives
   the dates by state and each place's highest tide with its local time and

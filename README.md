@@ -39,7 +39,8 @@ at 81 stations. The one deliberate difference from the app, removing
     uv run python scripts/fetch_golden.py [--month]                              # refresh the NOAA fixtures (network)
 
 Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
-`--base-url`, `--ga4-id` (empty: no analytics), `--app-store-url`.
+`--base-url`, `--ga4-id` (empty: no analytics), `--app-store-url`,
+`--amazon-tag` (empty: no Amazon links; DECISIONS 0016).
 
 ## CI
 
@@ -66,3 +67,7 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
 3. After the app is approved: its App Store URL in `APP_STORE_URL`.
 4. Merge the personal-site branch that redirects `/tide-hours/king-tides`
    here.
+5. Amazon links (DECISIONS 0016): add `https://tidehours.com` to the
+   Associates website list and create the `tidehours-20` tracking ID. Only
+   after Gate A passes (no earlier than 2026-12-01), set the repository
+   variable `AMAZON_ASSOCIATE_TAG` to it. Empty it to turn the links off.

@@ -363,3 +363,71 @@ checks both king-tide pages' tables and titles, and every station page's
 link or its absence, with a negative control in the tests.
 
 **For the app:** nothing changes. The app does not show king tides yet.
+
+## 0016: Amazon affiliate links on the English king-tide page, off by default (2026-11-04)
+
+The owner approved a small affiliate test on 2026-11-02: Phase 1 only, four
+Amazon links on `/king-tides/` in English, built with the switch off and
+turned on no earlier than 2026-12-01, and only if Gate A passes (indexing
+and impressions thresholds, kept in the owner's growth notes). The expected
+money is cents a season; the point is the Associates account's qualifying
+sales count, not revenue. Don't expand it without new data.
+
+**The switch.** `Config.amazon_tag` (`--amazon-tag`, the repository
+variable `AMAZON_ASSOCIATE_TAG` in `publish.yml`) is empty by default, and
+empty means off: the build is byte-identical to the build before this
+change, with no Amazon link, no disclosure, and the privacy, terms and about
+pages unchanged. The CLI accepts only a tracking ID shaped like
+`tidehours-20` (`^[a-z0-9][a-z0-9-]*-2[0-9]$`, matched in full). Switching
+on means setting the variable to the Associates tracking ID `tidehours-20`
+after the owner adds tidehours.com to the Associates website list and
+creates that ID. The kill switch is emptying the variable: the next daily
+build removes every link. Turning it on or off changes the HTML of the
+English king-tide, privacy, terms and about pages, so IndexNow (0011)
+announces those four; that is expected.
+
+**Where.** Website only: never in the iPhone app, a widget or an email.
+Only the English king-tide page; the Spanish page, station, state, region,
+home and about pages get no links. The block comes after the method
+section, whose last paragraph is the app line, so the page's answer, method
+and app come before Amazon.
+
+**What.** Four plain category searches, `https://www.amazon.com/s?k=<terms>&tag=<tag>`
+built with `urlencode`, with no redirect, shortener or script rewriting:
+phone tripod, waterproof phone pouch, rubber boots (`waterproof rubber
+boots`), rain jacket. They fit the Coastal Commission's King Tides Project,
+which asks for shoreline photos at these tides, in rain season. No brand,
+price, rating, image, "best" or "deal": Amazon's Program Policies allow
+prices only from its product APIs, and searches avoid naming products.
+`rel="sponsored nofollow noopener"` follows Google's guidance on paid links.
+Nothing implies safety, flood protection, prediction or navigation.
+
+**Excluded.** A tide clock: it follows the 12 h 25 min semidiurnal cycle,
+and every king-tide station is a mixed tide (0014), so it drifts from the
+real highs and lows. That is a prediction claim the page cannot stand
+behind, and it competes with the app. Also excluded: headlamps (they read
+as gear for walking out at night), traction footwear, life jackets, radios,
+sandbags or flood barriers, printed tide tables, charts and GPS (safety,
+flood or navigation implications, or they compete with the app).
+
+**Disclosure.** Amazon's required sentence, byte for byte ("As an Amazon
+Associate I earn from qualifying purchases."), sits in the paragraph right
+before the list, with a plain statement that the links earn a commission
+and that neither NOAA nor the California Coastal Commission endorses them.
+When on, the privacy page says "no display ads" instead of "no ads" and has
+an "Affiliate links" section (`/privacy/#affiliate`); the terms page names
+Amazon among the trademarks; the about page points to Privacy.
+
+**Analytics.** When GA4 is on (0007), a click on one of these links sends a
+`gear_click` event with its placement, link type and host only, read from
+data attributes, never the link's address, so the tracking ID and search
+terms never reach Google. The handler runs after the Global Privacy
+Control, Do Not Track and opt-out guards, and is rendered only on the page
+that has the links.
+
+**Checked.** `scripts/check_site.py --amazon-tag` fails the build if, with
+no tag, "amazon" appears anywhere; or, with one, a link appears outside the
+English king-tide page, before the end of the method section, without the
+configured tag or the three `rel` values, in JSON-LD, the sitemap,
+robots.txt or lastmod.json, or without the disclosure right before it.
+`tests/test_affiliate.py` covers both states with negative controls.

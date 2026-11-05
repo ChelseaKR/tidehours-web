@@ -56,14 +56,22 @@ jobs:
         run: uv sync --frozen
 
       - name: build every station for today
+        # AMAZON_ASSOCIATE_TAG is the affiliate switch (docs/DECISIONS.md
+        # 0016). Unset or empty, the default, means no Amazon link anywhere.
+        # Setting it to the Associates tracking ID (tidehours-20) turns on the
+        # links on the English king-tide page from the next build; emptying
+        # it is the kill switch. check_site gets the same value and fails the
+        # build if a link is untagged, misplaced or missing its disclosure.
         env:
           GA4_MEASUREMENT_ID: ${{ vars.GA4_MEASUREMENT_ID }}
           APP_STORE_URL: ${{ vars.APP_STORE_URL }}
+          AMAZON_ASSOCIATE_TAG: ${{ vars.AMAZON_ASSOCIATE_TAG }}
         run: |
           set -euo pipefail
           uv run --frozen tidehours --out site \
-            --ga4-id "$GA4_MEASUREMENT_ID" --app-store-url "$APP_STORE_URL"
-          uv run --frozen python scripts/check_site.py site
+            --ga4-id "$GA4_MEASUREMENT_ID" --app-store-url "$APP_STORE_URL" \
+            --amazon-tag "$AMAZON_ASSOCIATE_TAG"
+          uv run --frozen python scripts/check_site.py site --amazon-tag "$AMAZON_ASSOCIATE_TAG"
 
       - name: pick the pages to announce to IndexNow
         # Runs BEFORE the deploy replaces the live site, because the live

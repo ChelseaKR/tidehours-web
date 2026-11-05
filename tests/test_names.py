@@ -187,3 +187,10 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> Path:
     out = tmp_path_factory.mktemp("site")
     assert cli.main(["--out", str(out), "--now", NOW, "--states", "HI"]) == 0
     return out
+
+
+def test_split_region_stub_uses_the_label(tmp_path: Path) -> None:
+    out = tmp_path / "site"
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "UM,other"]) == 0
+    stub = (out / "states/other/hawaiin-islands/index.html").read_text(encoding="utf-8")
+    assert "<h1>Hawaiian Islands has moved</h1>" in stub and "Hawaiin" not in stub

@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
-{% block title %}{{ c.title }} | Tide Hours{% endblock %}
-{% block description %}{{ c.description }}{% endblock %}
+{% block title %}{% if king_up %}{{ fill(c.titleNext, months=fmt_months(king_months, lang, c)) }}{% else %}{{ c.title }}{% endif %} | Tide Hours{% endblock %}
+{% block description %}{% if king_up %}{{ fill(c.descriptionNext, range=fmt_range(king_span.first, king_span.last, lang, c), count=king_up|length|string) }}{% else %}{{ c.description }}{% endif %}{% endblock %}
 {% block alternates %}
 <link rel="alternate" hreflang="en" href="{{ base_url }}king-tides/">
 <link rel="alternate" hreflang="es" href="{{ base_url }}es/king-tides/">
@@ -12,6 +12,50 @@
 <p class="lead">{{ c.lead }}</p>
 <p class="meta">{{ fill(c.updated, date=fmt_long_date(retrieved, lang, c)) }}</p>
 
+{% if king_up %}
+<section class="callout kt-next" aria-labelledby="kt-next">
+  <h2 id="kt-next">{{ fill(c.next.headingNow if king_span.first <= king_today else c.next.headingSoon, range=fmt_range(king_span.first, king_span.last, lang, c)) }}</h2>
+  <p>{{ c.next.intro }}</p>
+  <ul>
+  {% for region in ["WA", "OR", "CA"] if king_states[region] %}
+    {% set k = king_states[region] %}
+    <li><a href="#kt-{{ region }}">{{ fill(c.next.state, state=c.stations.regions[region], range=fmt_range(k.first, k.last, lang, c), peaks=fmt_range(k.peak_first, k.peak_last, lang, c)) }}</a></li>
+  {% endfor %}
+  </ul>
+  <div class="table-scroll">
+  <table class="events">
+    <caption>{{ c.next.caption }}</caption>
+    <thead><tr>
+      <th scope="col">{{ c.next.cols.place }}</th>
+      <th scope="col">{{ c.next.cols.days }}</th>
+      <th scope="col">{{ c.next.cols.peak }}</th>
+      <th scope="col">{{ c.next.cols.height }}</th>
+    </tr></thead>
+    <tbody>
+    {% for u in king_up %}
+      <tr data-kt-next="{{ u.stamp() }}">
+        <th scope="row"><a href="#station-{{ u.season.id }}">{{ u.season.place }}</a>, {{ u.season.state }}</th>
+        <td>{{ fmt_range(u.first, u.last, lang, c) }}</td>
+        <td>{{ fmt_date(u.peak.date, lang, c) }}, {{ fmt_time(u.peak.time, lang) }}</td>
+        <td>{{ fmt_feet(u.peak.height, lang, c) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if king_up|length < seasons|length %}
+  <p>{{ fill(c.next.missing, count=(seasons|length - king_up|length)|string, total=seasons|length|string, days=king_lead|string) }}</p>
+  {% endif %}
+  <p class="meta">{{ c.next.note }}</p>
+</section>
+{% endif %}
+
+<section class="callout warning" aria-labelledby="kt-safety">
+  <h2 id="kt-safety">{{ c.safety.heading }}</h2>
+  {% for p in c.safety.body %}<p>{{ p }}</p>{% endfor %}
+  <p><a href="https://www.weather.gov/">{{ c.safety.nwsLink }}</a></p>
+</section>
+
 <section aria-labelledby="kt-california">
   <h2 id="kt-california">{{ c.california.heading }}</h2>
   {% for p in c.california.body %}<p>{{ p }}</p>{% endfor %}
@@ -22,12 +66,6 @@
     <li><a href="https://waseagrant.uw.edu/our-programs/coastal-hazards-climate-resilience/king-tides/king-tides-calendar/">{{ c.california.waLink }}</a></li>
     <li><a href="https://www.oregonkingtides.net/">{{ c.california.orLink }}</a></li>
   </ul>
-</section>
-
-<section class="callout warning" aria-labelledby="kt-safety">
-  <h2 id="kt-safety">{{ c.safety.heading }}</h2>
-  {% for p in c.safety.body %}<p>{{ p }}</p>{% endfor %}
-  <p><a href="https://www.weather.gov/">{{ c.safety.nwsLink }}</a></p>
 </section>
 
 <section aria-labelledby="kt-stations">

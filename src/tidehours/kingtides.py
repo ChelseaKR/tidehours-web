@@ -68,6 +68,18 @@ STATIONS: list[tuple[str, str, str]] = [
 SEASON_START = "2026-11-01"
 SEASON_DAYS = 365
 
+# Every king-tide station is on Pacific time, so "today" for the pages that
+# summarize them is one local date (season() refuses a station that isn't).
+ZONE = "America/Los_Angeles"
+# A station's next run is "coming up" when it starts within this many days
+# (or is under way). Only then do the summary at the top of the king-tide
+# pages and the links from station, region and state pages appear
+# (docs/DECISIONS.md 0015).
+LEAD_DAYS = 30
+# A WA, OR or CA station this close to a king-tide station links to that
+# station's dates while its run is coming up: 15 miles.
+NEAR_KM = 15 * 1.609344
+
 
 @dataclass(frozen=True)
 class Ranking:
@@ -192,6 +204,8 @@ def season(catalog: Catalog, datums: dict[str, float], start: str = SEASON_START
             raise ValueError(f"king tides: {sid} is not a harmonic station in the catalog")
         if sid not in datums:
             raise ValueError(f"king tides: no MHHW datum for {sid}")
+        if station.tz != ZONE:
+            raise ValueError(f"king tides: {sid} is in {station.tz}, not {ZONE}")
         zone = ZoneInfo(station.tz)
         t0 = dt.datetime.combine(dt.date.fromisoformat(first), dt.time(), zone).timestamp()
         t1 = dt.datetime.combine(dt.date.fromisoformat(last) + dt.timedelta(days=1), dt.time(), zone).timestamp()
@@ -201,3 +215,67 @@ def season(catalog: Catalog, datums: dict[str, float], start: str = SEASON_START
             raise ValueError(f"king tides: no series for {sid}")
         out.append(StationSeason(state, sid, place, station.name, datums[sid], series))
     return out
+
+
+def next_run(season: StationSeason, today: dt.date) -> list[Day] | None:
+    """The station's first run that has not ended by `today`, or None."""
+    for run in season.series:
+        if dt.date.fromisoformat(run[-1].date) >= today:
+            return run
+    return None
+
+
+@dataclass(frozen=True)
+class Upcoming:
+    """A station's next run, when it starts within LEAD_DAYS or is under way."""
+
+    season: StationSeason
+    run: list[Day]
+
+    @property
+    def first(self) -> str:
+        return self.run[0].date
+
+    @property
+    def last(self) -> str:
+        return self.run[-1].date
+
+    @property
+    def peak(self) -> Day:
+        return series_peak(self.run)
+
+    def stamp(self) -> str:
+        """What the pages carry for scripts/check_site.py to compare."""
+        return f"{self.season.id} {self.first} {self.last} {self.peak.date} {self.peak.time}"
+
+
+def upcoming(season: StationSeason, today: dt.date, lead_days: int = LEAD_DAYS) -> Upcoming | None:
+    run = next_run(season, today)
+    if run is None or (dt.date.fromisoformat(run[0].date) - today).days > lead_days:
+        return None
+    return Upcoming(season, run)
+
+
+def coming_up(seasons: list[StationSeason], today: dt.date) -> list[Upcoming]:
+    """Each station's run that is coming up, in the stations' order; a station
+    with none is left out, never shown as empty."""
+    out = []
+    for s in seasons:
+        u = upcoming(s, today)
+        if u is not None:
+            out.append(u)
+    return out
+
+
+def months(runs: list[Upcoming], today: dt.date) -> list[tuple[int, int]]:
+    """The (year, month) of each run's peak, or of today for a run whose peak
+    has passed but which is still under way: what to name in a title."""
+    out: set[tuple[int, int]] = set()
+    for u in runs:
+        d = max(dt.date.fromisoformat(u.peak.date), today)
+        out.add((d.year, d.month))
+    return sorted(out)
+
+
+def today_on_coast(now: dt.datetime) -> dt.date:
+    return now.astimezone(ZoneInfo(ZONE)).date()

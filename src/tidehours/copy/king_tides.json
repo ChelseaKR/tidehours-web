@@ -2,6 +2,23 @@
   "en": {
     "title": "King tides 2026–27: WA, OR and CA dates and heights",
     "description": "Predicted king tide dates, times and heights for 2026–27 at 31 NOAA stations in Washington, Oregon and California, from NOAA tide predictions.",
+    "titleNext": "King tides {months}: WA, OR and CA dates and times",
+    "descriptionNext": "West Coast king tides {range}: the season's highest predicted tides at {count} NOAA stations from Bellingham to San Diego, with each place's peak day, local time and height.",
+    "next": {
+      "headingSoon": "The next king tides: {range}",
+      "headingNow": "King tides now: {range}",
+      "intro": "The highest predicted tides of the season, place by place. Times are Pacific time. Heights are in feet above mean lower low water (MLLW). The high tides on the days around each peak are nearly as high.",
+      "state": "{state}: {range}, peaking {peaks}.",
+      "caption": "The next king tides by place",
+      "cols": {
+        "place": "Place",
+        "days": "Days",
+        "peak": "Highest tide",
+        "height": "Height"
+      },
+      "missing": "{count} of the {total} stations have no king-tide run in the next {days} days. Their dates are in the lists below.",
+      "note": "These are predictions, not observations, and not for navigation. Storms, wind and river flow can push the water higher. Read the warning below."
+    },
     "heading": "King tides 2026–27 on the West Coast",
     "lead": "The days with the highest predicted tides of the year at 31 NOAA tide stations from Bellingham to San Diego, with times and heights.",
     "updated": "Computed from NOAA CO-OPS harmonic constants retrieved {date}.",
@@ -135,6 +152,23 @@
   "es": {
     "title": "Mareas reales (king tides) 2026–27: WA, OR y CA",
     "description": "Fechas, horas y alturas previstas de las mareas reales 2026–27 en 31 estaciones de NOAA en Washington, Oregón y California.",
+    "titleNext": "Mareas reales (king tides) {months}: WA, OR y CA, fechas y horas",
+    "descriptionNext": "Mareas reales en la costa oeste, {range}: las mareas previstas más altas de la temporada en {count} estaciones de NOAA, de Bellingham a San Diego, con el día, la hora local y la altura del pico en cada lugar.",
+    "next": {
+      "headingSoon": "Las próximas mareas reales: {range}",
+      "headingNow": "Mareas reales ahora: {range}",
+      "intro": "Las mareas previstas más altas de la temporada, lugar por lugar. Las horas son del Pacífico. Las alturas están en pies sobre la bajamar media inferior (MLLW). Las pleamares de los días alrededor de cada pico son casi igual de altas.",
+      "state": "{state}: {range}; pico: {peaks}.",
+      "caption": "Las próximas mareas reales por lugar",
+      "cols": {
+        "place": "Lugar",
+        "days": "Días",
+        "peak": "Marea más alta",
+        "height": "Altura"
+      },
+      "missing": "{count} de las {total} estaciones no tienen una serie de mareas reales en los próximos {days} días. Sus fechas están en las listas de abajo.",
+      "note": "Son predicciones, no observaciones, y no sirven para la navegación. Las tormentas, el viento y el caudal de los ríos pueden subir el agua. Lea el aviso de abajo."
+    },
     "heading": "Mareas reales (king tides) 2026–27 en la costa oeste",
     "lead": "Los días con las mareas previstas más altas del año en 31 estaciones mareográficas de NOAA, de Bellingham a San Diego, con horas y alturas.",
     "updated": "Calculado con las constantes armónicas de NOAA CO-OPS obtenidas el {date}.",

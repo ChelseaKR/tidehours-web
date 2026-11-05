@@ -5,6 +5,17 @@
 <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/{{ state.path }}">{{ state.name }}</a></li></ol></nav>
 <h1>{{ region.name }} tide times</h1>
 <p class="lead">{{ region.stations|length }} NOAA tide prediction station{{ "s" if region.stations|length != 1 }} in NOAA's {{ region.name }} region{% if state.code != "other" %}, {{ state.name }}{% endif %}.</p>
+{% if region_king %}
+<section class="callout kt-link" aria-labelledby="king" data-kt-region="{% for u in region_king %}{{ u.season.id }}{{ " " if not loop.last }}{% endfor %}">
+  <h2 id="king">King tides {{ fmt_months(king_months, "en", kc) }}</h2>
+  <p>The season's highest predicted tides at the king-tide stations nearest this region:</p>
+  <ul>
+  {% for u in region_king %}
+    <li><a href="/king-tides/#station-{{ u.season.id }}">{{ u.season.place }}</a>: {{ fmt_range(u.first, u.last, "en", kc) }}, highest on {{ fmt_date(u.peak.date, "en", kc) }} at {{ fmt_time(u.peak.time, "en") }}</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
 <ul class="stations">
 {% for s in region.stations %}
   <li><a href="/stations/{{ s.id }}/">{{ s.name }}</a>{% if s.is_subordinate %} <span class="tag">from a reference station</span>{% endif %}</li>

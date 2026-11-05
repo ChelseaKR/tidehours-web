@@ -1,7 +1,7 @@
 {% extends "base.html.jinja" %}
 {% set today = days[0] %}
 {% block title %}{{ station.display_name }} tide times today | Tide Hours{% endblock %}
-{% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% endblock %}
+{% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% if king_link and king_link.own %} King tides {{ fmt_range(king_link.up.first, king_link.up.last, "en", kc) }}.{% endif %}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
   "@context": "https://schema.org",
@@ -26,6 +26,21 @@
 <h1>{{ station.display_name }} tide times</h1>
 <p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. Times are local ({{ station.tz }}); heights are feet above mean lower low water (MLLW).</p>
 <p class="stale" id="stale" role="status" hidden></p>
+
+{% if king_link %}
+{% set u = king_link.up %}
+<section class="callout kt-link" aria-labelledby="king" data-kt-run="{{ u.stamp() }}">
+  {% if king_link.own %}
+  <h2 id="king">King tides {{ fmt_range(u.first, u.last, "en", kc) }}</h2>
+  <p>The next run of this station's highest predicted tides of the season: {{ fmt_range(u.first, u.last, "en", kc) }}, highest on {{ fmt_date(u.peak.date, "en", kc) }} at {{ fmt_time(u.peak.time, "en") }}, {{ u.peak.height|feet }} ({{ u.season.above_mhhw(u.peak)|feet }} above a normal high tide).</p>
+  <p><a href="/king-tides/#station-{{ u.season.id }}">King tide dates, times and heights on the West Coast</a>.</p>
+  {% else %}
+  <h2 id="king">King tides nearby, {{ fmt_range(u.first, u.last, "en", kc) }}</h2>
+  <p>The nearest station on the king-tide page is {{ u.season.place }}, {{ "%.0f"|format(king_link.km * 0.621371) }} mi away: its highest predicted tides of the season are {{ fmt_range(u.first, u.last, "en", kc) }}, highest on {{ fmt_date(u.peak.date, "en", kc) }} at {{ fmt_time(u.peak.time, "en") }}, {{ u.peak.height|feet }}. Those are that station's predictions, not this one's; the tides here can differ in time and height.</p>
+  <p><a href="/king-tides/#station-{{ u.season.id }}">King tide dates and times at {{ u.season.place }}</a>.</p>
+  {% endif %}
+</section>
+{% endif %}
 
 {% if station.is_subordinate %}
 <div class="callout">
@@ -77,7 +92,7 @@
 </section>
 {% endif %}
 
-{% if king_season %}
+{% if king_season and not (king_link and king_link.own) %}
 <section aria-labelledby="king">
   <h2 id="king">King tides</h2>
   {% if king_next %}

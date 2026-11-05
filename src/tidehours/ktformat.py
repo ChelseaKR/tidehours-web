@@ -64,3 +64,20 @@ def fmt_feet(ft: float, lang: str, c: dict[str, Any], signed: bool = False) -> s
     if lang == "es":
         n = n.replace(".", ",")
     return f"{'+' if signed and v >= 0 else ''}{n} {c['ft']}"
+
+
+def fmt_months(months: list[tuple[int, int]], lang: str, c: dict[str, Any]) -> str:
+    """ "November 2026", "November and December 2026", "December 2026 and
+    January 2027" / "noviembre de 2026", "noviembre y diciembre de 2026"."""
+    if not months:
+        raise ValueError("fmt_months: no months")
+    names = c["monthsLong"]
+    conj = " y " if lang == "es" else " and "
+    years: dict[int, list[str]] = {}
+    for y, m in sorted(months):
+        years.setdefault(y, []).append(names[m - 1])
+    groups = []
+    for y, ms in years.items():
+        joined = ms[0] if len(ms) == 1 else ", ".join(ms[:-1]) + conj + ms[-1]
+        groups.append(f"{joined} de {y}" if lang == "es" else f"{joined} {y}")
+    return conj.join(groups)

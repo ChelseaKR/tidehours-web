@@ -2,6 +2,14 @@
 
 ## 0.1.0 (unreleased)
 
+- The king-tide pages lead with the runs coming up: their title names the
+  month and year ("King tides November 2026"), and the first section gives
+  the dates by state and each place's highest tide with its local time and
+  height, in English and Spanish. Station pages show their own run near the
+  top, and WA, OR and CA stations within 15 miles of a king-tide station
+  show the nearest one's run, labeled as that station's. Region, state and
+  home pages link to the dates. All of it appears only while a run starts
+  within 30 days or is under way, and all of it is computed (DECISIONS 0015).
 - Each harmonic station's page states its type of tide (semidiurnal; mixed,
   mainly semidiurnal; mixed, mainly diurnal; or diurnal) with one plain
   sentence on what it means. It is computed from the station's own NOAA

@@ -188,6 +188,7 @@ def env() -> Environment:
         fmt_range=ktformat.fmt_range,
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
+        fmt_months=ktformat.fmt_months,
     )
     return e
 
@@ -223,11 +224,67 @@ def king_tide_context(cat: Catalog) -> dict[str, Any]:
     }
 
 
-def next_series(season: kingtides.StationSeason, today: dt.date) -> list[kingtides.Day] | None:
-    for series in season.series:
-        if dt.date.fromisoformat(series[-1].date) >= today:
-            return series
-    return None
+@dataclass(frozen=True)
+class KingSpan:
+    """The runs coming up in one state (or all three): first and last day,
+    and the first and last day a station peaks."""
+
+    first: str
+    last: str
+    peak_first: str
+    peak_last: str
+
+
+def king_span(runs: list[kingtides.Upcoming]) -> KingSpan | None:
+    if not runs:
+        return None
+    peaks = [u.peak.date for u in runs]
+    return KingSpan(min(u.first for u in runs), max(u.last for u in runs), min(peaks), max(peaks))
+
+
+@dataclass(frozen=True)
+class KingLink:
+    """A station page's link to the king-tide page while a run is coming up:
+    the station's own run, or the nearest king-tide station's within
+    kingtides.NEAR_KM (docs/DECISIONS.md 0015)."""
+
+    up: kingtides.Upcoming
+    km: float  # 0 for the station itself
+
+    @property
+    def own(self) -> bool:
+        return self.km == 0
+
+
+def king_links(
+    stations: list[Station], seasons: list[kingtides.StationSeason], today: dt.date, cat: Catalog
+) -> dict[str, KingLink]:
+    """Station id -> its king-tide link, for WA, OR and CA stations: a
+    king-tide station's own run, or for any other station the nearest
+    king-tide station's within kingtides.NEAR_KM, while that run is coming
+    up. Out of season, empty."""
+    listed: list[tuple[Station, kingtides.StationSeason]] = []
+    for k in seasons:
+        st = cat.station(k.id)
+        if st is None:
+            raise ValueError(f"king tides: {k.id} is not in the catalog")
+        listed.append((st, k))
+    ids = {st.id for st, _ in listed}
+    out: dict[str, KingLink] = {}
+    for s in stations:
+        if s.state not in ("WA", "OR", "CA"):
+            continue
+        if s.id in ids:
+            season, km = next(k for st, k in listed if st.id == s.id), 0.0
+        else:
+            km, sid = min((distance_km(s, st), st.id) for st, _ in listed)
+            if km > kingtides.NEAR_KM:
+                continue
+            season = next(k for st, k in listed if st.id == sid)
+        up = kingtides.upcoming(season, today)
+        if up is not None:
+            out[s.id] = KingLink(up, km)
+    return out
 
 
 def derived_from(cat: Catalog, by_id: dict[str, Station]) -> dict[str, list[Derived]]:
@@ -242,6 +299,13 @@ def derived_from(cat: Catalog, by_id: dict[str, Station]) -> dict[str, list[Deri
     return out
 
 
+def region_king(region: Region, links: dict[str, KingLink], up: list[kingtides.Upcoming]) -> list[kingtides.Upcoming]:
+    """The runs coming up that the region's station pages link to, in the
+    king-tide page's order."""
+    ids = {links[s.id].up.season.id for s in region.stations if s.id in links}
+    return [u for u in up if u.season.id in ids]
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
@@ -253,6 +317,11 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     by_id = {s.id: s for s in stations}
     kt = king_tide_context(cat)
     kt_by_id = {s.id: s for s in kt["seasons"]}
+    kt_today = kingtides.today_on_coast(now)
+    kt_up = kingtides.coming_up(kt["seasons"], kt_today)
+    kt_months = kingtides.months(kt_up, kt_today)
+    kt_states = {code: king_span([u for u in kt_up if u.season.state == code]) for code in ("WA", "OR", "CA")}
+    links = king_links(stations, kt["seasons"], kt_today, cat)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
         "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
@@ -281,7 +350,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
 
     derived = derived_from(cat, by_id)
 
-    page("", "index.html.jinja", states=states, partial=cfg.states is not None)
+    king_common: dict[str, Any] = {
+        "king_today": kt_today.isoformat(),
+        "king_lead": kingtides.LEAD_DAYS,
+        "king_up": kt_up,
+        "king_months": kt_months,
+        "king_span": king_span(kt_up),
+        "king_states": kt_states,
+        "kc": kt["copy"]["en"],
+    }
+    page("", "index.html.jinja", states=states, partial=cfg.states is not None, **king_common)
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
@@ -292,11 +370,14 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             lang=lang,
             c=kt["copy"][lang],
             **kt,
+            **{k: v for k, v in king_common.items() if k != "kc"},
         )
     for st in states:
-        page(st.path, "state.html.jinja", state=st)
+        page(st.path, "state.html.jinja", state=st, king=kt_states.get(st.code), **king_common)
         for r in st.regions:
-            page(r.path, "region.html.jinja", state=st, region=r)
+            page(
+                r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common
+            )
     for s in stations:
         today = local_today(s, now)
         p = cat.predictor(s.id)
@@ -321,7 +402,9 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             derived=derived.get(s.id, []),
             tide_type=cat.tide_type(s.id),
             king_season=season,
-            king_next=next_series(season, today) if season else None,
+            king_next=kingtides.next_run(season, today) if season else None,
+            king_link=links.get(s.id),
+            kc=kt["copy"]["en"],
         )
     return pages
 

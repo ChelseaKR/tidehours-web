@@ -16,8 +16,8 @@
   </ul>
 </section>
 <section aria-labelledby="kt">
-  <h2 id="kt">King tides 2026–27</h2>
-  <p>The highest predicted tides of the season at 31 stations in Washington, Oregon and California. <a href="/king-tides/">King tide dates and heights</a>.</p>
+  <h2 id="kt">{% if king_up %}King tides {{ fmt_months(king_months, "en", kc) }}{% else %}King tides 2026–27{% endif %}</h2>
+  <p>{% if king_up %}The next West Coast king tides are {{ fmt_range(king_span.first, king_span.last, "en", kc) }}, {% if king_span.peak_first == king_span.peak_last %}highest on {{ fmt_date(king_span.peak_first, "en", kc) }}{% else %}peaking {{ fmt_range(king_span.peak_first, king_span.peak_last, "en", kc) }} depending on the place{% endif %}. {% endif %}The highest predicted tides of the season at 31 stations in Washington, Oregon and California. <a href="/king-tides/">King tide dates, times and heights</a>.</p>
 </section>
 <section aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>

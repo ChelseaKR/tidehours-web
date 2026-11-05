@@ -340,7 +340,9 @@ def test_check_site_catches_a_thin_region_mistake(tmp_path: Path, built: Path) -
     assert robots in full.read_text(encoding="utf-8")  # the sabotage applied
     found: list[str] = check.check_indexing(site_dir, sorted(site_dir.rglob("*.html")), stations)
     assert "states/hi/kahoolawe-island/: a region of 1 station(s) needs noindex" in found
-    assert any(p.startswith("states/ca/san-francisco-bay/: a region of") and p.endswith("needs no noindex") for p in found)
+    assert any(
+        p.startswith("states/ca/san-francisco-bay/: a region of") and p.endswith("needs no noindex") for p in found
+    )
     assert any(p.startswith("sitemap lists") for p in found)
 
 

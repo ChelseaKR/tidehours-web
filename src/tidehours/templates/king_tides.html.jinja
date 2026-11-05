@@ -125,4 +125,7 @@
   <p>{{ c.method.attribution }}</p>
   <p>{{ c.app.body }}</p>
 </section>
+{% if affiliate %}
+{% include "_affiliate_block.html.jinja" %}
+{% endif %}
 {% endblock %}

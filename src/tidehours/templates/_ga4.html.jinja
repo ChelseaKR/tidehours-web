@@ -14,6 +14,11 @@
   analytics_storage is denied in the EEA, the UK and Switzerland (the
   region-specific default wins there) and granted elsewhere. Google signals
   and ad personalization are off in the config.
+
+  A click on an affiliate link (data-ga-event="gear_click", only on the
+  English king-tide page when the Amazon tag is set) is counted with its
+  placement, link type and host only. The handler is rendered only on the
+  page that has those links, so switching them on changes no other page.
 #}
 <script>
 (function () {
@@ -83,5 +88,20 @@
   s.async = true;
   s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent({{ ga4_measurement_id|tojson }});
   document.head.appendChild(s);
+{% if affiliate is defined and affiliate %}
+
+  // Affiliate link clicks (docs/DECISIONS.md 0016): an ordinary event, sent
+  // only past the guards above. It reads the link's data attributes, never
+  // its address, so the tracking ID and search terms never reach Google.
+  d.addEventListener("click", function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest("a[data-ga-event]") : null;
+    if (!a || a.getAttribute("data-ga-event") !== "gear_click") return;
+    gtag("event", "gear_click", {
+      placement: a.getAttribute("data-ga-placement") || "",
+      link_type: a.getAttribute("data-ga-type") || "",
+      link_host: a.getAttribute("data-ga-host") || ""
+    });
+  });
+{% endif %}
 })();
 </script>

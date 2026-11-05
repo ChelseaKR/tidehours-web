@@ -48,6 +48,7 @@ def test_every_page_has_the_promises(built: Path) -> None:
         assert "Coming soon to the App Store" in html or "Próximamente en la App Store" in html, rel
         assert "apps.apple.com" not in html, rel
         assert "googletagmanager" not in html, rel
+        assert "amazon" not in html.lower(), rel  # affiliate links are off by default (DECISIONS 0016)
         for bad in ("None", "nan ft", "NaN", "undefined", "{{", "{place}", "{id}"):
             assert bad not in re.sub(r"<script.*?</script>", "", html, flags=re.S), (rel, bad)
         assert re.search(r"<title>[^<]+</title>", html), rel

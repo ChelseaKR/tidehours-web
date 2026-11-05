@@ -21,7 +21,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
 
-from . import indexnow, kingtides, ktformat
+from . import affiliate, indexnow, kingtides, ktformat
 from .catalog import DATA_DIR, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -68,6 +68,9 @@ class Config:
     ga4_measurement_id: str = ""
     app_store_url: str = ""
     states: set[str] | None = None  # None builds every state
+    # Amazon Associates tracking ID. Empty (the default) means off: no
+    # affiliate link anywhere (docs/DECISIONS.md 0016).
+    amazon_tag: str = ""
 
 
 @dataclass
@@ -329,10 +332,12 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "ga4_measurement_id": cfg.ga4_measurement_id,
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
+        "amazon_links": bool(cfg.amazon_tag),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
     }
+    gear = affiliate.block(cfg.amazon_tag)
     region_of: dict[str, tuple[State, Region | None]] = {}
     for st in states:
         for r in st.regions:
@@ -369,6 +374,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             "king_tides.html.jinja",
             lang=lang,
             c=kt["copy"][lang],
+            affiliate=gear if lang == "en" else None,
             **kt,
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
@@ -441,6 +447,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
         "ga4_measurement_id": cfg.ga4_measurement_id,
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
+        "amazon_links": bool(cfg.amazon_tag),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),

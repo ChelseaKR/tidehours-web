@@ -1,0 +1,18 @@
+{#
+  Amazon affiliate links (docs/DECISIONS.md 0016). king_tides.html.jinja
+  includes this only on the English page and only when an Associates tag is
+  configured, after the method section, so the page's answer, method and app
+  line come first. Category searches only: no brand, price, rating or image.
+  The disclosure sits right before the list.
+#}
+<section class="affiliate" aria-labelledby="kt-gear" data-affiliate="amazon">
+  <p class="meta">{{ affiliate.text.label }}</p>
+  <h2 id="kt-gear">{{ affiliate.text.heading }}</h2>
+  <p>{{ affiliate.text.intro }}</p>
+  <p class="affiliate-disclosure">{{ affiliate.text.before }} {{ affiliate.disclosure }} {{ affiliate.text.after }} <a href="/privacy/#affiliate">{{ affiliate.text.privacyLink }}</a>.</p>
+  <ul>
+  {% for link in affiliate.links %}
+    <li><a href="{{ link.href }}" rel="{{ affiliate.rel }}" data-ga-event="gear_click" data-ga-placement="king_tides" data-ga-type="amazon_search" data-ga-host="www.amazon.com">{{ link.label }}</a></li>
+  {% endfor %}
+  </ul>
+</section>

@@ -4,9 +4,13 @@
 {% block content %}
 <h1>Privacy</h1>
 {% if ga4_measurement_id %}
-<p>This site uses Google Analytics 4 to count page views. It does not load when your browser sends Global Privacy Control or Do Not Track, or after you choose "Opt out of analytics" at the bottom of any page. In the European Economic Area, the UK and Switzerland, Google Analytics runs without cookies. Google signals and ad personalization are off. The site has no accounts, no forms and no ads.</p>
+<p>This site uses Google Analytics 4 to count page views. It does not load when your browser sends Global Privacy Control or Do Not Track, or after you choose "Opt out of analytics" at the bottom of any page. In the European Economic Area, the UK and Switzerland, Google Analytics runs without cookies. Google signals and ad personalization are off. The site has no accounts, no forms and no {% if amazon_links %}display {% endif %}ads.</p>
 {% else %}
-<p>This site collects nothing about you: no analytics, no cookies, no accounts, no forms and no ads. The host may keep standard server logs.</p>
+<p>This site collects nothing about you: no analytics, no cookies, no accounts, no forms and no {% if amazon_links %}display {% endif %}ads. The host may keep standard server logs.</p>
+{% endif %}
+{% if amazon_links %}
+<h2 id="affiliate">Affiliate links</h2>
+<p>The king tides page has links to Amazon searches. If you buy something after following one, this site earns a commission, and it costs you nothing extra. As an Amazon Associate I earn from qualifying purchases. The links are Tide Hours', not NOAA's or the California Coastal Commission's, and neither endorses them or Amazon. A link takes you to Amazon, where Amazon's own privacy notice applies. When analytics is on, this site counts a click on one of these links without recording the link's address.</p>
 {% endif %}
 <p>The Tide Hours iPhone app has its own privacy policy: <a href="https://chelseakr.com/tide-hours/privacy">Tide Hours app privacy</a>.</p>
 {% endblock %}

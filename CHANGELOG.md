@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+- The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
+  Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
+  in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are
+  unchanged; three `/states/pr/st-*-island/` region pages go away, and their
+  stations join the existing `/states/vi/` region pages (DECISIONS 0017).
 - Amazon affiliate links for the English king-tide page, off by default:
   four tagged category searches after the method section with Amazon's
   disclosure, and matching privacy, terms and about lines, all only when

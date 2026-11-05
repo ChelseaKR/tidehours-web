@@ -16,6 +16,7 @@ from typing import Any
 
 import pytest
 
+from tidehours import catalog as catalog_mod
 from tidehours import cli, site, tidetype
 from tidehours.catalog import Station, load, tidy_name
 from tidehours.days import feet, meters, no_negative_zero, station_day
@@ -164,6 +165,53 @@ def test_grouping_and_nearby() -> None:
     assert site.slug("Outer Coast, San Francisco") == "outer-coast-san-francisco"
     with pytest.raises(ValueError, match="timezone-aware"):
         site.render(cat, site.Config(), dt.datetime(2026, 11, 1))
+
+
+# The U.S. Virgin Islands stations NOAA's own metadata codes PR (the mdapi
+# station record's "state" field, checked 2026-11-05), though each sits on
+# St. Croix, St. John or St. Thomas by its coordinates and its NOAA region.
+USVI_CODED_PR = {
+    "9751082", "9751084", "9751219", "9751274", "9751389", "9751417",
+    "9751419", "9751472", "9751561", "9751574", "9751693", "9751749",
+}  # fmt: skip
+
+
+def in_usvi(s: Station) -> bool:
+    # St. Thomas, St. John and St. Croix; Culebra (PR) is west of -65.1.
+    return 17.6 <= s.lat <= 18.45 and -65.1 <= s.lon <= -64.55
+
+
+def test_no_virgin_islands_station_is_under_puerto_rico() -> None:
+    raw = json.loads((catalog_mod.DATA_DIR / "stations.json").read_text(encoding="utf-8"))
+    noaa_state = {r["id"]: r["st"] for r in raw["harmonic"] + raw["subordinate"]}
+    cat = load()
+    vi = {s.id for s in cat.stations if s.state == "VI"}
+    for s in cat.stations:
+        if noaa_state[s.id] == "VI" or s.id in USVI_CODED_PR or in_usvi(s) or s.region in catalog_mod.USVI_REGIONS:
+            assert s.state == "VI" and s.tz == "America/St_Thomas", s
+        if s.state == "PR":
+            assert not in_usvi(s) and s.tz == "America/Puerto_Rico", s
+    assert vi >= USVI_CODED_PR
+    assert {i for i, st in noaa_state.items() if st == "VI"} <= vi
+    assert {i for i in USVI_CODED_PR if noaa_state[i] == "PR"} == USVI_CODED_PR  # still NOAA's coding
+    assert len(vi) == 25 and sum(s.state == "PR" for s in cat.stations) == 35
+    assert catalog_mod.territory("PR", "America/Puerto_Rico", "Puerto Rico") == ("PR", "America/Puerto_Rico")
+    assert catalog_mod.territory("PR", "America/Puerto_Rico", "St. Croix Island") == ("VI", "America/St_Thomas")
+
+
+def test_virgin_islands_pages(tmp_path: Path) -> None:
+    out = tmp_path / "site"
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "PR,VI"]) == 0
+    pr = (out / "states/pr/index.html").read_text(encoding="utf-8")
+    vi = (out / "states/vi/index.html").read_text(encoding="utf-8")
+    assert "Cruz Bay" not in pr and "St. Croix" not in pr and 'href="/states/pr/puerto-rico/"' in pr
+    assert 'href="/states/vi/st-johns-island/"' in vi and "U.S. Virgin Islands" in vi
+    assert not (out / "states/pr/st-croix-island").exists()
+    cruz = (out / "stations/9751472/index.html").read_text(encoding="utf-8")  # the station URL is unchanged
+    assert "Cruz Bay, St. John, VI" in cruz and "America/St_Thomas" in cruz
+    sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
+    assert "https://tidehours.com/states/vi/st-croix-island/" in sitemap
+    assert "/states/pr/st-" not in sitemap
 
 
 def test_group_rejects_unknown_state() -> None:

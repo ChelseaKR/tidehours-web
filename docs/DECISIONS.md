@@ -478,7 +478,9 @@ takes the first of these that applies:
    Apra Harbor and Pago Bay are GU; Pago Pago is AS; Johnston Atoll, Midway
    (Sand Island) and Wake Island are UM, the U.S. Minor Outlying Islands;
    Saipan Harbor, Tinian, Rota and Pagan are MP, the Northern Mariana Islands.
-   UM and MP are new state pages.
+   UM and MP are new state pages. `catalog.PLACE_STATES` adds Chelsea
+   (TEC1645, Arthur Kill), which is on Staten Island, NY, though its
+   reference station, Sandy Hook, is NJ.
 2. **The state the NOAA name ends in** ("Clifton Beach, Smith Point, Md.",
    "Harrington Point, Wash."), from `catalog.STATE_NAMES` and the older
    abbreviations in `catalog.STATE_ABBREVIATIONS`. It comes before the
@@ -519,8 +521,8 @@ station names, 86 of them NOAA-coded stations, most on the Delaware and Potomac
 rivers. Words inside a name are left alone ("N.C. State Fisheries, NC").
 Rewriting names more broadly is left for a later change.
 
-Result: 186 stations change state from main: 184 of the 194 (10 by the hand
-map, 4 by name, 170 by reference station) plus the two corrections. 11
+Result: 186 stations change state from main: 184 of the 194 (11 by the hand
+maps, 4 by name, 169 by reference station) plus the two corrections. 11
 stations are on "Stations without a state": Apia, Wales Island (British
 Columbia), 4 Oregon stations predicted from Crescent City, CA, and one each
 on the GA/SC, SC/NC and LA/MS lines and two on the FL/GA line. The list is
@@ -530,11 +532,12 @@ gained six NOAA-compared stations so it still covers every state
 (docs/DATA.md).
 
 Each filed or corrected station's page says what NOAA's list says and why it
-is listed where it is. Time zones are not changed apart from Apia: each
-station keeps the zone in the bundle. (Ten western Aleutian stations filed
-under AK carry `Pacific/Honolulu` from NOAA's UTC-10 offset, not
-`America/Adak`, which observes daylight saving time; that is the app's
-pipeline and is left for a change in both.) URLs: station pages stay at
+is listed where it is. Time zones: each station keeps the zone in the bundle,
+except Apia (above) and the ten western Aleutian stations now filed under AK
+(Kiska, Attu, Amchitka and others). The bundle gives them `Pacific/Honolulu`
+from NOAA's UTC-10 offset, which has no daylight saving time, so their summer
+times were an hour early. They take `America/Adak` (`catalog.ALEUTIAN_TZ`),
+as the app already does for stations NOAA codes AK. URLs: station pages stay at
 `/stations/<id>/`. Each region page whose stations all moved, by NOAA's own
 state and region for them, is built as a noindex stub to the new region
 page (`site.moved_regions`, the same stub as 0017); a region that still has a

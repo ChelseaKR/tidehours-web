@@ -5,6 +5,7 @@ config switches (GA4, App Store link) do what they say."""
 
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 import importlib.util
 import json
@@ -261,6 +262,8 @@ def test_stations_without_a_state_are_filed() -> None:
             assert s.filed_by is None, s
         elif s.filed_by == "territory":
             assert s.state == catalog_mod.TERRITORY_STATES[s.id], s
+        elif s.filed_by == "place":
+            assert s.state == catalog_mod.PLACE_STATES[s.id][0], s
         elif s.filed_by == "name":
             assert s.state == FILED_BY_NAME[s.id] == catalog_mod.name_state(s.name), s
         elif s.filed_by == "reference":
@@ -269,7 +272,16 @@ def test_stations_without_a_state_are_filed() -> None:
         else:
             assert s.state == "" and catalog_mod.across_border(STILL_WITHOUT_STATE[s.id], s.lat, s.lon), s
     filed = Counter(s.filed_by for s in cat.stations)
-    assert (filed["territory"], filed["name"], filed["reference"], filed["correction"]) == (10, 4, 170, 2)
+    assert (filed["territory"], filed["place"], filed["name"], filed["reference"], filed["correction"]) == (
+        10,
+        1,
+        4,
+        169,
+        2,
+    )
+    chelsea = by_id["TEC1645"]  # Staten Island, though its reference station (Sandy Hook) is NJ
+    assert (chelsea.state, chelsea.filed_by, by_id[chelsea.reference_id or ""].state) == ("NY", "place", "NJ")
+    assert chelsea.correction_note is not None and "Staten Island" in chelsea.correction_note
     assert {s.id for s in cat.stations if s.state == ""} == set(STILL_WITHOUT_STATE) | {"1778000"}  # and Apia
     for sid, code in STILL_WITHOUT_STATE.items():  # each would take this state without the border check
         assert by_id[by_id[sid].reference_id or ""].state == code, sid
@@ -288,6 +300,25 @@ def test_stations_without_a_state_are_filed() -> None:
     assert (apia.state, apia.noaa_state, apia.tz) == ("", "AS", "Pacific/Apia")  # independent Samoa, UTC+13
     assert apia.correction_note is not None and "independent Samoa" in apia.correction_note
     assert by_id["TWC2303"].display_name == "Constantine Harbor, Amchitka Island, AK"
+
+
+def test_western_aleutians_keep_daylight_saving_time() -> None:
+    # NOAA's UTC-10 offset put these AK-filed stations in Pacific/Honolulu,
+    # which has no daylight saving time; Adak's clock is UTC-9 in summer.
+    cat = load()
+    aleutian = [s for s in cat.stations if s.filed_by and s.state == "AK" and s.tz == "America/Adak"]
+    assert len(aleutian) == 10 and not any(s.tz == "Pacific/Honolulu" for s in cat.stations if s.state == "AK")
+    kiska = cat.station("TWC2307")  # Kiska Harbor, Kiska Island
+    assert kiska is not None and kiska.tz == "America/Adak"
+    summer = station_day(kiska, cat.predictor(kiska.id), dt.date(2027, 7, 1))
+    winter = station_day(kiska, cat.predictor(kiska.id), dt.date(2027, 1, 15))
+    assert summer.events and all(e.iso.endswith("-09:00") for e in summer.events)
+    assert winter.events and all(e.iso.endswith("-10:00") for e in winter.events)
+    # Negative control: the old zone shows the same summer tides an hour earlier.
+    old = station_day(dataclasses.replace(kiska, tz="Pacific/Honolulu"), cat.predictor(kiska.id), dt.date(2027, 7, 1))
+    first_old = dt.datetime.fromisoformat(old.events[0].iso)
+    match = [dt.datetime.fromisoformat(e.iso) for e in summer.events if dt.datetime.fromisoformat(e.iso) == first_old]
+    assert match and match[0].hour == (first_old.hour + 1) % 24
 
 
 def test_display_name_does_not_repeat_the_state() -> None:

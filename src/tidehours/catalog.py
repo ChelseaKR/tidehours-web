@@ -150,6 +150,16 @@ TERRITORY_STATES = {
     "TPT2625": "MP",  # Tinian Island
     "TPT2627": "MP",  # Rota Island
 }
+# Stations NOAA lists without a state, filed by hand from where they are
+# (DECISIONS 0018), each with the reason its page gives.
+PLACE_STATES = {
+    "TEC1645": ("NY", "Chelsea is on Staten Island, in New York City, across the Arthur Kill from New Jersey."),
+}
+# NOAA's UTC-10 offset gives an Alaska station with no state Pacific/Honolulu
+# in the bundle; the western Aleutians keep Hawaii-Aleutian time with daylight
+# saving time, America/Adak, as the app does for stations NOAA codes AK.
+ALEUTIAN_TZ = "America/Adak"
+
 # Stations NOAA codes with the wrong state (DECISIONS 0018): Tanapag Harbor is
 # on Saipan, in the Northern Mariana Islands, not Guam; Apia is in independent
 # Samoa, not American Samoa, so it has no state here and keeps Samoa's own
@@ -229,7 +239,8 @@ class Station:
     reference_id: str | None  # set for subordinate stations
     region: str | None  # NOAA's region name; None when NOAA's list has none
     # Where `state` comes from when it is not NOAA's (DECISIONS 0018):
-    # "territory" (TERRITORY_STATES), "name" (the state the name ends in),
+    # "territory" (TERRITORY_STATES), "place" (PLACE_STATES),
+    # "name" (the state the name ends in),
     # "reference" (the reference station's) or "correction" (STATE_CORRECTIONS).
     filed_by: str | None = None
     noaa_state: str = ""  # NOAA's code, as in the bundle
@@ -241,8 +252,13 @@ class Station:
 
     @property
     def correction_note(self) -> str | None:
-        """Why the site does not use NOAA's state code, for a corrected station."""
-        return STATE_CORRECTIONS[self.id][1] if self.filed_by == "correction" else None
+        """Why the site does not use NOAA's state code, for a corrected
+        station, or why it is filed where it is, for one filed by place."""
+        if self.filed_by == "correction":
+            return STATE_CORRECTIONS[self.id][1]
+        if self.filed_by == "place":
+            return PLACE_STATES[self.id][1]
+        return None
 
     @property
     def display_name(self) -> str:
@@ -293,7 +309,7 @@ class Catalog:
 def file_state(row: dict[str, Any], ref_state: str) -> tuple[str, str | None]:
     """The (state, filed_by) a station is listed under (DECISIONS 0018):
     NOAA's code unless STATE_CORRECTIONS has one; for a station NOAA lists
-    without a state, the hand map, else the state its name ends in, else its
+    without a state, the hand maps (TERRITORY_STATES, PLACE_STATES), else the state its name ends in, else its
     reference station's, each only when its coordinates are not across a
     border from that state."""
     sid, noaa = row["id"], row["st"]
@@ -303,6 +319,8 @@ def file_state(row: dict[str, Any], ref_state: str) -> tuple[str, str | None]:
         return noaa, None
     if sid in TERRITORY_STATES:
         return TERRITORY_STATES[sid], "territory"
+    if sid in PLACE_STATES:
+        return PLACE_STATES[sid][0], "place"
     for code, how in ((name_state(row["n"]), "name"), (ref_state, "reference")):
         if code and across_border(code, row["la"], row["lo"]) is None:
             return code, how
@@ -312,7 +330,10 @@ def file_state(row: dict[str, Any], ref_state: str) -> tuple[str, str | None]:
 def _station(row: dict[str, Any], ref: str | None, noaa_region: str | None, ref_state: str) -> Station:
     filed_state, filed = file_state(row, ref_state)
     region = REGION_CORRECTIONS.get(row["id"], noaa_region)
-    code, tz = territory(filed_state, TZ_CORRECTIONS.get(row["id"], row["tz"]), region)
+    tz = TZ_CORRECTIONS.get(row["id"], row["tz"])
+    if filed and filed_state == "AK" and tz == "Pacific/Honolulu":
+        tz = ALEUTIAN_TZ
+    code, tz = territory(filed_state, tz, region)
     return Station(
         row["id"], tidy_name(row["n"]), code, row["la"], row["lo"], tz, ref, region, filed, row["st"], noaa_region
     )

@@ -7,7 +7,9 @@
   Northern Mariana Islands pages), by the state their NOAA name ends in, or
   by their reference station's state, unless a border check rules it out.
   Tanapag Harbor, Saipan moves from GU to MP, and Apia (independent Samoa)
-  leaves American Samoa and takes Samoa's time zone. 186 stations change
+  leaves American Samoa and takes Samoa's time zone. Chelsea (Arthur Kill)
+  is filed under New York. Ten western Aleutian stations now filed under
+  Alaska use America/Adak, so their summer times are no longer an hour early. 186 stations change
   state, including Apra Harbor, Guam, Cape Hatteras and Key Largo; 11 stay on
   "Stations without a state". Names no longer repeat their state ("Apra
   Harbor, Guam", not "Apra Harbor, Guam, GU"). Old region pages send visitors

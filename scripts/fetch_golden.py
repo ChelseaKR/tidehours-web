@@ -3,10 +3,13 @@ golden fixture for tests/test_golden.py. Network; run by hand.
 
     uv run python scripts/fetch_golden.py            # golden-sample.json
     uv run python scripts/fetch_golden.py --month    # golden-month.json
+    uv run python scripts/fetch_golden.py --add      # golden-sample.json, missing keys only
 
 The sample: for every state code in the catalog (and the stations NOAA lists
 without one), one harmonic and one subordinate station, picked by the
-smallest SHA-256 of the station id. That choice is deterministic and does not
+smallest SHA-256 of the station id. `--add` keeps the stations already in
+the sample and fetches only (state, harmonic or subordinate) pairs it does
+not cover, for when the catalog's states change (DECISIONS 0018). That choice is deterministic and does not
 favor stations the engine happens to do well on. NOAA's high/low predictions
 for 2026-11-01 to 2026-11-03 (GMT, MLLW, feet) and, for harmonic stations,
 the hourly heights on 2026-11-01.
@@ -115,6 +118,13 @@ def main() -> int:
         "harmonic": {},
         "subordinate": {},
     }
+    if sys.argv[1:] == ["--add"]:
+        out = json.loads(OUT.read_text(encoding="utf-8"))
+        for group in ("harmonic", "subordinate"):
+            for sid in out[group]:
+                st = cat.station(sid)
+                assert st is not None  # noqa: S101
+                pick.pop((st.state, group == "subordinate"), None)
     for (state, sub), sid in sorted(pick.items()):
         st = cat.station(sid)
         assert st is not None  # noqa: S101

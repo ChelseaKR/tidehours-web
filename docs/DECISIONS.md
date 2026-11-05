@@ -463,3 +463,91 @@ built as a stub (`site.MOVED_REGIONS`, `moved.html.jinja`): a meta refresh,
 the sitemap and lastmod.json. A stub is built only when its VI page is. `tests/test_site.py` checks that no
 station NOAA codes VI, no pinned station, and no station inside the islands'
 bounding box is listed under PR.
+
+## 0018: File stations NOAA lists without a state by their reference station (owner, 2026-11-05)
+
+Supersedes the "no guessing" part of 0005. 194 stations have no state in
+NOAA's metadata (checked again against the mdapi station list on
+2026-11-05): 188 subordinate stations and 6 harmonic ones. They were all on
+"Stations without a state", including Guam's reference station (Apra
+Harbor), Cape Hatteras, Ocracoke Inlet and Key Largo. The owner chose to
+file them from NOAA's own data, not from coordinates. `catalog.file_state`
+takes the first of these that applies:
+
+1. **A hand map from NOAA's station names**, `catalog.TERRITORY_STATES`:
+   Apra Harbor and Pago Bay are GU; Pago Pago is AS; Johnston Atoll, Midway
+   (Sand Island) and Wake Island are UM, the U.S. Minor Outlying Islands;
+   Saipan Harbor, Tinian, Rota and Pagan are MP, the Northern Mariana Islands.
+   UM and MP are new state pages. `catalog.PLACE_STATES` adds Chelsea
+   (TEC1645, Arthur Kill), which is on Staten Island, NY, though its
+   reference station, Sandy Hook, is NJ.
+2. **The state the NOAA name ends in** ("Clifton Beach, Smith Point, Md.",
+   "Harrington Point, Wash."), from `catalog.STATE_NAMES` and the older
+   abbreviations in `catalog.STATE_ABBREVIATIONS`. It comes before the
+   reference station's: Harrington Point is predicted from Astoria, OR.
+3. **The reference station's state**, after that station's own state is
+   settled (so a reference in a U.S. Virgin Islands region gives VI, 0017).
+
+Rules 2 and 3 are vetoed when the station's coordinates are across an
+obvious border from the state (`catalog.BORDERS`): the 49th parallel and Juan
+de Fuca (WA and British Columbia), Dixon Entrance and Pearse Canal (Alaska
+and British Columbia), 42°N (CA and OR), the Columbia (OR and WA), the
+St. Marys and Savannah rivers, Little River Inlet (SC and NC), the Pearl
+River (LA and MS), the District of Columbia's box, and the line between Guam
+and the Northern Mariana Islands. The checks are coarse on purpose. Every
+station NOAA itself codes with a state passes its state's checks, except
+Tanapag Harbor, Saipan (1633227), which NOAA codes GU. A vetoed station keeps
+no state; it is not moved to the neighbor, because that would be a guess
+from coordinates.
+
+Two stations NOAA codes wrongly are corrected (`catalog.STATE_CORRECTIONS`):
+Tanapag Harbor is MP, not GU, and Apia (1778000) is in independent Samoa,
+not American Samoa (AS), so it has no state here. Apia also takes Samoa's
+own time zone, `Pacific/Apia` (UTC+13), instead of American Samoa's
+UTC-11 from NOAA's offset: same clock time, one day later. Its predictions,
+which are in UTC, do not change.
+
+Region names: NOAA puts Apra Harbor and Pago Bay in "Northern Marianas
+Islands", Johnston Atoll and Midway in "Hawaiin Islands" and Wake in
+"Marshall Islands". Those five are listed under their own island's name
+(`catalog.REGION_CORRECTIONS`): Guam, Johnston Atoll, Midway Islands and
+Wake Island.
+
+Names: a station's display name no longer repeats its state. When the name
+already ends in the state's name or abbreviation, the code is not appended
+("Apra Harbor, Guam", "Burlington, N.J.", not "Burlington, N.J., NJ"), and
+"Wake Island (U.S.)" drops "(U.S.)" before its UM code. This changes 93
+station names, 86 of them NOAA-coded stations, most on the Delaware and Potomac
+rivers. Words inside a name are left alone ("N.C. State Fisheries, NC").
+Rewriting names more broadly is left for a later change.
+
+Result: 186 stations change state from main: 184 of the 194 (11 by the hand
+maps, 4 by name, 169 by reference station) plus the two corrections. 11
+stations are on "Stations without a state": Apia, Wales Island (British
+Columbia), 4 Oregon stations predicted from Crescent City, CA, and one each
+on the GA/SC, SC/NC and LA/MS lines and two on the FL/GA line. The list is
+pinned in `tests/test_site.py`, with a negative control that drops the border
+checks and sees Wales Island land on the Alaska page. The golden sample
+gained six NOAA-compared stations so it still covers every state
+(docs/DATA.md).
+
+Each filed or corrected station's page says what NOAA's list says and why it
+is listed where it is. Time zones: each station keeps the zone in the bundle,
+except Apia (above) and the ten western Aleutian stations now filed under AK
+(Kiska, Attu, Amchitka and others). The bundle gives them `Pacific/Honolulu`
+from NOAA's UTC-10 offset, which has no daylight saving time, so their summer
+times were an hour early. They take `America/Adak` (`catalog.ALEUTIAN_TZ`),
+as the app already does for stations NOAA codes AK. URLs: station pages stay at
+`/stations/<id>/`. Each region page whose stations all moved, by NOAA's own
+state and region for them, is built as a noindex stub (`site.moved_regions`,
+`moved.html.jinja`). If the region moved whole, the stub sends visitors to its
+new page, as in 0017. If it split, the stub does not pick one part: it lists
+each new region page with the stations it holds, with no redirect and its
+own canonical URL. NOAA's "Hawaiin Islands" split into Johnston Atoll and
+Midway Islands; "Northern Marianas Islands" (without a state) into Guam and
+the Northern Mariana Islands; and the stateless "Columbia River" stations into
+Oregon and Washington. A region that still has a station keeps its page.
+
+The data files are not edited. The same rules belong in the app's pipeline
+(ChelseaKR/tide-hours, `pipeline/build_bundle.py`); until then this is a
+difference between the site and the app.

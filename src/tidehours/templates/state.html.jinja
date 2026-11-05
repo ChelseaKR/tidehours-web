@@ -5,7 +5,7 @@
 <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li></ol></nav>
 <h1>{% if state.code == "other" %}{{ state.name }}{% else %}{{ state.name }} tide times{% endif %}</h1>
 {% if state.code == "other" %}
-<p class="lead">NOAA's station list gives these {{ state.count }} stations no state. They are grouped here by NOAA's region name.</p>
+<p class="lead">These {{ state.count }} stations have no state on this site. Most have none in NOAA's station list, and their position rules out their reference station's state (for example, they are across the Canadian border); one, Apia, is in independent Samoa. They are grouped here by NOAA's region name.</p>
 {% else %}
 <p class="lead">{{ state.count }} NOAA tide prediction stations, grouped by NOAA's regions.</p>
 {% endif %}

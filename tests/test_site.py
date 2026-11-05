@@ -5,12 +5,14 @@ config switches (GA4, App Store link) do what they say."""
 
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 import importlib.util
 import json
 import re
 import shutil
 import xml.etree.ElementTree as ET
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -80,7 +82,7 @@ def test_indexes_sitemap_robots(built: Path) -> None:
     ca = (built / "states/ca/index.html").read_text(encoding="utf-8")
     assert 'href="/states/ca/san-francisco-bay/"' in ca
     other = (built / "states/other/index.html").read_text(encoding="utf-8")
-    assert "gives these" in other and "no state" in other
+    assert "have no state on this site" in other
     urls = [
         el.text
         for el in ET.parse(built / "sitemap.xml")  # noqa: S314 - our own build output
@@ -88,7 +90,8 @@ def test_indexes_sitemap_robots(built: Path) -> None:
         .iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
     ]
     noindex = [f for f in pages(built) if 'name="robots" content="noindex' in f.read_text(encoding="utf-8")]
-    assert noindex and all(f.parts[-3] == "stations" for f in noindex)
+    stub = '<meta http-equiv="refresh"'
+    assert noindex and all(f.parts[-3] == "stations" or stub in f.read_text(encoding="utf-8") for f in noindex)
     assert len(urls) == len(pages(built)) - 1 - len(noindex)  # every indexable page but 404.html
     assert "https://tidehours.com/es/king-tides/" in urls
     assert "Sitemap: https://tidehours.com/sitemap.xml" in (built / "robots.txt").read_text(encoding="utf-8")
@@ -194,7 +197,8 @@ def test_no_virgin_islands_station_is_under_puerto_rico() -> None:
     assert vi >= USVI_CODED_PR
     assert {i for i, st in noaa_state.items() if st == "VI"} <= vi
     assert {i for i in USVI_CODED_PR if noaa_state[i] == "PR"} == USVI_CODED_PR  # still NOAA's coding
-    assert len(vi) == 25 and sum(s.state == "PR" for s in cat.stations) == 35
+    # PR: 35 NOAA-coded, plus 4 NOAA lists without a state, filed by reference station (0018).
+    assert len(vi) == 25 and sum(s.state == "PR" for s in cat.stations) == 39
     assert catalog_mod.territory("PR", "America/Puerto_Rico", "Puerto Rico") == ("PR", "America/Puerto_Rico")
     assert catalog_mod.territory("PR", "America/Puerto_Rico", "St. Croix Island") == ("VI", "America/St_Thomas")
 
@@ -219,6 +223,219 @@ def test_virgin_islands_pages(tmp_path: Path) -> None:
     sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
     assert "https://tidehours.com/states/vi/st-croix-island/" in sitemap
     assert "/states/pr/st-" not in sitemap
+
+
+# Stations NOAA lists without a state whose position rules out their
+# reference station's state (DECISIONS 0018), checked by hand on 2026-11-05.
+STILL_WITHOUT_STATE = {
+    "8218447": "AK",  # Wales Island (Cannery), Pearse Canal: British Columbia
+    "8659899": "SC",  # Sunset Beach Bridge: North Carolina
+    "8748038": "LA",  # Wolf River, Henderson Avenue bridge: Mississippi
+    "TEC3327": "GA",  # Euhaw Creek, Broad River: South Carolina
+    "TEC3531": "FL",  # Below Spring Bluff, Little Satilla River: Georgia
+    "TEC3541": "FL",  # Burnt Fort, Satilla River: Georgia
+    "TWC0817": "CA",  # Wedderburn, Rogue River: Oregon
+    "TWC0857": "CA",  # Nestucca Bay entrance: Oregon
+    "TWC0863": "CA",  # Miami Cove, Tillamook Bay: Oregon
+    "TWC0865": "CA",  # Bay City, Tillamook Bay: Oregon
+}
+# Filed by the state their NOAA name ends in, which beats the reference
+# station's (Harrington Point is predicted from Astoria, OR; Clifton Beach
+# from Washington, DC).
+FILED_BY_NAME = {"8578931": "MD", "TWC0881": "OR", "TWC0883": "OR", "TWC0895": "WA"}
+# NOAA codes this Saipan station GU; it is the one NOAA-coded station outside
+# its own state's border checks.
+NOAA_CODED_ACROSS_BORDER = {"1633227"}
+
+
+def test_stations_without_a_state_are_filed() -> None:
+    raw = json.loads((catalog_mod.DATA_DIR / "stations.json").read_text(encoding="utf-8"))
+    noaa = {r["id"]: r["st"] for r in raw["harmonic"] + raw["subordinate"]}
+    cat = load()
+    by_id = {s.id: s for s in cat.stations}
+    assert sum(noaa[s.id] == "" for s in cat.stations) == 194
+    for s in cat.stations:
+        assert s.noaa_state == noaa[s.id]
+        if s.filed_by == "correction":
+            assert s.state == catalog_mod.STATE_CORRECTIONS[s.id][0] != s.noaa_state, s
+        elif noaa[s.id]:
+            assert s.filed_by is None, s
+        elif s.filed_by == "territory":
+            assert s.state == catalog_mod.TERRITORY_STATES[s.id], s
+        elif s.filed_by == "place":
+            assert s.state == catalog_mod.PLACE_STATES[s.id][0], s
+        elif s.filed_by == "name":
+            assert s.state == FILED_BY_NAME[s.id] == catalog_mod.name_state(s.name), s
+        elif s.filed_by == "reference":
+            ref = by_id[s.reference_id or ""]
+            assert s.state == ref.state != "" and catalog_mod.across_border(s.state, s.lat, s.lon) is None, s
+        else:
+            assert s.state == "" and catalog_mod.across_border(STILL_WITHOUT_STATE[s.id], s.lat, s.lon), s
+    filed = Counter(s.filed_by for s in cat.stations)
+    assert (filed["territory"], filed["place"], filed["name"], filed["reference"], filed["correction"]) == (
+        10,
+        1,
+        4,
+        169,
+        2,
+    )
+    chelsea = by_id["TEC1645"]  # Staten Island, though its reference station (Sandy Hook) is NJ
+    assert (chelsea.state, chelsea.filed_by, by_id[chelsea.reference_id or ""].state) == ("NY", "place", "NJ")
+    assert chelsea.correction_note is not None and "Staten Island" in chelsea.correction_note
+    assert {s.id for s in cat.stations if s.state == ""} == set(STILL_WITHOUT_STATE) | {"1778000"}  # and Apia
+    for sid, code in STILL_WITHOUT_STATE.items():  # each would take this state without the border check
+        assert by_id[by_id[sid].reference_id or ""].state == code, sid
+    named = {"TEC2789": "NC", "TEC2793": "NC", "8723667": "FL", "1630000": "GU", "1631428": "GU", "1890000": "UM"}
+    assert {sid: by_id[sid].state for sid in named} == named  # Cape Hatteras, Ocracoke, Key Largo, Guam, Wake
+    assert {s.id for s in cat.stations if s.state == "GU"} == {"1630000", "1631428"}
+    assert {s.id for s in cat.stations if s.state == "MP"} == {"1633227", "TPT2621", "TPT2623", "TPT2625", "TPT2627"}
+    assert all(s.region == "Northern Marianas Islands" for s in cat.stations if s.state == "MP")
+    assert {by_id[i].region for i in ("1630000", "1631428")} == {"Guam"}
+    assert [by_id[i].region for i in ("1619000", "1619910", "1890000")] == [
+        "Johnston Atoll",
+        "Midway Islands",
+        "Wake Island",
+    ]
+    apia = by_id["1778000"]
+    assert (apia.state, apia.noaa_state, apia.tz) == ("", "AS", "Pacific/Apia")  # independent Samoa, UTC+13
+    assert apia.correction_note is not None and "independent Samoa" in apia.correction_note
+    assert by_id["TWC2303"].display_name == "Constantine Harbor, Amchitka Island, AK"
+
+
+def test_western_aleutians_keep_daylight_saving_time() -> None:
+    # NOAA's UTC-10 offset put these AK-filed stations in Pacific/Honolulu,
+    # which has no daylight saving time; Adak's clock is UTC-9 in summer.
+    cat = load()
+    aleutian = [s for s in cat.stations if s.filed_by and s.state == "AK" and s.tz == "America/Adak"]
+    assert len(aleutian) == 10 and not any(s.tz == "Pacific/Honolulu" for s in cat.stations if s.state == "AK")
+    kiska = cat.station("TWC2307")  # Kiska Harbor, Kiska Island
+    assert kiska is not None and kiska.tz == "America/Adak"
+    summer = station_day(kiska, cat.predictor(kiska.id), dt.date(2027, 7, 1))
+    winter = station_day(kiska, cat.predictor(kiska.id), dt.date(2027, 1, 15))
+    assert summer.events and all(e.iso.endswith("-09:00") for e in summer.events)
+    assert winter.events and all(e.iso.endswith("-10:00") for e in winter.events)
+    # Negative control: the old zone shows the same summer tides an hour earlier.
+    old = station_day(dataclasses.replace(kiska, tz="Pacific/Honolulu"), cat.predictor(kiska.id), dt.date(2027, 7, 1))
+    first_old = dt.datetime.fromisoformat(old.events[0].iso)
+    match = [dt.datetime.fromisoformat(e.iso) for e in summer.events if dt.datetime.fromisoformat(e.iso) == first_old]
+    assert match and match[0].hour == (first_old.hour + 1) % 24
+
+
+def test_display_name_does_not_repeat_the_state() -> None:
+    cat = load()
+    names = {i: cat.station(i).display_name for i in ("1630000", "1631428", "TWC0881", "8539487", "8594900", "1890000", "1633227")}  # type: ignore[union-attr]  # fmt: skip
+    assert names == {
+        "1630000": "Apra Harbor, Guam",
+        "1631428": "Pago Bay, Guam",
+        "TWC0881": "Point Adams, Oreg.",
+        "8539487": "Fieldsboro, N.J.",
+        "8594900": "Washington, Washington Channel, D.C.",
+        "1890000": "Wake Island, UM",
+        "1633227": "Tanapag Harbor, Saipan Island, MP",
+    }
+    for s in cat.stations:
+        if s.state:
+            assert s.display_name.endswith(", " + s.state) or catalog_mod.name_state(s.display_name) == s.state, s
+    # A name's other words are not a suffix: "N.C. State Fisheries" still gets ", NC".
+    assert cat.station("TEC2831").display_name == "N.C. State Fisheries, NC"  # type: ignore[union-attr]
+    assert (
+        Station("1", "Chesapeake City, Maryland", "MD", 0, 0, "UTC", None, None).display_name
+        == "Chesapeake City, Maryland"
+    )
+    assert Station("1", "Burlington, N.J.", "PA", 0, 0, "UTC", None, None).display_name == "Burlington, N.J., PA"
+
+
+def test_border_checks() -> None:
+    raw = json.loads((catalog_mod.DATA_DIR / "stations.json").read_text(encoding="utf-8"))
+    # Every station NOAA itself codes with a state passes that state's checks,
+    # so they are not tighter than NOAA's own coding.
+    across = {
+        r["id"] for r in raw["harmonic"] + raw["subordinate"] if catalog_mod.across_border(r["st"], r["la"], r["lo"])
+    }
+    assert across == NOAA_CODED_ACROSS_BORDER
+    # The checks apply: points just over each border fail, just inside pass.
+    over = [("WA", 49.01, -122.75), ("WA", 48.45, -123.4), ("AK", 54.77, -130.55), ("CA", 42.01, -124.2),
+            ("OR", 46.27, -123.65), ("FL", 30.95, -81.9), ("GA", 32.43, -80.85), ("SC", 33.88, -78.51),
+            ("LA", 30.36, -89.27), ("DC", 38.41, -77.27), ("GU", 15.2, 145.72), ("MP", 13.44, 144.66)]  # fmt: skip
+    inside = [("WA", 48.99, -122.75), ("WA", 48.37, -124.6), ("AK", 54.94, -130.34), ("CA", 41.99, -124.2),
+              ("OR", 46.2, -123.95), ("FL", 30.79, -81.84), ("GA", 32.08, -81.09), ("SC", 33.1, -78.43),
+              ("LA", 29.26, -89.96), ("DC", 38.87, -77.02), ("GU", 13.44, 144.66), ("MP", 15.2, 145.72)]  # fmt: skip
+    assert all(catalog_mod.across_border(*p) for p in over)
+    assert not any(catalog_mod.across_border(*p) for p in inside)
+    assert catalog_mod.across_border("WA", 49.5, -123.0) == "British Columbia (49th parallel)"
+    assert catalog_mod.across_border("ME", 47.0, -68.0) is None  # no checks for a state means no veto
+
+
+def test_without_the_border_check_wales_island_would_be_alaska(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Negative control: the border check is what keeps a British Columbia
+    # station off the Alaska page.
+    s = load().station("8218447")
+    assert s is not None and s.state == ""
+    monkeypatch.setattr(catalog_mod, "BORDERS", ())
+    s = load().station("8218447")
+    assert s is not None and s.state == "AK" and s.filed_by == "reference"
+
+
+def test_filed_stations_pages(tmp_path: Path) -> None:
+    out = tmp_path / "site"
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "NC,GU,MP,UM,other"]) == 0
+    sitemap = (out / "sitemap.xml").read_text(encoding="utf-8")
+    nc = (out / "states/nc/index.html").read_text(encoding="utf-8")
+    assert 'href="/stations/TEC2789/"' in nc and 'href="/states/nc/outer-banks/"' in nc
+    hatteras = (out / "stations/TEC2789/index.html").read_text(encoding="utf-8")
+    assert "Cape Hatteras, NC tide times" in hatteras
+    assert "listed under North Carolina, the state of the reference station" in hatteras
+    apra = (out / "stations/1630000/index.html").read_text(encoding="utf-8")
+    assert "<h1>Apra Harbor, Guam tide times</h1>" in apra and "where NOAA's station name places it" in apra
+    assert 'href="/states/gu/guam/"' in apra and "Northern Marianas" not in apra
+    tanapag = (out / "stations/1633227/index.html").read_text(encoding="utf-8")
+    assert "codes this station GU. Tanapag Harbor is on Saipan" in tanapag
+    apia = (out / "stations/1778000/index.html").read_text(encoding="utf-8")
+    assert "codes this station AS. Apia is in independent Samoa" in apia and "Pacific/Apia" in apia
+    um = (out / "states/um/index.html").read_text(encoding="utf-8")
+    assert "U.S. Minor Outlying Islands" in um and "Hawaiin" not in um
+    assert "Northern Mariana Islands" in (out / "states/mp/index.html").read_text(encoding="utf-8")
+    other = (out / "states/other/index.html").read_text(encoding="utf-8")
+    assert "Cape Hatteras" not in other and "Wales Island" in other and "Saipan" not in other and "Apia" in other
+    for old, new, where in [
+        ("states/other/outer-banks/", "states/nc/outer-banks/", "North Carolina"),  # was a live region page
+        ("states/gu/northern-marianas-islands/", "states/mp/northern-marianas-islands/", "Northern Mariana Islands"),
+        ("states/other/marshall-islands/", "states/um/wake-island/", "U.S. Minor Outlying Islands"),
+    ]:
+        stub = (out / old / "index.html").read_text(encoding="utf-8")
+        assert f'<meta http-equiv="refresh" content="0; url=/{new}">' in stub, old
+        assert 'content="noindex,follow"' in stub and f"listed under {where}" in stub, old
+        assert f"https://tidehours.com/{old}" not in sitemap and f"https://tidehours.com/{new}" in sitemap, old
+    # A region that split lists each part, with its stations, and sends no one
+    # to just one of them (Midway is not Johnston Atoll; Guam is not the CNMI).
+    for old, parts in [
+        (
+            "states/other/hawaiin-islands/",
+            {"states/um/johnston-atoll/": ["1619000"], "states/um/midway-islands/": ["1619910"]},
+        ),
+        (
+            "states/other/northern-marianas-islands/",
+            {
+                "states/gu/guam/": ["1630000", "1631428"],
+                "states/mp/northern-marianas-islands/": ["TPT2621", "TPT2623", "TPT2625", "TPT2627"],
+            },
+        ),
+    ]:
+        split = (out / old / "index.html").read_text(encoding="utf-8")
+        assert "http-equiv" not in split and 'content="noindex,follow"' in split, old
+        assert f'<link rel="canonical" href="https://tidehours.com/{old}">' in split, old
+        assert "now listed in 2 places" in split and f"https://tidehours.com/{old}" not in sitemap, old
+        sections = [p.split("</section>")[0] for p in split.split('aria-labelledby="to-')[1:]]
+        assert len(sections) == len(parts), old
+        for section, (new, ids) in zip(sections, parts.items(), strict=True):
+            assert f'href="/{new}"' in section, new
+            assert sorted(re.findall(r'href="/stations/([^/]+)/"', section)) == ids, new
+    assert "Johnston Atoll, U.S. Minor Outlying Islands" in (out / "states/other/hawaiin-islands/index.html").read_text(
+        encoding="utf-8"
+    )
+    # A region that still has a station without a state keeps its own page, not a stub.
+    southeast = (out / "states/other/southeast-coast/index.html").read_text(encoding="utf-8")
+    assert "http-equiv" not in southeast and "Sunset Beach Bridge" in southeast
 
 
 def test_group_rejects_unknown_state() -> None:
@@ -485,3 +702,32 @@ def test_check_site_catches_a_wrong_king_tide_summary(tmp_path: Path, built: Pat
     assert "stations/1612340: king-tide link ['x'], expected none" in found
     assert not any(p.startswith("es/king-tides") for p in found)
     assert len(found) == 4
+
+
+def _site_sample() -> Any:
+    spec = importlib.util.spec_from_file_location(
+        "site_sample", Path(__file__).parent.parent / "scripts/site_sample.py"
+    )
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_site_checks_sample_skips_redirect_stubs(tmp_path: Path) -> None:
+    # The axe and reflow checks lost their page context on a stub's meta
+    # refresh (DECISIONS 0018). Redirect stubs are left out of the sample;
+    # split-region pages, which do not redirect, are put in it.
+    out = tmp_path / "site"
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "NC,GU,MP,UM,PR,VI,other"]) == 0
+    sample_mod = _site_sample()
+    picked: list[str] = sample_mod.sample(out)
+    stubs = [p for p in out.glob("states/*/*/index.html") if sample_mod.redirects(p)]
+    assert len(stubs) >= 5  # the outer banks, marshall islands and PR island stubs, at least
+    assert "states/other/outer-banks/" not in picked and "states/pr/st-croix-island/" not in picked
+    assert not any(sample_mod.redirects(out / p / "index.html") for p in picked if p.startswith("states/"))
+    assert {"states/other/hawaiin-islands/", "states/other/northern-marianas-islands/"} <= set(picked)
+    assert "states/nc/outer-banks/" in [
+        p.parent.relative_to(out).as_posix() + "/" for p in out.glob("states/*/*/index.html")
+    ]
+    assert "states/nc/" in picked and "stations/1630000/" in picked

@@ -69,6 +69,14 @@
   NOAA also publishes its own <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ station.id }}">predictions for station {{ station.id }}</a>.</p>
 </section>
 
+{% if tide_type %}
+<section class="tide-type" aria-labelledby="type" data-tide-type="{{ tide_type.kind.key }}">
+  <h2 id="type">Type of tide: {{ tide_type.kind.label|lower }}</h2>
+  <p>{{ tide_type.kind.meaning }}</p>
+  <p class="meta">Computed from this station's NOAA harmonic constants: the form factor (K1 + O1) / (M2 + S2) is {{ "%.2f"|format(tide_type.form_factor) }}. Under 0.25 is semidiurnal, 0.25 to 1.5 mixed and mainly semidiurnal, 1.5 to 3 mixed and mainly diurnal, and over 3 diurnal, as in NOAA's Tide and Current Glossary. It describes the usual pattern; the highs and lows above are the ones for each day.</p>
+</section>
+{% endif %}
+
 {% if king_season %}
 <section aria-labelledby="king">
   <h2 id="king">King tides</h2>

@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- Each harmonic station's page states its type of tide (semidiurnal; mixed,
+  mainly semidiurnal; mixed, mainly diurnal; or diurnal) with one plain
+  sentence on what it means. It is computed from the station's own NOAA
+  constants with the form factor (K1 + O1) / (M2 + S2) and NOAA's glossary
+  thresholds: 1,230 of 1,232 harmonic stations. The two whose constants list
+  no S2, and the subordinate stations, show none (DECISIONS 0014).
 - Search engines are asked to index the 1,232 harmonic station pages and the
   hub pages, not yet the 2,024 subordinate station pages, which are near
   copies of their reference station's page. Those keep their URLs and links

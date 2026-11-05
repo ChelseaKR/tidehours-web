@@ -278,3 +278,37 @@ When to widen: when the indexed pages earn impressions for four straight
 weeks without a sitewide drop, allow subordinate pages back, a state or a
 named list at a time, and re-measure. Allowing a page back is a code change
 that adds it to the sitemap and `lastmod.json`, so IndexNow announces it.
+
+## 0014: Each harmonic station's type of tide, from its own constants (2026-11-04)
+
+The 1,232 indexed station pages (0013) differ mostly in names and numbers. A
+station's type of tide is a real fact that differs by station, is computed
+from data already here, and tells a visitor what to expect: whether there are
+two highs a day or one, and whether they are alike.
+
+**Definition.** The form factor F = (K1 + O1) / (M2 + S2), the sum of the
+amplitudes of the two main daily constituents over the two main twice-daily
+ones. NOAA CO-OPS's Tide and Current Glossary, under "type of tide"
+(quantitative classification after Dietrich): under 0.25 semidiurnal; 0.25
+to 1.5 mixed, mainly semidiurnal; 1.5 to 3.0 mixed, mainly diurnal; over 3.0
+diurnal. The page shows F to 2 decimals and classifies that shown value, so the number and the label never disagree (0.2466 shows
+as 0.25 and is mixed). At the edges: 0.25 and 1.5 belong to the class above,
+3.0 to mixed, mainly diurnal.
+
+**Only where the data has it.** The amplitudes are the station's NOAA
+harmonic constants in `stations.json`. A station gets a type only when K1,
+O1, M2 and S2 are all listed and M2 + S2 is positive; nothing is estimated.
+Of the 1,232 harmonic stations, 1,230 qualify: 313 semidiurnal, 641 mixed and
+mainly semidiurnal, 107 mixed and mainly diurnal, 169 diurnal (data
+retrieved 2026-10-24). Two list no S2 (8653244 Pungo River, NC and 8773896
+Shoalwater Flats, TX) and show no type. Subordinate stations have no
+constants of their own and show none; they are noindex anyway.
+
+**On the page:** a short "Type of tide" section with one plain sentence on
+what it means and the form factor with the thresholds. It says this is the
+usual pattern and that each day's highs and lows are the ones to go by.
+`scripts/check_site.py` checks every station page shows exactly the
+computed type, or none, with a negative control in the tests.
+
+**For the app:** display only; the prediction method is unchanged. The app
+does not show a type of tide.

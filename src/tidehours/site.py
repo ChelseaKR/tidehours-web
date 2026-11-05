@@ -319,6 +319,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             reference_listed=ref is not None and ref.id in by_id,
             nearby=near(s),
             derived=derived.get(s.id, []),
+            tide_type=cat.tide_type(s.id),
             king_season=season,
             king_next=next_series(season, today) if season else None,
         )

@@ -122,3 +122,45 @@ def test_rank_edge_cases() -> None:
 def test_season_refuses_missing_datum() -> None:
     with pytest.raises(ValueError, match="no MHHW"):
         kt.season(load(), {})
+
+
+def test_upcoming_runs_and_their_months(seasons: list[kt.StationSeason]) -> None:
+    """The runs "coming up" (docs/DECISIONS.md 0015): a station's next run that
+    has not ended and starts within LEAD_DAYS. The dates are the computed
+    season's, checked above against NOAA and the published lists."""
+    import datetime as dt
+
+    from tidehours import ktformat
+
+    sf = by_id(seasons, "9414290")
+    nov4 = dt.date(2026, 11, 4)
+    up = kt.upcoming(sf, nov4)
+    assert up is not None and up.stamp() == "9414290 2026-11-24 2026-11-26 2026-11-25 10:49"
+    # 30 days ahead is in; 31 is not.
+    assert kt.upcoming(sf, dt.date(2026, 10, 25)) is not None
+    assert kt.upcoming(sf, dt.date(2026, 10, 24)) is None
+    # Under way, and on its last day, it is still the run coming up.
+    assert kt.upcoming(sf, dt.date(2026, 11, 26)) == up
+    after = kt.upcoming(sf, dt.date(2026, 11, 27))
+    assert after is not None and after.first == "2026-12-22"
+    # Past the season's last run: nothing, not an empty run.
+    assert kt.next_run(sf, dt.date(2027, 11, 1)) is None
+    assert kt.upcoming(sf, dt.date(2027, 11, 1)) is None
+
+    runs = kt.coming_up(seasons, nov4)
+    assert len(runs) == 31
+    assert min(u.first for u in runs) == "2026-11-23" and max(u.last for u in runs) == "2026-12-01"
+    assert kt.months(runs, nov4) == [(2026, 11)]
+    # On Nov 28 Seattle's run (peak Nov 27) is still under way; California's next is December's.
+    assert kt.months(kt.coming_up(seasons, dt.date(2026, 11, 28)), dt.date(2026, 11, 28)) == [(2026, 11), (2026, 12)]
+    assert kt.coming_up(seasons, dt.date(2027, 3, 15)) == []
+
+    c = json.loads((Path(kt.__file__).parent / "copy/king_tides.json").read_text(encoding="utf-8"))
+    assert ktformat.fmt_months([(2026, 11)], "en", c["en"]) == "November 2026"
+    assert ktformat.fmt_months([(2026, 11), (2026, 12)], "en", c["en"]) == "November and December 2026"
+    assert ktformat.fmt_months([(2026, 12), (2027, 1)], "en", c["en"]) == "December 2026 and January 2027"
+    assert ktformat.fmt_months([(2026, 11)], "es", c["es"]) == "noviembre de 2026"
+    assert ktformat.fmt_months([(2026, 11), (2026, 12)], "es", c["es"]) == "noviembre y diciembre de 2026"
+    assert ktformat.fmt_months([(2026, 12), (2027, 1)], "es", c["es"]) == "diciembre de 2026 y enero de 2027"
+    with pytest.raises(ValueError, match="no months"):
+        ktformat.fmt_months([], "en", c["en"])

@@ -312,3 +312,54 @@ computed type, or none, with a negative control in the tests.
 
 **For the app:** display only; the prediction method is unchanged. The app
 does not show a type of tide.
+
+## 0015: Lead with the king tides coming up, and link to them in season (2026-11-04)
+
+People search for king tides by place and month ("king tides Seattle
+November 2026") in the days before a run. The king-tide pages opened with
+the Coastal Commission's text and listed each station's whole season far
+down the page, under a title that named only "2026–27".
+
+**What counts as coming up.** A station's next run is the first of its
+computed runs (0006) that has not ended on the build day, in Pacific time
+(every king-tide station is on Pacific time; `kingtides.season` refuses one
+that isn't). It is coming up when it starts within `kingtides.LEAD_DAYS`
+(30) days or is under way. Built 2026-11-04, all 31 stations' next runs are
+coming up: Nov 23 to Dec 1, 2026, peaking Nov 25 to 27 (Washington's Puget
+Sound stations run latest). Measured over the season, the set is empty from
+2027-02-25 to 2027-05-04 and from 2027-08-04 to 2027-09-27, and then nothing
+below renders.
+
+**While runs are coming up:**
+
+- **King-tide pages (English and Spanish):** the title names the month and
+  year ("King tides November 2026: WA, OR and CA dates and times"; "Mareas
+  reales (king tides) noviembre de 2026") and the description the dates. The
+  first section after the lead gives the dates, one line per state, and a
+  table of each place's run, highest tide with its local time, and height.
+  The "prediction, not a flood forecast" warning moved up to follow it. A
+  station with no run coming up is left out of the table, and the page says
+  how many are left out.
+- **Station pages:** a king-tide station shows its run near the top, in
+  place of the section lower down. A WA, OR or CA station within
+  `kingtides.NEAR_KM` (15 miles) of a king-tide station shows the nearest
+  one's run, named and with its distance, and says these are that station's
+  predictions, not this one's. 212 stations get that link (54 harmonic),
+  plus the 31.
+- **Region pages** list the king-tide stations nearest their stations, and
+  the WA, OR and CA state pages and the home page give the dates.
+
+The months in a title are each run's peak month, or the build month for a
+run still under way after its peak, so on Nov 28 the title reads "November
+and December 2026" while Seattle's run lasts.
+
+**Still computed, still pinned.** Every date, time and height is the
+engine's (0006); nothing is copied from another site, and no affiliate
+links are added. Which run is "next" depends on the build day, as the
+station pages' king-tide line already did, and tests pass the day in, so
+the gate does not read the wall clock. `scripts/check_site.py` recomputes
+the runs coming up for the day the page was built (`data-kt-today`) and
+checks both king-tide pages' tables and titles, and every station page's
+link or its absence, with a negative control in the tests.
+
+**For the app:** nothing changes. The app does not show king tides yet.

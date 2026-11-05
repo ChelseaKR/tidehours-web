@@ -340,3 +340,92 @@ def test_check_site_catches_a_wrong_tide_type(tmp_path: Path, built: Path) -> No
     assert "stations/9414290: type of tide ['diurnal'], expected ['mixed-semidiurnal']" in found
     assert "stations/9413878: type of tide ['semidiurnal'], expected none" in found
     assert len(found) == 2
+
+
+def test_king_tides_coming_up(built: Path) -> None:
+    """Built on Nov 1, the November run is 22 days out: the king-tide pages
+    lead with it and name the month, and nearby pages link to it (0015)."""
+    en = (built / "king-tides/index.html").read_text(encoding="utf-8")
+    es = (built / "es/king-tides/index.html").read_text(encoding="utf-8")
+    assert "<title>King tides November 2026: WA, OR and CA dates and times | Tide Hours</title>" in en
+    assert 'content="West Coast king tides Nov 23–Dec 1, 2026:' in en
+    assert "The next king tides: Nov 23–Dec 1, 2026" in en
+    assert en.index('id="kt-next"') < en.index('id="kt-safety"') < en.index('id="kt-california"')
+    assert en.count("data-kt-next=") == 31 and es.count("data-kt-next=") == 31
+    assert 'data-kt-next="9414290 2026-11-24 2026-11-26 2026-11-25 10:49"' in en
+    assert "Washington: Nov 23–Dec 1, 2026, peaking Nov 25–27, 2026." in en
+    assert "<td>Nov 25, 2026, 10:49 AM</td>" in en
+    assert "<title>Mareas reales (king tides) noviembre de 2026: WA, OR y CA, fechas y horas | Tide Hours</title>" in es
+    assert "Las próximas mareas reales: 23 nov–1 dic 2026" in es and "<td>25 nov 2026, 10:49</td>" in es
+
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    assert "King tides Nov 24–26, 2026</h2>" in sf and "King tides Nov 24–26, 2026.</title>" not in sf
+    assert sf.index('id="king"') < sf.index('id="day-1"') and sf.count('id="king"') == 1
+    assert "highest on Nov 25, 2026 at 10:49 AM, 7.0 ft" in sf
+    assert sf.count('data-kt-run="9414290 2026-11-24') == 1
+    # Rincon Point is 4 mi from the Golden Gate station and not on the king-tide page.
+    rp = (built / "stations/9414317/index.html").read_text(encoding="utf-8")
+    assert "King tides nearby, Nov 24–26, 2026" in rp and "San Francisco (Golden Gate), 4 mi away" in rp
+    assert "not this one's" in rp and 'href="/king-tides/#station-9414290"' in rp
+    assert "data-kt-run" not in (built / "stations/1612340/index.html").read_text(encoding="utf-8")  # Honolulu
+
+    region = (built / "states/ca/san-francisco-bay/index.html").read_text(encoding="utf-8")
+    assert "King tides November 2026" in region and 'href="/king-tides/#station-9414290"' in region
+    ca = (built / "states/ca/index.html").read_text(encoding="utf-8")
+    assert "California's next king tides are Nov 23–27, 2026, highest on Nov 25, 2026." in ca
+    assert 'href="/king-tides/#kt-CA"' in ca
+    assert "kt-link" not in (built / "states/hi/index.html").read_text(encoding="utf-8")
+    home = (built / "index.html").read_text(encoding="utf-8")
+    assert "King tides November 2026" in home and "Nov 23–Dec 1, 2026" in home
+
+
+def test_king_tides_out_of_season(tmp_path: Path) -> None:
+    """In March 2027 no station has a run within 30 days: the pages fall back
+    to the season's title and copy, no summary or link renders, and the gate
+    agrees."""
+    out = tmp_path / "march"
+    assert cli.main(["--out", str(out), "--now", "2027-03-15T12:00:00Z", "--states", "CA"]) == 0
+    en = (out / "king-tides/index.html").read_text(encoding="utf-8")
+    assert "<title>King tides 2026–27: WA, OR and CA dates and heights | Tide Hours</title>" in en
+    assert "kt-next" not in en and "data-kt-next" not in en
+    sf = (out / "stations/9414290/index.html").read_text(encoding="utf-8")
+    assert "data-kt-run" not in sf and 'href="/king-tides/#station-9414290"' in sf  # the section lower down
+    assert "King tides 2026–27" in (out / "index.html").read_text(encoding="utf-8")
+    assert "kt-link" not in (out / "states/ca/index.html").read_text(encoding="utf-8")
+    check: Any = _check_site()
+    assert check.check_king_tides(out, load()) == []
+    # With no king-tide station page to date the build, it says so, not passes.
+    assert check.check_king_tides(tmp_path / "empty", load()) == [
+        "king-tides: no king-tide station page to date the build"
+    ]
+
+
+def test_check_site_catches_a_wrong_king_tide_summary(tmp_path: Path, built: Path) -> None:
+    """Negative control: the gate's king-tide check passes on the build and
+    fails when the summary, the title or a station's link disagrees with the
+    computed season."""
+    check: Any = _check_site()
+    site_dir = tmp_path / "site"
+    shutil.copytree(built, site_dir)
+    cat = load()
+    assert check.check_king_tides(site_dir, cat) == []
+
+    en = site_dir / "king-tides/index.html"
+    html = en.read_text(encoding="utf-8")
+    html = html.replace("2026-11-25 10:49", "2026-11-25 11:49").replace("King tides November 2026", "King tides 2026")
+    en.write_text(html, encoding="utf-8")
+    assert "2026-11-25 11:49" in en.read_text(encoding="utf-8")  # the sabotage applied
+    sf = site_dir / "stations/9414290/index.html"
+    sf.write_text(re.sub(r' data-kt-run="[^"]*"', "", sf.read_text(encoding="utf-8")), encoding="utf-8")
+    assert "data-kt-run" not in sf.read_text(encoding="utf-8")  # applied
+    hi = site_dir / "stations/1612340/index.html"
+    hi.write_text(hi.read_text(encoding="utf-8").replace("<main", '<main data-kt-run="x"', 1), encoding="utf-8")
+    assert 'data-kt-run="x"' in hi.read_text(encoding="utf-8")  # applied
+
+    found = check.check_king_tides(site_dir, cat)
+    assert any(p.startswith("king-tides: runs coming up differ") and "11:49" in p for p in found)
+    assert any(p.startswith("king-tides: title") for p in found)
+    assert "stations/9414290: king-tide link none, expected ['9414290 2026-11-24 2026-11-26 2026-11-25 10:49']" in found
+    assert "stations/1612340: king-tide link ['x'], expected none" in found
+    assert not any(p.startswith("es/king-tides") for p in found)
+    assert len(found) == 4

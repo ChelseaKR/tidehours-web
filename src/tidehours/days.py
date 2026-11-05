@@ -61,7 +61,6 @@ class Event:
 @dataclass(frozen=True)
 class Day:
     date: dt.date
-    label: str  # "Today" or "Tomorrow"
     events: list[Event]
     svg: str | None  # None when there is no curve to draw
     approximate: bool
@@ -161,7 +160,7 @@ def _svg(
     )
 
 
-def station_day(station: Station, predictor: Predictor, d: dt.date, label: str, curve_step: float = 600.0) -> Day:
+def station_day(station: Station, predictor: Predictor, d: dt.date, curve_step: float = 600.0) -> Day:
     zone = ZoneInfo(station.tz)
     start = local_midnight(d, zone)
     end = local_midnight(d + dt.timedelta(days=1), zone)
@@ -169,7 +168,7 @@ def station_day(station: Station, predictor: Predictor, d: dt.date, label: str, 
     curve = predictor.curve(start, end, curve_step)
     approximate = not isinstance(predictor, HarmonicPredictor)
     svg = _svg(curve, events, start, end, zone, d, approximate, f"chart-title-{d.isoformat()}")
-    return Day(d, label, [_event(e, zone) for e in events], svg, approximate)
+    return Day(d, [_event(e, zone) for e in events], svg, approximate)
 
 
 def local_today(station: Station, now: dt.datetime) -> dt.date:

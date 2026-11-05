@@ -8,6 +8,12 @@
   unchanged; the three `/states/pr/st-*-island/` region pages now send visitors
   to the matching `/states/vi/` region pages, which the stations join
   (DECISIONS 0017).
+- Station pages label "Today" and "Tomorrow" from the station's own date
+  when the page is read, not when it was built. Before dawn on the East
+  Coast, and for most of the day in Guam, the page used to call yesterday
+  "Today". Days that have passed are hidden, and when today is not on the
+  page at all it says so in words. Without JavaScript the headings are
+  plain dates.
 - Amazon affiliate links for the English king-tide page, off by default:
   four tagged category searches after the method section with Amazon's
   disclosure, and matching privacy, terms and about lines, all only when

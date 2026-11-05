@@ -147,7 +147,7 @@ def test_day_without_events_or_curve() -> None:
             return []
 
     s = Station("1", "Nowhere", "CA", 0.0, 0.0, "America/Los_Angeles", "2", None)
-    day = station_day(s, Flat(), dt.date(2026, 11, 1), "Today")  # type: ignore[arg-type]
+    day = station_day(s, Flat(), dt.date(2026, 11, 1))  # type: ignore[arg-type]
     assert day.events == [] and day.svg is None
     assert day.summary() == "no high or low tide predicted"
 

@@ -88,7 +88,8 @@ def test_indexes_sitemap_robots(built: Path) -> None:
         .iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
     ]
     noindex = [f for f in pages(built) if 'name="robots" content="noindex' in f.read_text(encoding="utf-8")]
-    assert noindex and all(f.parts[-3] == "stations" for f in noindex)
+    assert noindex and all(f.parts[-3] in ("stations", "ca", "hi", "other") for f in noindex)
+    assert {f.parts[-3] for f in noindex if f.parts[-3] != "stations"}  # thin region pages (DECISIONS 0022)
     assert len(urls) == len(pages(built)) - 1 - len(noindex)  # every indexable page but 404.html
     assert "https://tidehours.com/es/king-tides/" in urls
     assert "Sitemap: https://tidehours.com/sitemap.xml" in (built / "robots.txt").read_text(encoding="utf-8")
@@ -283,6 +284,64 @@ def test_subordinate_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> No
         s = cat.station(f.parent.name)
         assert s is not None
         assert (robots in f.read_text(encoding="utf-8")) == s.is_subordinate == (not site.indexable(s)), s.id
+
+
+def test_thin_region_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> None:
+    """DECISIONS 0022: a region page of one or two stations is served, linked
+    from its state page and followed, but asks not to be indexed and is in
+    neither the sitemap nor lastmod.json; its stations keep their own rule,
+    so a harmonic station in a thin region is still indexed."""
+    robots = '<meta name="robots" content="noindex,follow">'
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+    states = site.group([s for s in load().stations if (s.state or site.OTHER) in ("CA", "HI", "other")])
+    regions = [r for st in states for r in st.regions]
+    thin = [r for r in regions if len(r.stations) < 3]
+    assert thin and len(thin) < len(regions)
+    harmonic_in_thin = 0
+    for st in states:
+        state_page = (built / st.path / "index.html").read_text(encoding="utf-8")
+        assert "noindex" not in state_page, st.path
+        for r in st.regions:
+            html = (built / r.path / "index.html").read_text(encoding="utf-8")
+            assert f'rel="canonical" href="https://tidehours.com/{r.path}"' in html, r.path
+            assert f'href="/{r.path}"' in state_page, r.path  # still linked
+            listed = f"https://tidehours.com/{r.path}</loc>" in sitemap
+            assert (robots in html) == (r in thin) == (not site.region_indexable(r)) == (not listed), r.path
+            assert ("/" + r.path in manifest) == listed, r.path
+            if r in thin:
+                for s in r.stations:
+                    assert f'href="/stations/{s.id}/"' in state_page, (r.path, s.id)
+                    station = (built / "stations" / s.id / "index.html").read_text(encoding="utf-8")
+                    assert (robots in station) == s.is_subordinate, s.id
+                    harmonic_in_thin += not s.is_subordinate
+    assert harmonic_in_thin  # the rule never holds back a harmonic station's own page
+    sfbay = (built / "states/ca/san-francisco-bay/index.html").read_text(encoding="utf-8")
+    assert "noindex" not in sfbay and "https://tidehours.com/states/ca/san-francisco-bay/</loc>" in sitemap
+
+
+def test_check_site_catches_a_thin_region_mistake(tmp_path: Path, built: Path) -> None:
+    """Negative control: the gate fails once a thin region page loses its
+    noindex, and once a full region page gains one."""
+    check: Any = _check_site()
+    site_dir = tmp_path / "site"
+    shutil.copytree(built, site_dir)
+    stations = load().stations
+    robots = '<meta name="robots" content="noindex,follow">'
+    assert check.check_indexing(site_dir, sorted(site_dir.rglob("*.html")), stations) == []
+    thin = site_dir / "states/hi/kahoolawe-island/index.html"
+    html = thin.read_text(encoding="utf-8")
+    assert robots in html
+    thin.write_text(html.replace(robots, ""), encoding="utf-8")
+    assert "noindex" not in thin.read_text(encoding="utf-8")  # the sabotage applied
+    full = site_dir / "states/ca/san-francisco-bay/index.html"
+    html = full.read_text(encoding="utf-8")
+    full.write_text(html.replace("<head>", "<head>" + robots, 1), encoding="utf-8")
+    assert robots in full.read_text(encoding="utf-8")  # the sabotage applied
+    found: list[str] = check.check_indexing(site_dir, sorted(site_dir.rglob("*.html")), stations)
+    assert "states/hi/kahoolawe-island/: a region of 1 station(s) needs noindex" in found
+    assert any(p.startswith("states/ca/san-francisco-bay/: a region of") and p.endswith("needs no noindex") for p in found)
+    assert any(p.startswith("sitemap lists") for p in found)
 
 
 def test_offset_phrase() -> None:

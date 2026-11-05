@@ -2,6 +2,10 @@
 
 ## 0.1.0 (unreleased)
 
+- Region pages that list only one or two stations (127 of 446, about 130
+  words each, the same list their state page shows) carry noindex and are
+  left out of the sitemap and lastmod.json. They keep their URLs and links;
+  station and state pages are unchanged (DECISIONS 0022).
 - The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
   Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
   in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are

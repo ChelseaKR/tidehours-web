@@ -16,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from tidehours import cli, site
+from tidehours import cli, site, tidetype
 from tidehours.catalog import Station, load, tidy_name
 from tidehours.days import feet, meters, no_negative_zero, station_day
 
@@ -265,3 +265,78 @@ def test_check_site_catches_an_indexing_mistake(tmp_path: Path, built: Path) -> 
     assert "stations/9413878: a subordinate station needs noindex" in found
     assert any(p.startswith("sitemap lists") for p in found)
     assert any(p.startswith("lastmod.json lists") for p in found)
+
+
+def test_tide_type_thresholds() -> None:
+    """NOAA's Tide and Current Glossary, "type of tide": F under 0.25,
+    0.25 to 1.5, 1.5 to 3.0, over 3.0 (DECISIONS 0014)."""
+    assert tidetype.classify(0.0) is tidetype.SEMI
+    assert tidetype.classify(0.24) is tidetype.SEMI
+    assert tidetype.classify(0.25) is tidetype.MIXED_SEMI
+    assert tidetype.classify(1.49) is tidetype.MIXED_SEMI
+    assert tidetype.classify(1.5) is tidetype.MIXED_DIURNAL
+    assert tidetype.classify(3.0) is tidetype.MIXED_DIURNAL
+    assert tidetype.classify(3.01) is tidetype.DIURNAL_KIND
+    t = tidetype.tide_type({"K1": 0.5, "O1": 0.3, "M2": 1.5, "S2": 0.5})
+    assert t is not None and t.form_factor == 0.4 and t.kind is tidetype.MIXED_SEMI
+    # Classified as shown, to 2 decimals: 0.2466 shows as 0.25, so it is mixed.
+    t = tidetype.tide_type({"K1": 0.1233, "O1": 0.0, "M2": 0.5, "S2": 0.0})
+    assert t is not None and t.form_factor == 0.25 and t.kind is tidetype.MIXED_SEMI
+    # Nothing is guessed: a missing constituent or no semidiurnal tide gives no type.
+    assert tidetype.tide_type({"K1": 0.1, "O1": 0.1, "M2": 0.5}) is None
+    assert tidetype.tide_type({"K1": 0.1, "O1": 0.1, "M2": 0.0, "S2": 0.0}) is None
+    assert len({k.key for k in tidetype.KINDS}) == 4
+
+
+def test_tide_type_from_the_catalog() -> None:
+    cat = load()
+    expect = {
+        "8443970": "semidiurnal",  # Boston, F 0.16
+        "9414290": "mixed-semidiurnal",  # San Francisco, F 0.84
+        "8771450": "mixed-diurnal",  # Galveston, F 2.33
+        "8729840": "diurnal",  # Pensacola, F 11.25
+    }
+    for sid, key in expect.items():
+        t = cat.tide_type(sid)
+        assert t is not None and t.kind.key == key, sid
+    sf = cat.tide_type("9414290")
+    assert sf is not None and sf.form_factor == 0.84
+    # NOAA's constants for Pungo River, NC list no S2: no type, not a guess.
+    assert cat.tide_type("8653244") is None
+    # Subordinate stations have no constants of their own.
+    assert cat.tide_type("9413878") is None
+    harmonic = [s for s in cat.stations if not s.is_subordinate]
+    typed = [s for s in harmonic if cat.tide_type(s.id) is not None]
+    assert len(harmonic) == 1232 and len(typed) == 1230
+
+
+def test_station_page_tide_type(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    assert 'data-tide-type="mixed-semidiurnal"' in sf
+    assert "Type of tide: mixed, mainly semidiurnal" in sf
+    assert "two high tides and two low tides a day, but of different heights" in sf
+    assert "(K1 + O1) / (M2 + S2) is 0.84" in sf
+    sub = (built / "stations/9413878/index.html").read_text(encoding="utf-8")
+    assert "data-tide-type" not in sub and "Type of tide" not in sub
+
+
+def test_check_site_catches_a_wrong_tide_type(tmp_path: Path, built: Path) -> None:
+    """Negative control: the gate's type-of-tide check passes on the build and
+    fails when a page shows the wrong type, or one where there is none."""
+    check: Any = _check_site()
+    site_dir = tmp_path / "site"
+    shutil.copytree(built, site_dir)
+    cat = load()
+    assert check.check_tide_types(site_dir, cat) == []
+    sf = site_dir / "stations/9414290/index.html"
+    sf.write_text(
+        sf.read_text(encoding="utf-8").replace('data-tide-type="mixed-semidiurnal"', 'data-tide-type="diurnal"')
+    )
+    assert 'data-tide-type="diurnal"' in sf.read_text(encoding="utf-8")  # the sabotage applied
+    sub = site_dir / "stations/9413878/index.html"
+    sub.write_text(sub.read_text(encoding="utf-8").replace("<main", '<main data-tide-type="semidiurnal"', 1))
+    assert 'data-tide-type="semidiurnal"' in sub.read_text(encoding="utf-8")  # applied
+    found = check.check_tide_types(site_dir, cat)
+    assert "stations/9414290: type of tide ['diurnal'], expected ['mixed-semidiurnal']" in found
+    assert "stations/9413878: type of tide ['semidiurnal'], expected none" in found
+    assert len(found) == 2

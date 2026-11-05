@@ -3,7 +3,8 @@ every page carries the disclaimers and the NOAA credit, nothing absent
 renders as a value, every internal link and sitemap entry resolves, no page
 is unreasonably large, and the sitemap lists exactly the pages that may be
 indexed: subordinate station pages carry noindex and are left out
-(docs/DECISIONS.md 0013).
+(docs/DECISIONS.md 0013). A station page shows a type of tide exactly when
+its own constants give one, and it is the computed one (0014).
 
     uv run python scripts/check_site.py SITE_DIR
 """
@@ -15,7 +16,7 @@ import re
 import sys
 from pathlib import Path
 
-from tidehours.catalog import Station, load
+from tidehours.catalog import Catalog, Station, load
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
 LOC = re.compile(r"<loc>https://tidehours\.com/([^<]*)</loc>")
@@ -23,6 +24,7 @@ SCRIPT = re.compile(r"<script.*?</script>", re.S)
 BAD = ("None", "NaN", "nan ft", "undefined", "{{", "{place}", "{id}", "{date}")
 MAX_PAGE_BYTES = 120_000
 NOINDEX = '<meta name="robots" content="noindex,follow">'
+TIDE_TYPE = re.compile(r'data-tide-type="([^"]*)"')
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -69,6 +71,22 @@ def check_indexing(root: Path, html: list[Path], stations: list[Station]) -> lis
     return problems
 
 
+def check_tide_types(root: Path, cat: Catalog) -> list[str]:
+    """Each station page shows the type of tide its constants give, and none
+    when they give none (subordinate stations, or a constituent missing)."""
+    problems: list[str] = []
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if not f.exists():
+            continue
+        shown = TIDE_TYPE.findall(f.read_text(encoding="utf-8"))
+        tt = cat.tide_type(s.id)
+        want = [tt.kind.key] if tt else []
+        if shown != want:
+            problems.append(f"stations/{s.id}: type of tide {shown or 'none'}, expected {want or 'none'}")
+    return problems
+
+
 def main(root: Path) -> int:
     problems: list[str] = []
     cat = load()
@@ -81,6 +99,7 @@ def main(root: Path) -> int:
     for f in html:
         problems += check_page(root, f)
     problems += check_indexing(root, html, cat.stations)
+    problems += check_tide_types(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

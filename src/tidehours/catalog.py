@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 
 from .engine import HarmonicPredictor, Offsets, Predictor, SubordinatePredictor, YearCache
+from .tidetype import TideType, tide_type
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
@@ -103,6 +104,7 @@ class Catalog:
     _by_id: dict[str, Station]
     _harmonic: dict[str, HarmonicPredictor]
     _offsets: dict[str, Offsets]
+    _amplitudes: dict[str, dict[str, float]]
 
     def station(self, station_id: str) -> Station | None:
         return self._by_id.get(station_id)
@@ -118,6 +120,12 @@ class Catalog:
 
     def harmonic(self, station_id: str) -> HarmonicPredictor:
         return self._harmonic[station_id]
+
+    def tide_type(self, station_id: str) -> TideType | None:
+        """A harmonic station's type of tide from its own constants; None for a
+        subordinate station or one missing K1, O1, M2 or S2 (DECISIONS 0014)."""
+        amplitudes = self._amplitudes.get(station_id)
+        return tide_type(amplitudes) if amplitudes is not None else None
 
 
 def _compounds(raw: dict[str, Any]) -> dict[str, list[tuple[str, int]]]:
@@ -146,6 +154,7 @@ def load(
     stations: list[Station] = []
     harmonic: dict[str, HarmonicPredictor] = {}
     offsets: dict[str, Offsets] = {}
+    amplitudes: dict[str, dict[str, float]] = {}
     skipped: list[str] = []
     for h in raw["harmonic"]:
         idx, amp, ph = [], [], []
@@ -155,6 +164,7 @@ def load(
             idx.append(int(term[0]))
             amp.append(float(term[1]))
             ph.append(float(term[2]))
+        amplitudes[h["id"]] = {names[i]: a for i, a in zip(idx, amp, strict=True)}
         harmonic[h["id"]] = HarmonicPredictor(float(h["z0"]), idx, amp, ph, speeds, years)
         stations.append(
             Station(h["id"], tidy_name(h["n"]), h["st"], h["la"], h["lo"], h["tz"], None, regions.get(h["id"]))
@@ -180,4 +190,5 @@ def load(
         _by_id=by_id,
         _harmonic=harmonic,
         _offsets=offsets,
+        _amplitudes=amplitudes,
     )

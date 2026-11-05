@@ -103,6 +103,28 @@ def region_label(region: str, state_name: str | None) -> str:
     return label
 
 
+def tell_apart(code: str, regions: list[Region]) -> None:
+    """Give two regions of one state that `region_label` names alike their
+    own labels (docs/DECISIONS.md 0023). NOAA splits a region across a page
+    break ("MAINE, outer coast" and "MAINE, outer coast-cont."), so its own
+    detail is only "continued"; the parts are told apart by where NOAA puts
+    their stations, "(north)" and "(south)", as NOAA writes "(inside)" and
+    "(outside)". That holds only when every station of one part is north of
+    every station of the other; anything else stops the build."""
+    by_label: dict[str, list[Region]] = defaultdict(list)
+    for r in regions:
+        by_label[r.name].append(r)
+    for label, same in by_label.items():
+        if len(same) == 1:
+            continue
+        if len(same) > 2:
+            raise ValueError(f"{code}: {len(same)} regions are labeled {label!r}")
+        south, north = sorted(same, key=lambda r: min(s.lat for s in r.stations))
+        if max(s.lat for s in south.stations) >= min(s.lat for s in north.stations):
+            raise ValueError(f"{code}: the two {label!r} regions overlap north to south")
+        south.name, north.name = f"{label} (south)", f"{label} (north)"
+
+
 @dataclass
 class Config:
     base_url: str = DEFAULT_BASE_URL
@@ -158,6 +180,7 @@ def group(stations: list[Station]) -> list[State]:
             if r is None:
                 r = regions[s.region] = Region(code, region_label(s.region, STATE_NAMES.get(code)), slug(s.region))
             r.stations.append(s)
+        tell_apart(code, list(regions.values()))
         slugs = [r.slug for r in regions.values()]
         if len(slugs) != len(set(slugs)):
             raise ValueError(f"{code}: two regions share a URL slug")

@@ -5,6 +5,7 @@ can, and region labels read as names. URLs do not change."""
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import re
 from collections import Counter
@@ -13,11 +14,12 @@ from pathlib import Path
 import pytest
 
 from tidehours import cli, names, site
-from tidehours.catalog import DATA_DIR, Catalog, load, tidy_name
+from tidehours.catalog import DATA_DIR, Catalog, Station, load, tidy_name
 
 NOW = "2026-11-01T11:20:00Z"
+STATION = Station("0", "x", "ME", 43.0, -70.0, "America/New_York", None, "MAINE, outer coast")
 # The indexed station titles still over 60 characters with the shortest tier.
-LONG_INDEXED_TITLES = {"8447180", "8534319", "8668918", "9448614", "9751309"}
+LONG_INDEXED_TITLES = {"8447180", "8534319", "8668918", "9448614"}
 
 
 @pytest.fixture(scope="module")
@@ -40,9 +42,9 @@ def test_every_fix_applies_to_the_bundled_names(cat: Catalog) -> None:
     # refresh fails here instead of silently doing nothing.
     noaa = noaa_names()
     tables = (names.MISSPELLINGS, names.SPANISH, names.HAWAIIAN, names.CASING, names.PUNCTUATION, names.SAINT)
-    assert [len(t) for t in tables] == [40, 5, 13, 12, 4, 8]
+    assert [len(t) for t in tables] == [45, 5, 13, 12, 4, 8]
     assert len(names.DUPLICATES) == 6
-    assert sum(len(t) for t in (*tables, names.DUPLICATES)) == len(names.NAME_FIXES) == 88
+    assert sum(len(t) for t in (*tables, names.DUPLICATES)) == len(names.NAME_FIXES) == 93
     for sid, (before, after) in names.NAME_FIXES.items():
         assert tidy_name(noaa[sid]) == before, sid
         st = cat.station(sid)
@@ -159,13 +161,92 @@ def test_region_label(region: str, state: str | None, label: str) -> None:
 def test_region_urls_do_not_change(cat: Catalog) -> None:
     states = site.group(cat.stations)
     paths = {r.path: r.name for st in states for r in st.regions}
-    assert paths["states/me/maine-outer-coast/"] == paths["states/me/maine-outer-coast-cont/"] == "Outer Coast"
+    assert paths["states/me/maine-outer-coast/"] == "Outer Coast (north)"
+    assert paths["states/me/maine-outer-coast-cont/"] == "Outer Coast (south)"
     assert paths["states/hi/hawaiin-islands/"] == "Hawaiian Islands"
     assert paths["states/vi/st-johns-island/"] == "St. John Island"
     for st in states:
         for r in st.regions:
             assert r.slug == site.slug(r.stations[0].region or ""), r.path
             assert not re.search(r"[A-Z]{3,}|-cont\.|, etc\.|Hawaiin", r.name), r.path
+
+
+def region_titles(states: list[site.State]) -> dict[str, list[str]]:
+    # A region page's label and <title>, per state, as region.html.jinja
+    # writes the title.
+    out: dict[str, list[str]] = {}
+    for st in states:
+        place = "" if st.code == "other" else f", {st.name}"
+        out[st.code] = [r.name for r in st.regions] + [f"{r.name}{place} tide times | Tide Hours" for r in st.regions]
+    return out
+
+
+def test_no_two_region_pages_in_a_state_share_a_label_or_title(cat: Catalog) -> None:
+    for code, shown in region_titles(site.group(cat.stations)).items():
+        assert sorted(t for t, n in Counter(shown).items() if n > 1) == [], code
+
+
+def test_split_regions_are_told_apart_north_and_south(cat: Catalog) -> None:
+    states = {st.code: st for st in site.group(cat.stations)}
+    paths = {r.path: r for st in states.values() for r in st.regions}
+    pairs = {
+        "states/me/maine-outer-coast/": "Outer Coast (north)",
+        "states/me/maine-outer-coast-cont/": "Outer Coast (south)",
+        "states/sc/south-carolina-outer-coast/": "Outer Coast (north)",
+        "states/sc/south-carolina-outer-coast-cont/": "Outer Coast (south)",
+        "states/fl/gulf-coast-cont/": "Gulf Coast (north)",
+        "states/fl/gulf-coast/": "Gulf Coast (south)",
+        "states/nj/delaware-river-cont/": "Delaware River (north)",
+        "states/nj/delaware-river/": "Delaware River (south)",
+    }
+    assert {p: paths[p].name for p in pairs} == pairs
+    assert sorted(r.path for r in paths.values() if r.name.endswith(("(north)", "(south)"))) == sorted(pairs)
+    # The label is true of NOAA's coordinates: every station of the north
+    # part is north of every station of the south part.
+    for south, north in zip(list(pairs)[1::2], list(pairs)[::2], strict=True):
+        if "(south)" in paths[north].name:
+            south, north = north, south
+        assert max(s.lat for s in paths[south].stations) < min(s.lat for s in paths[north].stations)
+    title = region_titles([states["ME"]])["ME"]
+    assert "Outer Coast (north), Maine tide times | Tide Hours" in title
+
+
+def test_without_tell_apart_the_region_pairs_share_labels(cat: Catalog, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Negative control: with the pairs left alone, four states show two
+    # region pages with the same label and title.
+    monkeypatch.setattr(site, "tell_apart", lambda code, regions: None)
+    shared = {
+        code: sorted({t for t, n in Counter(shown).items() if n > 1 and "|" not in t})
+        for code, shown in region_titles(site.group(cat.stations)).items()
+    }
+    assert {c: v for c, v in shared.items() if v} == {
+        "FL": ["Gulf Coast"],
+        "ME": ["Outer Coast"],
+        "NJ": ["Delaware River"],
+        "SC": ["Outer Coast"],
+    }
+
+
+def _region(code: str, label: str, slug: str, *lats: float) -> site.Region:
+    return site.Region(code, label, slug, [dataclasses.replace(STATION, lat=lat) for lat in lats])
+
+
+def test_tell_apart_refuses_parts_that_overlap() -> None:
+    a = _region("ME", "Outer Coast", "a", 43.0, 43.5)
+    b = _region("ME", "Outer Coast", "b", 43.4, 44.0)
+    with pytest.raises(ValueError, match="overlap north to south"):
+        site.tell_apart("ME", [a, b])
+    c = _region("ME", "Outer Coast", "c", 45.0)
+    with pytest.raises(ValueError, match="3 regions"):
+        site.tell_apart("ME", [_region("ME", "Outer Coast", "a", 43.0), c, _region("ME", "Outer Coast", "d", 46.0)])
+
+
+def test_st_john_station_names(cat: Catalog) -> None:
+    vi = [s for s in cat.stations if s.region == "St. Johns Island"]
+    assert len(vi) == 8
+    assert [s.name for s in vi if "Johns" in s.name.replace("Johns Folly", "")] == []
+    assert cat.station("9751373").name == "Coral Harbor, St. John"  # type: ignore[union-attr]
+    assert cat.station("9751309").name == "Leinster Point, Leinster Bay, St. John Island"  # type: ignore[union-attr]
 
 
 def test_station_page_title_and_labels(built: Path) -> None:

@@ -15,6 +15,9 @@
   <p>{{ state.name }}'s next king tides are {{ fmt_range(king.first, king.last, "en", kc) }}, {% if king.peak_first == king.peak_last %}highest on {{ fmt_date(king.peak_first, "en", kc) }}{% else %}peaking {{ fmt_range(king.peak_first, king.peak_last, "en", kc) }} depending on the place{% endif %}. <a href="/king-tides/#kt-{{ state.code }}">King tide dates, times and heights in {{ state.name }}</a>.</p>
 </section>
 {% endif %}
+{% if low_tides %}
+<p class="callout lt-link">Planning to go tide pooling? <a href="/low-tides/#lt-{{ state.code }}">The lowest daylight low tides in {{ state.name }}</a> in the next two months.</p>
+{% endif %}
 {% for r in state.regions %}
 <section aria-labelledby="r-{{ r.slug }}">
   <h2 id="r-{{ r.slug }}"><a href="/{{ r.path }}">{{ r.name }}</a></h2>

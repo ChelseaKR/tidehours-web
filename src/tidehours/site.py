@@ -1,7 +1,8 @@
 """Renders the static site: a page per station (today and tomorrow), state
-and region indexes, the king-tide pages, about, privacy, terms, 404, sitemap and
-robots.txt. Every number on a page is computed at build time from NOAA's
-constants (docs/DECISIONS.md 0002); nothing is fetched while building."""
+and region indexes, the king-tide pages, the lowest daylight low tides page,
+about, privacy, terms, 404, sitemap and robots.txt. Every number on a page is
+computed at build time from NOAA's constants (docs/DECISIONS.md 0002);
+nothing is fetched while building."""
 
 from __future__ import annotations
 
@@ -21,7 +22,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat
+from . import affiliate, indexnow, kingtides, ktformat, lowtides
 from .catalog import DATA_DIR, Catalog, Station
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -52,6 +53,8 @@ MOVED_REGIONS = {
     "states/pr/st-thomas-island/": "states/vi/st-thomas-island/",
 }
 OTHER_NAME = "Stations without a state"
+# The lowest daylight low tides page (docs/DECISIONS.md 0021).
+LOW_TIDES_PATH = "low-tides/"
 
 
 def indexable(station: Station) -> bool:
@@ -63,6 +66,11 @@ def indexable(station: Station) -> bool:
     followed, but carries ``noindex`` and is left out of the sitemap (and so of
     IndexNow) until the site has earned some trust (docs/DECISIONS.md 0013)."""
     return not station.is_subordinate
+
+
+def and_list(items: list[str]) -> str:
+    """ "WA", "WA and OR", "WA, OR and CA"."""
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
 
 
 def slug(text: str) -> str:
@@ -328,6 +336,29 @@ def moved_pages(template: Template, common: dict[str, Any], states: list[State])
     ]
 
 
+def low_tides_pages(
+    template: Template, common: dict[str, Any], low: list[lowtides.RegionLows], kc: dict[str, Any]
+) -> list[Page]:
+    """The lowest daylight low tides page, when the build has any of its
+    regions (docs/DECISIONS.md 0021)."""
+    if not low:
+        return []
+    html = template.render(
+        **common,
+        path=LOW_TIDES_PATH,
+        noindex=False,
+        low_regions=low,
+        low_list=and_list([r.code for r in low]),
+        low_names=and_list([r.spec.name for r in low]),
+        lt_window=lowtides.WINDOW_DAYS,
+        lt_size=lowtides.LIST_SIZE,
+        lt_margin=lowtides.MARGIN_MINUTES,
+        lt_search=lowtides.SEARCH_DAYS,
+        kc=kc,
+    )
+    return [Page(LOW_TIDES_PATH, html)]
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
@@ -383,7 +414,11 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "king_states": kt_states,
         "kc": kt["copy"]["en"],
     }
-    page("", "index.html.jinja", states=states, partial=cfg.states is not None, **king_common)
+    low = lowtides.season(cat, now, cfg.states)
+    low_codes = {r.code for r in low}
+    low_names = and_list([r.spec.name for r in low]) if low else ""
+    page("", "index.html.jinja", states=states, partial=cfg.states is not None, low_names=low_names, **king_common)
+    pages += low_tides_pages(e.get_template("low_tides.html.jinja"), common, low, kt["copy"]["en"])
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
@@ -398,7 +433,14 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
     for st in states:
-        page(st.path, "state.html.jinja", state=st, king=kt_states.get(st.code), **king_common)
+        page(
+            st.path,
+            "state.html.jinja",
+            state=st,
+            king=kt_states.get(st.code),
+            low_tides=st.code in low_codes,
+            **king_common,
+        )
         for r in st.regions:
             page(
                 r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common

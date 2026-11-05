@@ -11,6 +11,9 @@ pages were built (0015). Amazon affiliate links appear only when a tag is
 configured, only on the English king-tide page, after its method section,
 tagged, with rel="sponsored nofollow noopener" and Amazon's disclosure right
 before them; with no tag, "amazon" appears nowhere in the build (0016).
+The lowest daylight low tides page lists, per region, exactly the lows
+computed for the day it was built, each in daylight, below 0 ft and at most
+one a day; a region with none says so in words (0021).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG]
 """
@@ -25,8 +28,9 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
+from zoneinfo import ZoneInfo
 
-from tidehours import affiliate, kingtides, ktformat, site
+from tidehours import affiliate, kingtides, ktformat, lowtides, site
 from tidehours.catalog import Catalog, Station, load
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
@@ -42,6 +46,10 @@ KT_RUN = re.compile(r'data-kt-run="([^"]*)"')
 TITLE = re.compile(r"<title>([^<]*)</title>")
 AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 REL_ATTR = re.compile(r'\brel="([^"]*)"')
+LT_SECTION = re.compile(r'<section aria-labelledby="lt-([A-Z]{2})">(.*?)</section>', re.S)
+LT_ROW = re.compile(r'data-lt="([^"]*)"')
+LT_NONE = re.compile(r'data-lt-none="([^"]*)"')
+LT_NEXT = re.compile(r'data-lt-next="([^"]*)"')
 JSON_LD = re.compile(r'<script type="application/ld\+json">.*?</script>', re.S)
 
 
@@ -147,6 +155,76 @@ def check_king_tides(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
+def check_low_tides(root: Path, cat: Catalog) -> list[str]:
+    """Each region on the low-tides page shows exactly the lows computed for
+    the day the page was built (dated, as the king-tide check is, from the
+    region's first station page): at most LIST_SIZE, one a day, each below
+    the threshold and inside the margin of daylight. A region with no rows
+    says so in words, and names the next low after the window when there is
+    one. A build that has a region's stations has the region."""
+    f = root / site.LOW_TIDES_PATH / "index.html"
+    present = [r for r in lowtides.REGIONS if (root / "stations" / r.stations[0][0] / "index.html").exists()]
+    if not f.exists():
+        return ["low-tides: no page"] if present else []
+    sections = dict(LT_SECTION.findall(f.read_text(encoding="utf-8")))
+    problems: list[str] = []
+    for spec in present:
+        body = sections.get(spec.code)
+        if body is None:
+            problems.append(f"low-tides: no {spec.code} section")
+            continue
+        page = (root / "stations" / spec.stations[0][0] / "index.html").read_text(encoding="utf-8")
+        dates = STATION_DATE.findall(page)
+        if len(dates) != 1:
+            problems.append(f"low-tides: cannot date {spec.code} from stations/{spec.stations[0][0]}")
+            continue
+        want = lowtides.region_lows(cat, spec, dt.date.fromisoformat(dates[0]))
+        shown = LT_ROW.findall(body)
+        expect = [lo.stamp() for lo in want.lows]
+        if shown != expect:
+            problems.append(f"low-tides {spec.code}: rows {shown}, computed {expect}")
+        problems += _check_low_rows(cat, spec, shown)
+        none = LT_NONE.findall(body)
+        if bool(none) == bool(shown):
+            problems.append(f"low-tides {spec.code}: {'both rows and' if shown else 'neither rows nor'} a no-lows line")
+        after = [want.next_after.stamp()] if want.next_after else []
+        if LT_NEXT.findall(body) != after:
+            problems.append(f"low-tides {spec.code}: next low {LT_NEXT.findall(body)}, computed {after}")
+    return problems
+
+
+def _check_low_rows(cat: Catalog, spec: lowtides.RegionSpec, stamps: list[str]) -> list[str]:
+    """Each row on its own terms: a station of the region, a distinct day,
+    below the threshold, in daylight with the margin."""
+    problems: list[str] = []
+    if len(stamps) > lowtides.LIST_SIZE:
+        problems.append(f"low-tides {spec.code}: {len(stamps)} rows, at most {lowtides.LIST_SIZE}")
+    ids = {sid for sid, _ in spec.stations}
+    days = [x.split()[1] for x in stamps if len(x.split()) == 4]
+    if len(days) != len(set(days)):
+        problems.append(f"low-tides {spec.code}: two rows on one day")
+    zone = ZoneInfo(spec.zone)
+    for x in stamps:
+        parts = x.split()
+        if len(parts) != 4 or parts[0] not in ids:
+            problems.append(f"low-tides {spec.code}: bad row {x!r}")
+            continue
+        sid, date, time, height = parts
+        station = cat.station(sid)
+        if station is None:
+            problems.append(f"low-tides {spec.code}: {sid} is not in the catalog")
+            continue
+        if not float(height) < lowtides.THRESHOLD_FT:
+            problems.append(f"low-tides {spec.code}: {x} is not below {lowtides.THRESHOLD_FT} ft")
+        d = dt.date.fromisoformat(date)
+        at = dt.datetime.combine(d, dt.time.fromisoformat(time), zone).timestamp()
+        sun = lowtides.sun_times(station.lat, station.lon, spec.zone, d)
+        margin = lowtides.MARGIN_MINUTES * 60 - 60  # the shown time is rounded to the minute
+        if sun is None or not sun[0] + margin <= at <= sun[1] - margin:
+            problems.append(f"low-tides {spec.code}: {x} is not in daylight")
+    return problems
+
+
 def check_affiliate(root: Path, html: list[Path], tag: str) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
     king-tide page links to Amazon: at most MAX_LINKS links, each a plain
@@ -220,6 +298,7 @@ def main(root: Path, amazon_tag: str = "") -> int:
     problems += check_indexing(root, html, cat.stations)
     problems += check_tide_types(root, cat)
     problems += check_king_tides(root, cat)
+    problems += check_low_tides(root, cat)
     problems += check_affiliate(root, html, amazon_tag)
     for p in problems[:50]:
         print(p, file=sys.stderr)

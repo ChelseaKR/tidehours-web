@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- A lowest daylight low tides page at `/low-tides/`, for tide pooling: for
+  Washington, Oregon, California, Hawaii and Maine, the six lowest low tides
+  below 0 ft that fall in daylight in the next 60 days, at most one a day,
+  with the time, height, station and that day's sunrise and sunset. A state
+  with none says so and names the next one. Linked from the home page and
+  those five state pages, and in the sitemap (DECISIONS 0021).
 - The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
   Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
   in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are

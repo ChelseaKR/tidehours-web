@@ -463,3 +463,72 @@ built as a stub (`site.MOVED_REGIONS`, `moved.html.jinja`): a meta refresh,
 the sitemap and lastmod.json. A stub is built only when its VI page is. `tests/test_site.py` checks that no
 station NOAA codes VI, no pinned station, and no station inside the islands'
 bounding box is listed under PR.
+
+## 0021: The lowest daylight low tides, for tide pooling (2026-11-05)
+
+People plan tide pooling around the next low tide that is both very low and
+in daylight. `/low-tides/` lists those as dated events, one section per
+state, built like the king-tide pages (0006, 0015). It is free, like the
+king-tide pages, because it is a calendar of notable events and not a tide
+table (0001): each state's list has at most `lowtides.LIST_SIZE` (6) rows
+and at most one row a day, over the next `lowtides.WINDOW_DAYS` (60) days,
+at a fixed set of harmonic stations, so it can never stand in for the app's
+7-day tables.
+
+**States and stations.** WA, OR and CA (the king-tide page's places, minus
+the bay-only ones), HI (Nawiliwili, Honolulu, Kahului, Kawaihae, Hilo) and
+ME (Eastport, Bar Harbor, Rockland, Portland, Wells). All harmonic, all in
+the app's catalog, and each region on one clock (`lowtides.REGIONS`;
+`region_lows` refuses a subordinate station or one in another zone).
+
+**What counts.** Every predicted low from the site's engine (0002, 0003),
+no other data source, that is
+
+- below 0 ft MLLW as the page prints it, to a tenth of a foot (so -0.04 ft,
+  which prints as 0.0 ft, does not count), and
+- at least `lowtides.MARGIN_MINUTES` (30) minutes after sunrise and before
+  sunset at that station on that day.
+
+Each local day keeps the state's lowest such low; the 6 lowest days are
+listed in date order with the date, time, height, station and that day's
+sunrise and sunset. "Today" is the state's local date at build time.
+
+**Daylight is computed, not assumed.** `lowtides.sun_times` is NOAA's Solar
+Calculator equations (the sun's center at -0.833 degrees, USNO's definition)
+refined twice, with no data file and no network. Measured against the U.S.
+Naval Observatory's API at five places and dates (San Francisco, Seattle,
+Honolulu, Portland ME, and Neah Bay on the 2027 daylight saving day), every
+sunrise and sunset is within 0.5 minutes; the test allows 1.5. A day the sun
+does not both rise and set returns None, which counts as no daylight. The
+30-minute margin is wider than any error here. When the sky module (0019,
+branch feat/sky) merges, `sun_times` should call it, so the site has one sun
+computation; until then this is a second, smaller one.
+
+**Absence in words.** A state with no qualifying low in the window has no
+rows. The page says "No daylight low tide below 0 ft at these stations in
+the next 60 days." and names the first one after the window, searched up to
+`lowtides.SEARCH_DAYS` (365) days, or says there is none in that time.
+Built 2026-11-01, Washington has none until Neah Bay, Jan 18, 2027, 3:57 PM,
+-0.2 ft (NOAA: 15:57, -0.218 ft): the winter's lowest lows there are at
+night.
+
+**Pages and links.** The page is indexed and in the sitemap and
+lastmod.json. It does not print the window's dates, only "the next 60 days",
+so its HTML changes only when a row does and IndexNow (0011) is not told
+about it every day. The home page and the five state pages link to it with
+fixed text. The site header is unchanged.
+
+**Checks.** `scripts/check_site.py` recomputes each state's list for the day
+its first station's page was built (`data-station-date`, as the king-tide
+check does) and compares every row (`data-lt`), the no-lows line
+(`data-lt-none`) and the next low after the window (`data-lt-next`), and
+checks each row on its own terms: a station of that state, a distinct day,
+below 0 ft, in daylight with the margin. `tests/test_lowtides.py` has the
+negative control, and checks three picked lows against NOAA's published
+predictions (within a minute and 0.02 ft).
+
+**Timing.** A new page family, so it merges after the Gate A quiet window
+(no template changes 11-24 to 12-15).
+
+**For the app:** nothing changes. A "good low tide" alert per favorite is a
+later, paid follow-on.

@@ -19,6 +19,12 @@
   <h2 id="kt">{% if king_up %}King tides {{ fmt_months(king_months, "en", kc) }}{% else %}King tides 2026–27{% endif %}</h2>
   <p>{% if king_up %}The next West Coast king tides are {{ fmt_range(king_span.first, king_span.last, "en", kc) }}, {% if king_span.peak_first == king_span.peak_last %}highest on {{ fmt_date(king_span.peak_first, "en", kc) }}{% else %}peaking {{ fmt_range(king_span.peak_first, king_span.peak_last, "en", kc) }} depending on the place{% endif %}. {% endif %}The highest predicted tides of the season at 31 stations in Washington, Oregon and California. <a href="/king-tides/">King tide dates, times and heights</a>.</p>
 </section>
+{% if low_names %}
+<section aria-labelledby="lt">
+  <h2 id="lt">Low tides for tide pooling</h2>
+  <p>The lowest low tides in daylight over the next two months, below 0 ft, in {{ low_names }}: date, time, height and the station. <a href="/low-tides/">Lowest daylight low tides</a>.</p>
+</section>
+{% endif %}
 <section aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>
   <p>Every page shows predicted astronomical tides, computed from NOAA CO-OPS harmonic constants, datums and station offsets with the same method as the Tide Hours iPhone app, and checked against NOAA's own published predictions. They are predictions, not observations, and not for navigation. Tide Hours is not a NOAA product. <a href="/about/">More about the method and the checks</a>.</p>

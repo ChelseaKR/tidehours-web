@@ -1,0 +1,71 @@
+{% extends "base.html.jinja" %}
+{% block title %}Lowest daylight low tides for tide pooling: {{ low_list }} | Tide Hours{% endblock %}
+{% block description %}The lowest predicted low tides in daylight over the next {{ lt_window }} days, below 0 ft, in {{ low_names }}: date, time, height and station, computed from NOAA harmonic constants.{% endblock %}
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li></ol></nav>
+<h1>Lowest daylight low tides for tide pooling</h1>
+<p class="lead">The best low tides for tide pooling are the ones that fall in daylight and go below 0 ft. For each state below, these are the {{ lt_size }} lowest of them in the next {{ lt_window }} days, at most one a day, across the stations listed.</p>
+<p class="meta">{{ fill(kc.updated, date=fmt_long_date(retrieved, "en", kc)) }}</p>
+<ul>
+{% for r in low_regions %}<li><a href="#lt-{{ r.code }}">{{ r.spec.name }}</a></li>{% endfor %}
+</ul>
+
+<section class="callout warning" aria-labelledby="lt-safety">
+  <h2 id="lt-safety">Before you go</h2>
+  <p>These are predicted astronomical tides, not observations. Waves, swell, wind and storms can put the water well above the prediction, and the tide turns and comes back in after the low. Go out before the time shown, keep an eye on the ocean, and leave with time to spare. Never walk out on rocks or reefs after dark.</p>
+  <p>Check the surf and marine forecast first: <a href="https://www.weather.gov/">National Weather Service</a>.</p>
+</section>
+
+{% for r in low_regions %}
+<section aria-labelledby="lt-{{ r.code }}">
+  <h2 id="lt-{{ r.code }}">{{ r.spec.name }}</h2>
+  {% if r.lows %}
+  <div class="table-scroll">
+  <table class="events">
+    <caption>{{ r.spec.name }}: the lowest daylight low tides below 0 ft in the next {{ lt_window }} days</caption>
+    <thead><tr>
+      <th scope="col">Date</th>
+      <th scope="col">Low tide</th>
+      <th scope="col">Height</th>
+      <th scope="col">Station</th>
+      <th scope="col">Sunrise and sunset</th>
+    </tr></thead>
+    <tbody>
+    {% for lo in r.lows %}
+      <tr data-lt="{{ lo.stamp() }}">
+        <th scope="row">{{ fmt_date(lo.date, "en", kc) }}</th>
+        <td>{{ fmt_time(lo.time, "en") }}</td>
+        <td>{{ fmt_feet(lo.height, "en", kc) }}</td>
+        <td><a href="/stations/{{ lo.station_id }}/">{{ lo.place }}</a></td>
+        <td>{{ fmt_time(lo.sunrise, "en") }} to {{ fmt_time(lo.sunset, "en") }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if r.lows|length < lt_size %}
+  <p>Only {{ r.lows|length }} day{{ "s" if r.lows|length != 1 }} in the next {{ lt_window }} days {{ "have" if r.lows|length != 1 else "has" }} a daylight low below 0 ft at these stations.</p>
+  {% endif %}
+  {% else %}
+  <p data-lt-none="{{ r.code }}">No daylight low tide below 0 ft at these stations in the next {{ lt_window }} days.
+  {% if r.next_after %}
+  {% set lo = r.next_after %}
+  The next one is on <span data-lt-next="{{ lo.stamp() }}">{{ fmt_date(lo.date, "en", kc) }} at {{ fmt_time(lo.time, "en") }}, {{ fmt_feet(lo.height, "en", kc) }} at <a href="/stations/{{ lo.station_id }}/">{{ lo.place }}</a></span> (sunrise {{ fmt_time(lo.sunrise, "en") }}, sunset {{ fmt_time(lo.sunset, "en") }}).
+  {% else %}
+  There is none in the next {{ lt_search }} days either.
+  {% endif %}
+  </p>
+  {% endif %}
+  <p class="meta">Stations: {% for sid, place in r.spec.stations %}<a href="/stations/{{ sid }}/">{{ place }}</a>{{ ", " if not loop.last }}{% endfor %}.</p>
+</section>
+{% endfor %}
+
+<section aria-labelledby="lt-method">
+  <h2 id="lt-method">How these days were picked</h2>
+  <p>For each station, this page computes every predicted low tide in the next {{ lt_window }} days from NOAA's harmonic constants, with the same method as the Tide Hours app, and keeps the lows below 0 ft (MLLW, the average of the lower low tides) that fall at least {{ lt_margin }} minutes after sunrise and {{ lt_margin }} minutes before sunset at that station. Each day keeps only the state's lowest one, and the {{ lt_size }} lowest days are listed in date order.</p>
+  <p>Sunrise and sunset are computed for each station's position with NOAA's Solar Calculator equations, the sun's center 0.833 degrees below the horizon, as the U.S. Naval Observatory defines them. They agree with the Naval Observatory's times within a minute.</p>
+  <p>Heights are relative to NOAA's 1983–2001 tidal epoch and to each station's own MLLW. A low at a nearby beach can come earlier or later and run higher or lower than at the station.</p>
+  <p>NOAA data is U.S. Government work in the public domain. This page is not a NOAA product and is not endorsed by NOAA.</p>
+  <p>Every high and low for today and tomorrow is free on each station's page. The Tide Hours app has 7-day tables for every station.</p>
+</section>
+{% endblock %}

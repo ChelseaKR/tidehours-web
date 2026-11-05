@@ -431,3 +431,35 @@ English king-tide page, before the end of the method section, without the
 configured tag or the three `rel` values, in JSON-LD, the sitemap,
 robots.txt or lastmod.json, or without the disclosure right before it.
 `tests/test_affiliate.py` covers both states with negative controls.
+
+## 0017: U.S. Virgin Islands stations are listed under VI, not PR (2026-11-05)
+
+NOAA's station metadata (the mdapi station record's `state` field, and so
+the app's `stations.json`) codes 12 U.S. Virgin Islands stations PR:
+9751082, 9751084, 9751219, 9751274, 9751389, 9751417, 9751419, 9751472,
+9751561, 9751574, 9751693 and 9751749. Each was checked on 2026-11-05: its
+coordinates are on St. Croix, St. John or St. Thomas, and NOAA's region for it
+is "St. Croix Island", "St. Johns Island" or "St. Thomas Island". The site
+listed them on the Puerto Rico page.
+
+`catalog.territory` lists any station in one of those three NOAA regions,
+and any station NOAA codes VI, under VI with the time zone
+`America/St_Thomas`. It is the same clock as `America/Puerto_Rico` (UTC-4,
+no daylight saving time), so no prediction or time changes; the station page
+names the islands' own zone. The data files are not edited: `stations.json`
+is copied byte for byte from the app's bundle, so the root fix belongs in the
+app's pipeline (ChelseaKR/tide-hours, `pipeline/build_bundle.py`), and until
+then this is a difference between the site and the app.
+
+URLs: station pages stay at `/stations/<id>/`. The state page `/states/vi/`
+and its three region pages already existed and are in the sitemap; the
+moved stations join them. `/states/pr/st-croix-island/`,
+`/states/pr/st-johns-island/` and `/states/pr/st-thomas-island/` were in
+the live sitemap, so they must not 404. The site is static files on S3
+behind CloudFront, whose one viewer-request function handles only www and
+trailing slashes, and changing it is an AWS change. So each old path is
+built as a stub (`site.MOVED_REGIONS`, `moved.html.jinja`): a meta refresh,
+`rel=canonical` to the VI page, a plain link, and noindex, so it is out of
+the sitemap and lastmod.json. A stub is built only when its VI page is. `tests/test_site.py` checks that no
+station NOAA codes VI, no pinned station, and no station inside the islands'
+bounding box is listed under PR.

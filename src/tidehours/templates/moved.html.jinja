@@ -1,0 +1,9 @@
+{% extends "base.html.jinja" %}
+{% block title %}{{ name }} has moved | Tide Hours{% endblock %}
+{% block description %}{{ name }} tide stations are now listed under the U.S. Virgin Islands.{% endblock %}
+{% block alternates %}<meta http-equiv="refresh" content="0; url=/{{ canonical_path }}">
+{% endblock %}
+{% block content %}
+<h1>{{ name }} has moved</h1>
+<p>These stations are in the U.S. Virgin Islands, not Puerto Rico. <a href="/{{ canonical_path }}">Go to {{ name }}, U.S. Virgin Islands</a>.</p>
+{% endblock %}

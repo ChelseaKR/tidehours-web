@@ -1,5 +1,6 @@
 {% set lang = lang if lang is defined else "en" %}
 {% set t = ui[lang] %}
+{% set canonical = canonical_path if canonical_path is defined else path %}
 <!doctype html>
 <html lang="{{ lang }}">
 <head>
@@ -7,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Tide Hours{% endblock %}</title>
 <meta name="description" content="{% block description %}{% endblock %}">
-<link rel="canonical" href="{{ base_url }}{{ path }}">
+<link rel="canonical" href="{{ base_url }}{{ canonical }}">
 {% if noindex is defined and noindex %}<meta name="robots" content="noindex,follow">
 {% endif %}
 {% block alternates %}{% endblock %}
@@ -15,7 +16,7 @@
 <meta property="og:site_name" content="Tide Hours">
 <meta property="og:title" content="{{ self.title() }}">
 <meta property="og:description" content="{{ self.description() }}">
-<meta property="og:url" content="{{ base_url }}{{ path }}">
+<meta property="og:url" content="{{ base_url }}{{ canonical }}">
 <meta name="theme-color" content="#0b4f6c">
 <link rel="stylesheet" href="/style.css">
 {% block jsonld %}{% endblock %}

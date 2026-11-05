@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
+  Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
+  in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are
+  unchanged; the three `/states/pr/st-*-island/` region pages now send visitors
+  to the matching `/states/vi/` region pages, which the stations join
+  (DECISIONS 0017).
 - Station pages label "Today" and "Tomorrow" from the station's own date
   when the page is read, not when it was built. Before dawn on the East
   Coast, and for most of the day in Guam, the page used to call yesterday

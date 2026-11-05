@@ -75,6 +75,23 @@ def tidy_name(name: str) -> str:
     return _CAPS_WORD.sub(fix, name)
 
 
+# NOAA's region names for the three U.S. Virgin Islands. NOAA codes some of
+# their stations PR (state "PR" in its station metadata, and so in the app's
+# bundle), which put Cruz Bay or Magens Bay on the Puerto Rico page. A station
+# in one of these regions is listed under VI, in the islands' own time zone
+# (the same clock as Puerto Rico's, UTC-4 all year), docs/DECISIONS.md 0017.
+USVI_REGIONS = frozenset(["St. Croix Island", "St. Johns Island", "St. Thomas Island"])
+USVI_TZ = "America/St_Thomas"
+
+
+def territory(state: str, tz: str, region: str | None) -> tuple[str, str]:
+    """The (state, time zone) a station is listed under: NOAA's, except that
+    a U.S. Virgin Islands station is VI in America/St_Thomas."""
+    if region in USVI_REGIONS or state == "VI":
+        return "VI", USVI_TZ
+    return state, tz
+
+
 @dataclass(frozen=True)
 class Station:
     id: str
@@ -166,9 +183,8 @@ def load(
             ph.append(float(term[2]))
         amplitudes[h["id"]] = {names[i]: a for i, a in zip(idx, amp, strict=True)}
         harmonic[h["id"]] = HarmonicPredictor(float(h["z0"]), idx, amp, ph, speeds, years)
-        stations.append(
-            Station(h["id"], tidy_name(h["n"]), h["st"], h["la"], h["lo"], h["tz"], None, regions.get(h["id"]))
-        )
+        code, tz = territory(h["st"], h["tz"], regions.get(h["id"]))
+        stations.append(Station(h["id"], tidy_name(h["n"]), code, h["la"], h["lo"], tz, None, regions.get(h["id"])))
     for s in raw["subordinate"]:
         # TideCore skips a subordinate station whose reference or heights are
         # missing; so does the site, and it reports the count.
@@ -176,9 +192,8 @@ def load(
             skipped.append(s["id"])
             continue
         offsets[s["id"]] = Offsets(s["ref"], s["k"], float(s["th"]), float(s["tl"]), float(s["hh"]), float(s["hl"]))
-        stations.append(
-            Station(s["id"], tidy_name(s["n"]), s["st"], s["la"], s["lo"], s["tz"], s["ref"], regions.get(s["id"]))
-        )
+        code, tz = territory(s["st"], s["tz"], regions.get(s["id"]))
+        stations.append(Station(s["id"], tidy_name(s["n"]), code, s["la"], s["lo"], tz, s["ref"], regions.get(s["id"])))
     by_id: dict[str, Station] = {}
     for st in stations:
         by_id.setdefault(st.id, st)

@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
 {% set today = days[0] %}
-{% block title %}{{ station.display_name }} tide times today | Tide Hours{% endblock %}
+{% block title %}{{ station_title(station.display_name) }}{% endblock %}
 {% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% if king_link and king_link.own %} King tides {{ fmt_range(king_link.up.first, king_link.up.last, "en", kc) }}.{% endif %}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
@@ -13,6 +13,7 @@
             "geo": {"@type": "GeoCoordinates", "latitude": station.lat, "longitude": station.lon}},
   "isBasedOn": "https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=" ~ station.id
 }|tojson }}</script>
+{% with crumbs = [["Home", ""], [state.name, state.path]] + ([[region.name, region.path]] if region else []) %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}
 {% block main_attrs %} data-station-date="{{ today.date.isoformat() }}" data-tz="{{ station.tz }}"{% endblock %}
 {% block content %}
@@ -24,7 +25,7 @@
   </ol>
 </nav>
 <h1>{{ station.display_name }} tide times</h1>
-<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. Times are local ({{ station.tz }}); heights are feet above mean lower low water (MLLW).</p>
+<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW).</p>
 <p class="stale" id="stale" role="status" hidden></p>
 {% if station.filed_by == "reference" %}
 <p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, the state of the reference station NOAA predicts it from.</p>

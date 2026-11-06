@@ -22,9 +22,9 @@
     <li><a href="#kt-{{ region }}">{{ fill(c.next.state, state=c.stations.regions[region], range=fmt_range(k.first, k.last, lang, c), peaks=fmt_range(k.peak_first, k.peak_last, lang, c)) }}</a></li>
   {% endfor %}
   </ul>
-  <div class="table-scroll">
+  <div class="table-scroll" role="region" tabindex="0" aria-labelledby="kt-next-cap">
   <table class="events">
-    <caption>{{ c.next.caption }}</caption>
+    <caption id="kt-next-cap">{{ c.next.caption }}</caption>
     <thead><tr>
       <th scope="col">{{ c.next.cols.place }}</th>
       <th scope="col">{{ c.next.cols.days }}</th>
@@ -79,9 +79,9 @@
     {% for s in seasons if s.state == region %}
     <section class="kt-station" id="station-{{ s.id }}" aria-labelledby="kt-h-{{ s.id }}">
       <h4 id="kt-h-{{ s.id }}">{{ s.place }}</h4>
-      <div class="table-scroll">
+      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="kt-cap-{{ s.id }}">
       <table class="events">
-        <caption class="vh">{{ fill(c.stations.caption, place=s.place, id=s.id) }}</caption>
+        <caption class="vh" id="kt-cap-{{ s.id }}">{{ fill(c.stations.caption, place=s.place, id=s.id) }}</caption>
         <thead><tr>
           <th scope="col">{{ c.stations.cols.days }}</th>
           <th scope="col">{{ c.stations.cols.peak }}</th>

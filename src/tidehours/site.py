@@ -12,6 +12,7 @@ import math
 import re
 import shutil
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -192,6 +193,7 @@ def env() -> Environment:
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
         fmt_months=ktformat.fmt_months,
+        calendar_path=kingtides.calendar_path,
     )
     return e
 
@@ -223,6 +225,7 @@ def king_tide_context(cat: Catalog) -> dict[str, Any]:
         "window_start": first,
         "window_end": last,
         "datums_retrieved": datums_raw["retrieved"],
+        "datum_epochs": {k: str(v.get("epoch", "")) for k, v in datums_raw["datums"].items()},
         "copy": copy,
     }
 
@@ -288,6 +291,38 @@ def king_links(
         if up is not None:
             out[s.id] = KingLink(up, km)
     return out
+
+
+def king_calendar_pages(
+    page: Callable[..., None], kt: dict[str, Any], states: list[State], king_common: dict[str, Any]
+) -> None:
+    """The WA, OR and CA winter calendar pages (docs/DECISIONS.md 0024)."""
+    state_paths = {st.code: st.path for st in states}
+    for code, (name, _) in kingtides.CALENDAR_STATES.items():
+        page(
+            kingtides.calendar_path(code),
+            "king_tides_state.html.jinja",
+            state_code=code,
+            state_name=name,
+            state_path=state_paths.get(code),
+            calendar=kingtides.calendar(kt["seasons"], code),
+            kt_station_count=sum(1 for k in kt["seasons"] if k.state == code),
+            epochs=kingtides.epochs(kt["seasons"], kt["datum_epochs"], code),
+            calendar_first=kingtides.CALENDAR_FIRST,
+            calendar_last=kingtides.CALENDAR_LAST,
+            calendar_states=kingtides.CALENDAR_STATES,
+            **king_common,
+        )
+
+
+def king_calendar(season: kingtides.StationSeason | None, link: KingLink | None) -> tuple[str, str] | None:
+    """The winter calendar page a station page links to, (path, state name):
+    its own state's, for a king-tide station, or the nearby king-tide
+    station's while that station's run is coming up."""
+    state = season.state if season is not None else link.up.season.state if link is not None else None
+    if state is None:
+        return None
+    return kingtides.calendar_path(state), kingtides.CALENDAR_STATES[state][0]
 
 
 def derived_from(cat: Catalog, by_id: dict[str, Station]) -> dict[str, list[Derived]]:
@@ -417,8 +452,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             **kt,
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
+    king_calendar_pages(page, kt, states, king_common)
     for st in states:
-        page(st.path, "state.html.jinja", state=st, king=kt_states.get(st.code), **king_common)
+        page(
+            st.path,
+            "state.html.jinja",
+            state=st,
+            king=kt_states.get(st.code),
+            king_calendar=kingtides.calendar_path_for(st.code),
+            **king_common,
+        )
         for r in st.regions:
             page(
                 r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common
@@ -449,6 +492,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             king_season=season,
             king_next=kingtides.next_run(season, today) if season else None,
             king_link=links.get(s.id),
+            king_calendar=king_calendar(season, links.get(s.id)),
             kc=kt["copy"]["en"],
         )
     return pages

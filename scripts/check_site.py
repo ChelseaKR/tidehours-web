@@ -7,7 +7,8 @@ indexed: subordinate station pages carry noindex and are left out
 its own constants give one, and it is the computed one (0014). The
 king-tide pages' summary of the runs coming up, their titles, and the
 king-tide links on station pages match the computed season for the day the
-pages were built (0015). Amazon affiliate links appear only when a tag is
+pages were built (0015), and each state's winter calendar lists exactly
+the computed runs by month (0024). Amazon affiliate links appear only when a tag is
 configured, only on the English king-tide page, after its method section,
 tagged, with rel="sponsored nofollow noopener" and Amazon's disclosure right
 before them; with no tag, "amazon" appears nowhere in the build (0016).
@@ -39,6 +40,8 @@ TIDE_TYPE = re.compile(r'data-tide-type="([^"]*)"')
 STATION_DATE = re.compile(r'data-station-date="(\d{4}-\d{2}-\d{2})"')
 KT_NEXT = re.compile(r'data-kt-next="([^"]*)"')
 KT_RUN = re.compile(r'data-kt-run="([^"]*)"')
+KT_CAL = re.compile(r'data-kt-cal="([^"]*)"')
+KT_CAL_MONTH = re.compile(r'data-kt-cal-month="(\d{4}-\d{2})"')
 TITLE = re.compile(r"<title>([^<]*)</title>")
 AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 REL_ATTR = re.compile(r'\brel="([^"]*)"')
@@ -147,6 +150,35 @@ def check_king_tides(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
+def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
+    """Each state's winter king-tide calendar lists every month of the
+    window, in order, and in each exactly the runs computed for it; a month
+    with none says so in words (docs/DECISIONS.md 0024)."""
+    problems: list[str] = []
+    seasons = site.king_tide_context(cat)["seasons"]
+    for code in kingtides.CALENDAR_STATES:
+        rel = kingtides.calendar_path(code)
+        f = root / rel / "index.html"
+        if not f.is_file():
+            problems.append(f"{rel}: no page")
+            continue
+        text = f.read_text(encoding="utf-8")
+        months = kingtides.calendar(seasons, code)
+        want_months = [f"{m.year}-{m.month:02d}" for m in months]
+        if KT_CAL_MONTH.findall(text) != want_months:
+            problems.append(f"{rel}: months {KT_CAL_MONTH.findall(text)}, expected {want_months}")
+        want = [u.stamp() for m in months for u in m.runs]
+        shown = KT_CAL.findall(text)
+        if shown != want:
+            extra = [x for x in shown if x not in want]
+            missing = [w for w in want if w not in shown]
+            problems.append(f"{rel}: runs differ: shown but not computed {extra}, computed but not shown {missing}")
+        empty = sum(1 for m in months if not m.runs)
+        if text.count("stations does a run of the year's highest predicted tides peak in") != empty:
+            problems.append(f"{rel}: {empty} month(s) without a run, not each said in words")
+    return problems
+
+
 def check_affiliate(root: Path, html: list[Path], tag: str) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
     king-tide page links to Amazon: at most MAX_LINKS links, each a plain
@@ -220,6 +252,7 @@ def main(root: Path, amazon_tag: str = "") -> int:
     problems += check_indexing(root, html, cat.stations)
     problems += check_tide_types(root, cat)
     problems += check_king_tides(root, cat)
+    problems += check_king_calendar(root, cat)
     problems += check_affiliate(root, html, amazon_tag)
     for p in problems[:50]:
         print(p, file=sys.stderr)

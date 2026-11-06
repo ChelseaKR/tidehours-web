@@ -61,7 +61,8 @@
       "noaaLink": "NOAA's tide predictions for station {id}",
       "clipped": "This list ends {end}; the run may continue past it.",
       "aboveNote": "“Above a normal high tide” is the height above mean higher high water (MHHW), the average of each day's higher high tide at that station.",
-      "siteLink": "Today's tides at {place}"
+      "siteLink": "Today's tides at {place}",
+      "calendarLink": "{state} king tides by month, November to February"
     },
     "method": {
       "heading": "How these dates were picked",
@@ -211,7 +212,8 @@
       "noaaLink": "Predicciones de NOAA para la estación {id} (en inglés)",
       "clipped": "Esta lista termina el {end}; la serie puede continuar después.",
       "aboveNote": "«Sobre una pleamar normal» es la altura sobre la pleamar media superior (MHHW), el promedio de la pleamar más alta de cada día en esa estación.",
-      "siteLink": "Mareas de hoy en {place} (en inglés)"
+      "siteLink": "Mareas de hoy en {place} (en inglés)",
+      "calendarLink": "Mareas reales en {state} por mes, de noviembre a febrero (en inglés)"
     },
     "method": {
       "heading": "Cómo se eligieron estas fechas",

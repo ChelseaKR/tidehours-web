@@ -48,6 +48,7 @@
   <p>The nearest station on the king-tide page is {{ u.season.place }}, {{ "%.0f"|format(king_link.km * 0.621371) }} mi away: its highest predicted tides of the season are {{ fmt_range(u.first, u.last, "en", kc) }}, highest on {{ fmt_date(u.peak.date, "en", kc) }} at {{ fmt_time(u.peak.time, "en") }}, {{ u.peak.height|feet }}. Those are that station's predictions, not this one's; the tides here can differ in time and height.</p>
   <p><a href="/king-tides/#station-{{ u.season.id }}">King tide dates and times at {{ u.season.place }}</a>.</p>
   {% endif %}
+  {% if king_calendar %}<p><a href="/{{ king_calendar[0] }}">{{ king_calendar[1] }} king tides by month, November to February</a>.</p>{% endif %}
 </section>
 {% endif %}
 
@@ -112,6 +113,7 @@
   {% else %}
   <p><a href="/king-tides/#station-{{ station.id }}">This season's king tide dates</a>.</p>
   {% endif %}
+  {% if king_calendar %}<p><a href="/{{ king_calendar[0] }}">{{ king_calendar[1] }} king tides by month, November to February</a>.</p>{% endif %}
 </section>
 {% endif %}
 

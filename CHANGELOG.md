@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- Winter king-tide calendars by month for Washington, Oregon and California
+  (`/king-tides/washington/`, `/king-tides/oregon/`,
+  `/king-tides/california/`): each place's runs of predicted king tides from
+  November 2026 to February 2027, with dates, Pacific times and heights above
+  MLLW and MHHW. Linked from the king-tide pages, the three state pages and
+  king-tide and nearby station pages (DECISIONS 0024).
 - Stations NOAA lists without a state are filed under a state: by a hand
   map for island stations (GU, AS, and new U.S. Minor Outlying Islands and
   Northern Mariana Islands pages), by the state their NOAA name ends in, or

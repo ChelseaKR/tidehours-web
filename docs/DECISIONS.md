@@ -601,6 +601,40 @@ The state that a name ends in ("Bladensburg, Md.") is still handled by 0018.
 The same corrections belong in the app's pipeline (ChelseaKR/tide-hours);
 until then this is a difference between the site and the app.
 
+## 0022: Region pages of one or two stations are noindex (2026-11-05)
+
+Measured 2026-11-05 with Search Console URL Inspection
+(growth/indexing-gaps-2026-11-05.md): 11 of 14 well-known harmonic stations
+(San Francisco, the Battery, San Diego, Seattle, Honolulu and others) were
+still unknown to Google five days after the domain went live, and Google
+reaches station pages through state and region pages. Meanwhile some region
+pages carry about 130 words: `/states/md/tred-avon-river/` and
+`/states/pa/schuylkill-river-pennsylvania/` each list two stations. A region page is
+a heading and a list of its stations, and its state page shows the same
+heading and the same list, so a one- or two-station region page is a
+near-empty copy of part of its state page. On the full catalog, with the
+stations filed by 0018, 66 of the 370 region pages list one or two
+stations (127 of 446 before 0018).
+
+So `site.region_indexable` asks for at least `site.REGION_MIN_STATIONS`
+(3) stations. A smaller region page is still built at its URL, linked from
+its state page and followed, with its own canonical, but carries
+`noindex,follow` and is left out of the sitemap and `lastmod.json`, so
+IndexNow (0011) does not announce it. `scripts/check_site.py` fails the
+build if a region page's noindex does not match the rule.
+
+What does not change: every station page keeps its own rule (0013), so a
+harmonic station in a small region is still indexed and is linked from its
+state page. State pages stay indexed, including the shortest territory
+pages (`/states/as/`, `/states/gu/`, `/states/dc/`): the home page links
+only state pages, so a state page is the one path to its stations, and
+American Samoa has no region page at all. No template changes.
+
+When to revisit: when region pages are filed differently, the count
+changes on its own. If a small
+region page starts earning impressions anyway, or the station pages are
+indexed well, lower the threshold and re-measure.
+
 ## 0023: Tell apart the region pages that 0020 left with one label (owner, 2026-11-05)
 
 (0021 and 0022 are reserved for other branches.) 0020 renamed region labels

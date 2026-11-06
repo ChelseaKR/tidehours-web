@@ -3,7 +3,8 @@ every page carries the disclaimers and the NOAA credit, nothing absent
 renders as a value, every internal link and sitemap entry resolves, no page
 is unreasonably large, and the sitemap lists exactly the pages that may be
 indexed: subordinate station pages carry noindex and are left out
-(docs/DECISIONS.md 0013). A station page shows a type of tide exactly when
+(docs/DECISIONS.md 0013), and so do region pages of fewer than three
+stations (0022). A station page shows a type of tide exactly when
 its own constants give one, and it is the computed one (0014). The
 king-tide pages' summary of the runs coming up, their titles, and the
 king-tide links on station pages match the computed season for the day the
@@ -67,14 +68,22 @@ def check_page(root: Path, f: Path) -> list[str]:
 
 
 def check_indexing(root: Path, html: list[Path], stations: list[Station]) -> list[str]:
-    """Subordinate station pages carry noindex and harmonic ones do not; the
-    sitemap and lastmod.json list exactly the pages without noindex."""
+    """Subordinate station pages carry noindex and harmonic ones do not;
+    region pages of fewer than site.REGION_MIN_STATIONS stations carry
+    noindex and the rest do not; the sitemap and lastmod.json list exactly
+    the pages without noindex."""
     problems: list[str] = []
     for s in stations:
         f = root / "stations" / s.id / "index.html"
         if f.exists() and (NOINDEX in f.read_text(encoding="utf-8")) != s.is_subordinate:
             kind, want = ("subordinate", "noindex") if s.is_subordinate else ("harmonic", "no noindex")
             problems.append(f"stations/{s.id}: a {kind} station needs {want}")
+    for st in site.group(stations):
+        for r in st.regions:
+            f = root / r.path / "index.html"
+            if f.exists() and (NOINDEX in f.read_text(encoding="utf-8")) == site.region_indexable(r):
+                want = "no noindex" if site.region_indexable(r) else "noindex"
+                problems.append(f"{r.path}: a region of {len(r.stations)} station(s) needs {want}")
     indexable: set[str] = set()
     for f in html:
         if f.name == "index.html" and NOINDEX not in f.read_text(encoding="utf-8"):

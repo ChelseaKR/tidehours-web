@@ -60,6 +60,22 @@ def indexable(station: Station) -> bool:
     return not station.is_subordinate
 
 
+# A region page lists its stations, and its state page lists the same
+# stations under the same heading, so a region of one or two stations is a
+# near-empty copy of part of its state page (about 120 to 130 words). Those
+# pages are served, linked and followed, but carry noindex and are left out of
+# the sitemap and lastmod.json (docs/DECISIONS.md 0022). Their stations are
+# linked from the state page either way, and each station page is indexed or
+# not by its own rule (indexable above).
+REGION_MIN_STATIONS = 3
+
+
+def region_indexable(region: Region) -> bool:
+    """Whether a region page asks search engines to index it: only when it
+    lists at least REGION_MIN_STATIONS stations (docs/DECISIONS.md 0022)."""
+    return len(region.stations) >= REGION_MIN_STATIONS
+
+
 def slug(text: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "region"
@@ -494,7 +510,13 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         page(st.path, "state.html.jinja", state=st, king=kt_states.get(st.code), **king_common)
         for r in st.regions:
             page(
-                r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common
+                r.path,
+                "region.html.jinja",
+                index=region_indexable(r),
+                state=st,
+                region=r,
+                region_king=region_king(r, links, kt_up),
+                **king_common,
             )
     pages += moved_pages(e.get_template("moved.html.jinja"), common, states)
     for s in stations:

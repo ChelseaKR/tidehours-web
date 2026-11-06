@@ -10,6 +10,7 @@
   "about": {"@type": "State", "name": state_name},
   "isBasedOn": "https://tidesandcurrents.noaa.gov/"
 }|tojson }}</script>
+{% with crumbs = [["Home", ""], ["King tides", "king-tides/"]] %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}
 {% block content %}
 <nav class="crumbs" aria-label="Breadcrumb">

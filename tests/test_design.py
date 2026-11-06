@@ -68,7 +68,7 @@ def test_every_page_has_the_mark_favicon_and_reading_link(built: Path) -> None:
             continue
         rel = f.relative_to(built)
         assert '<link rel="icon" href="/favicon.svg"' in html, rel
-        assert '<a class="brand" href="/">' in html and "<span>Tide Hours</span>" in html, rel
+        assert '<a class="brand" href="/">Tide Hours</a>' in html, rel
         assert 'href="/about/#reading"' in html, rel
         assert 'class="wave-rule" aria-hidden="true"' in html, rel
 

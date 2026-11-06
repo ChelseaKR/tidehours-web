@@ -495,6 +495,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
     (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
+    shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
     # The IndexNow ownership file (indexnow.py), served from the domain's
     # root. Public by design. Only a build for tidehours.com carries it,

@@ -131,10 +131,15 @@ def _svg(
     step = max(1, math.ceil((y1 - y0) / 5))
     first = math.ceil(y0 / step) * step
     level = first
+    datum_drawn = False
     while level <= y1:
         yy = y(level)
         text = f"{level}".replace("-", MINUS) + " ft"
-        parts.append(f'<line class="grid" x1="{PAD_L}" x2="{W - PAD_R}" y1="{yy:.1f}" y2="{yy:.1f}"/>')
+        # 0 ft is the datum itself (MLLW): drawn heavier and named in the
+        # key under the chart, so the reference level is never implicit.
+        css = "grid datum" if level == 0 else "grid"
+        datum_drawn = datum_drawn or level == 0
+        parts.append(f'<line class="{css}" x1="{PAD_L}" x2="{W - PAD_R}" y1="{yy:.1f}" y2="{yy:.1f}"/>')
         y_labels.append(f'<span class="ax" style="top:{yy / H * 100:.2f}%">{text}</span>')
         level += step
     for hour, name in ((0, "12 AM"), (6, "6 AM"), (12, "Noon"), (18, "6 PM")):
@@ -156,8 +161,16 @@ def _svg(
         + "".join(parts)
         + "</svg>"
         + f'<div class="ax-x">{"".join(x_labels)}</div>'
+        + f'<div class="ax-key">{_axis_key(datum_drawn)}</div>'
         + "</div>"
     )
+
+
+def _axis_key(datum_drawn: bool) -> str:
+    """The key under a chart: the datum the heights are measured from, and
+    which line is that datum when 0 ft falls inside the drawing."""
+    key = "Heights in feet above mean lower low water (MLLW)"
+    return key + ("; the dotted line is 0 ft, the datum." if datum_drawn else ".")
 
 
 def station_day(station: Station, predictor: Predictor, d: dt.date, curve_step: float = 600.0) -> Day:

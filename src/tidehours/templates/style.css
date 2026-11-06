@@ -187,6 +187,7 @@ ul.states li, ul.stations li, ul.near li { padding-block: 0.45rem; border-bottom
 ul.states li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
 ul.states a, ul.stations a, ul.near a { display: inline-block; min-height: 24px; }
 ul.states a { font-weight: 500; }
+ul.states .count { white-space: nowrap; }
 ul.derived { padding-inline-start: 1.1rem; }
 ul.derived li { margin-block: 0.25rem; }
 dl.glossary dt { font-family: var(--serif); font-weight: 600; margin-top: 0.9rem; }

@@ -1,6 +1,11 @@
 {% extends "base.html.jinja" %}
 {% block title %}Tide times today for every US tide station | Tide Hours{% endblock %}
 {% block description %}Free tide times for today and tomorrow at {{ "{:,}".format(station_count) }} NOAA tide prediction stations in the US, with high and low tides and a tide curve, computed from NOAA harmonic constants.{% endblock %}
+{% block jsonld %}
+{#- The site name and address only; the name is the header's brand. No
+    SearchAction: the site has no search page. -#}
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "WebSite", "name": "Tide Hours", "url": base_url}|tojson }}</script>
+{% endblock %}
 {% block content %}
 <h1>Tide times for every NOAA tide station in the US</h1>
 <p class="lead">Today's and tomorrow's high and low tides, with a tide curve, for {{ "{:,}".format(station_count) }} NOAA tide prediction stations from Alaska to Puerto Rico and Guam. Free, no account.</p>

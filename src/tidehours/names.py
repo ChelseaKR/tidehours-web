@@ -56,6 +56,16 @@ MISSPELLINGS: dict[str, tuple[str, str]] = {
     "9446800": ("Dofflemeyer Point, Boston Hbr., Budd Inlet", "Dofflemyer Point, Boston Hbr., Budd Inlet"),  # GNIS: Dofflemyer Point (Cape, 0.4 km)
     "9450258": ("Keete Island, Nutkwa Inlets", "Keete Island, Nutkwa Inlet"),  # GNIS: Keete Inlet (Bay, 3.3 km)
     "TWC1785": ("Lindenburg Head", "Lindenberg Head"),  # GNIS: Lindenberg Harbor (Bay, 1.0 km)
+    # St. John, U.S. Virgin Islands: GNIS names the island "Saint John"
+    # (1614296), and each feature below is on it (county "St. John"); GNIS
+    # has no "Saint Johns" there. NOAA's own current names (mdapi) write it
+    # "St. John" or "St John" (Lovango Cay, Lameshur Bay), "St. John's"
+    # (Leinster Point, Coral Harbor) and "St. Johns" (Haulover Bay).
+    "9751309": ("Leinster Point, Leinster Bay, St. Johns Island", "Leinster Point, Leinster Bay, St. John Island"),  # GNIS: Leinster Point (Cape, 0.0 km); NOAA: Leinster Point, Leinster Bay, St. John's
+    "9751373": ("Coral Harbor, St. Johns", "Coral Harbor, St. John"),  # GNIS: Coral Harbor (Bay, 0.7 km); NOAA: ST JOHN'S ISLAND, CORAL HARBOR
+    "9751381": ("Lameshur Bay, St. Johns Island", "Lameshur Bay, St. John Island"),  # GNIS: Lameshur Bay (Bay, 0.4 km); NOAA: Lameshur Bay, St John
+    "9751419": ("Haulover Bay, St. Johns", "Haulover Bay, St. John"),  # GNIS: Haulover Bay (Bay, 0.3 km); NOAA: HAULOVER BAY, ST. JOHNS
+    "9751467": ("Lovango Cay, St. Johns Island", "Lovango Cay, St. John Island"),  # GNIS: Lovango Cay (Island, 0.2 km); NOAA: Lovango Cay, St. John
 }  # fmt: skip
 
 # Spanish diacritics for Puerto Rico, as GNIS writes the names.

@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+- Region pages that shared a label now say which part they are, from
+  NOAA's coordinates: "Outer Coast (north)" and "(south)" in Maine and South
+  Carolina, "Gulf Coast (north)" and "(south)" in Florida and "Delaware River
+  (north)" and "(south)" in New Jersey. Five St. John, Virgin Islands station
+  names say "St. John", not "St. Johns". No URL changes (DECISIONS 0023).
 - Station names are corrected for display: 40 NOAA misspellings backed by
   USGS GNIS names (Chickahominy, Sergius Narrows, Frederiksted), Spanish and
   Hawaiian diacritics (Mayagüez, Nāwiliwili), casing, punctuation and "St."

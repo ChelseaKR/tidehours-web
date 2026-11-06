@@ -600,3 +600,39 @@ off. The owner chose the recommended fix for each:
 The state that a name ends in ("Bladensburg, Md.") is still handled by 0018.
 The same corrections belong in the app's pipeline (ChelseaKR/tide-hours);
 until then this is a difference between the site and the app.
+
+## 0023: Tell apart the region pages that 0020 left with one label (owner, 2026-11-05)
+
+(0021 and 0022 are reserved for other branches.) 0020 renamed region labels
+without merging regions, so four states each showed two region pages with
+the same label and title: Maine and South Carolina "Outer Coast", Florida
+"Gulf Coast" and New Jersey "Delaware River". In each pair NOAA's own names
+differ only by its page-break "-cont." ("MAINE, outer coast" and "MAINE,
+outer coast-cont."), which says "continued", not where. The owner chose to
+tell them apart with NOAA's own detail, and geography only where NOAA's
+data supports it:
+
+- **North and south, from NOAA's coordinates** (`site.tell_apart`). In all
+  four pairs every station of one part is north of every station of the
+  other, so the parts read "(north)" and "(south)", in NOAA's own style for
+  qualifiers ("(inside)", "(outside)"). Maine's Damariscove to Friendship
+  Harbor part is north of its Seapoint to Pine Point part; South Carolina's
+  North Inlet to Little River part is north of its Edisto to Folly Creek
+  part; Florida's Indian Rocks Beach to Panhandle part is north of its Cape
+  Sable to Venice Inlet part; and New Jersey's Mantua Creek to Trenton part
+  is north of its Stow Creek to Oldmans Creek part. "Upper" and "lower" are not used: "Upper Delaware" names
+  the non-tidal river above Port Jervis. If a refresh gives two parts that
+  overlap north to south, or three parts with one label, the build stops.
+- **URLs do not change.** The pages stay at NOAA's region paths
+  (`maine-outer-coast-cont/` and so on).
+- **St. John station names.** Five Virgin Islands stations that NOAA's
+  bundle calls "St. Johns" now say "St. John", like the region label: GNIS
+  names the island "Saint John" and has no "Saint Johns" on it, each
+  station's named feature is on it within 0.7 km, and NOAA's own current
+  names write "St. John" or "St John" for two of them. That makes 45 GNIS
+  misspellings and 93 name corrections, and "Leinster Point, Leinster Bay,
+  St. John Island, VI tide times" now fits in 60 characters, leaving 4
+  indexed titles over 60.
+
+`tests/test_names.py` checks that no two region pages in a state share a
+label or a title, and that without `tell_apart` the four pairs come back.

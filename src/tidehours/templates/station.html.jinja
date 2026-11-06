@@ -13,6 +13,7 @@
             "geo": {"@type": "GeoCoordinates", "latitude": station.lat, "longitude": station.lon}},
   "isBasedOn": "https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=" ~ station.id
 }|tojson }}</script>
+{% with crumbs = [["Home", ""], [state.name, state.path]] + ([[region.name, region.path]] if region else []) %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}
 {% block main_attrs %} data-station-date="{{ today.date.isoformat() }}" data-tz="{{ station.tz }}"{% endblock %}
 {% block content %}

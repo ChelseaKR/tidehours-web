@@ -15,6 +15,7 @@ from typing import Any
 import numpy as np
 
 from .engine import HarmonicPredictor, Offsets, Predictor, SubordinatePredictor, YearCache
+from .names import fixed_name
 from .tidetype import TideType, tide_type
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -334,9 +335,8 @@ def _station(row: dict[str, Any], ref: str | None, noaa_region: str | None, ref_
     if filed and filed_state == "AK" and tz == "Pacific/Honolulu":
         tz = ALEUTIAN_TZ
     code, tz = territory(filed_state, tz, region)
-    return Station(
-        row["id"], tidy_name(row["n"]), code, row["la"], row["lo"], tz, ref, region, filed, row["st"], noaa_region
-    )
+    name = fixed_name(row["id"], tidy_name(row["n"]))  # NOAA's name, corrected (DECISIONS 0020)
+    return Station(row["id"], name, code, row["la"], row["lo"], tz, ref, region, filed, row["st"], noaa_region)
 
 
 def _compounds(raw: dict[str, Any]) -> dict[str, list[tuple[str, int]]]:

@@ -66,7 +66,7 @@ def crumb_problems(page: str) -> list[str]:
 
 
 def test_every_breadcrumb_matches_the_visible_trail(built: Path) -> None:
-    kinds = {"station+region": 0, "station": 0, "region": 0, "state": 0}
+    kinds = {"station+region": 0, "station": 0, "region": 0, "state": 0, "king-tide state": 0}
     for f in sorted(built.rglob("*.html")):
         page = f.read_text(encoding="utf-8")
         rel = f.relative_to(built).as_posix()
@@ -81,6 +81,9 @@ def test_every_breadcrumb_matches_the_visible_trail(built: Path) -> None:
         elif re.fullmatch(r"states/[a-z]+/[^/]+/index\.html", rel) and n:
             assert n == 2, rel
             kinds["region"] += 1
+        elif re.fullmatch(r"king-tides/[a-z-]+/index\.html", rel):
+            assert n == 2, rel
+            kinds["king-tide state"] += 1
         else:
             assert n == 0, rel
     # Each kind of trail was actually checked, not skipped.

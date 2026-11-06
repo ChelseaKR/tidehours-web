@@ -75,6 +75,7 @@
   {% for region in ["WA", "OR", "CA"] %}
   <section aria-labelledby="kt-{{ region }}">
     <h3 id="kt-{{ region }}">{{ c.stations.regions[region] }}</h3>
+    <p><a href="/{{ calendar_path(region) }}"{% if lang != "en" %} hreflang="en"{% endif %}>{{ fill(c.stations.calendarLink, state=c.stations.regions[region]) }}</a></p>
     {% for s in seasons if s.state == region %}
     <section class="kt-station" id="station-{{ s.id }}" aria-labelledby="kt-h-{{ s.id }}">
       <h4 id="kt-h-{{ s.id }}">{{ s.place }}</h4>

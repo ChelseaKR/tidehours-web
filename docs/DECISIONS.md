@@ -670,3 +670,48 @@ data supports it:
 
 `tests/test_names.py` checks that no two region pages in a state share a
 label or a title, and that without `tell_apart` the four pairs come back.
+
+## 0024: A winter king-tide calendar for each state, by month (2026-11-05)
+
+People plan king-tide visits by month and place ("Washington king tides
+December 2026"). The king-tide page lists each station's whole year, and its
+summary shows only the runs within 30 days (0015), so on November 5 nothing
+on the site named the January or February dates in one place.
+
+**Pages.** `/king-tides/washington/`, `/king-tides/oregon/` and
+`/king-tides/california/`, in English (the Spanish king-tide page links to
+them, marked as English). Each lists, for November 2026 through February
+2027 (`kingtides.CALENDAR_FIRST` and `CALENDAR_LAST`), the runs from 0006
+whose highest tide falls in that month, filed under that month: place,
+days, highest tide with its Pacific time, height above MLLW and height above
+MHHW, with the MHHW epoch from the committed datums (1983–2001 for all 31).
+The runs are the same objects as on the king-tide page, so the two cannot
+disagree; nothing is copied from another site and nothing is new data.
+
+**Absence.** A month in which no station in the state has a run is still
+listed and says in words that no run of the year's highest tides peaks then,
+and that this is not a prediction of no high tides (California's February
+2027). A month in which some stations have none says the others' high tides
+are predicted, but lower than the peak of each of their runs on the page.
+The count is of stations, not runs: some Washington stations have two
+December runs.
+
+**Pinned, not rolled.** Like 0006, the window is a constant edited once a
+season; no run is hidden or marked as past by the build date, so the pages
+change only when the data does. Runs that have ended stay listed under their
+month.
+
+**Links.** The king-tide pages (under each state's heading), the WA, OR and
+CA state pages (always, not only in season), each king-tide station's page,
+and each station page that shows a nearby king-tide station's run (0015).
+Region and home pages are unchanged. Structured data is a plain `WebPage`
+about the state; no `Event` markup, because a predicted tide has no
+organizer, place or tickets and the rich result would overstate it.
+
+**Checked.** `scripts/check_site.py` recomputes each state's calendar and
+compares every row (`data-kt-cal`), the list of months, and the sentence for
+each empty month; `tests/test_king_calendar.py` checks Seattle's February run
+against Washington Sea Grant's table and California's peaks against the
+Coastal Commission's dates, with a negative control for the check.
+
+**For the app:** nothing changes.

@@ -1,0 +1,12 @@
+{#- BreadcrumbList for the visible trail. `crumbs` is the same list of
+    [name, path] pairs the page's <nav class="crumbs"> shows, in order, and
+    nothing more. Google shows a breadcrumb only for two or more items, so a
+    one-item trail (a state page: Home) gets no markup. tests/test_breadcrumbs.py
+    holds every page's markup to its visible trail. -#}
+{% if crumbs|length >= 2 %}
+{% set ns = namespace(items=[]) %}
+{% for name, p in crumbs %}
+{% set ns.items = ns.items + [{"@type": "ListItem", "position": loop.index, "name": name, "item": base_url ~ p}] %}
+{% endfor %}
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": ns.items}|tojson }}</script>
+{% endif %}

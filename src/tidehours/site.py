@@ -11,6 +11,7 @@ import json
 import math
 import re
 import shutil
+import string
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,9 +23,11 @@ import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
 from . import affiliate, indexnow, kingtides, ktformat
-from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station
+from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
+from .zones import UNKNOWN as ZONE_UNKNOWN
+from .zones import label as zone_label
 
 DEFAULT_BASE_URL = "https://tidehours.com/"
 # Analytics regions where analytics_storage defaults to denied (EEA, UK, CH),
@@ -76,6 +79,68 @@ def region_indexable(region: Region) -> bool:
 def slug(text: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "region"
+
+
+# A station page's <title> (and og:title): the longest of these that fits in
+# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020).
+TITLE_MAX = 60
+TITLE_TIERS = ("{} tide times today | Tide Hours", "{} tide times today", "{} tide times")
+
+
+def station_title(name: str) -> str:
+    for tier in TITLE_TIERS:
+        title = tier.format(name)
+        if len(title) <= TITLE_MAX:
+            return title
+    return title
+
+
+# NOAA's region names with typos or case slips, written right
+# (docs/DECISIONS.md 0020). The region's URL keeps NOAA's name.
+REGION_FIXES = {
+    "Hawaiin Islands": "Hawaiian Islands",
+    "St. Johns Island": "St. John Island",
+    "Chesapeake Bay, western shore": "Chesapeake Bay, Western Shore",
+}
+REGION_SUFFIXES = ("-cont.", ", etc.")
+
+
+def region_label(region: str, state_name: str | None) -> str:
+    """How a region's name reads on the site: NOAA's typos fixed, out of
+    capitals ("MAINE and NEW HAMPSHIRE" -> "Maine and New Hampshire"),
+    without NOAA's page-break "-cont." or ", etc.", and without a leading
+    "STATE, " part on that state's own pages ("FLORIDA, East Coast" -> "East
+    Coast"). The region's page and URL are NOAA's region, unchanged."""
+    label = tidy_name(REGION_FIXES.get(region, region))
+    for suffix in REGION_SUFFIXES:
+        label = label.removesuffix(suffix)
+    head, sep, rest = label.partition(",")
+    if sep and state_name and head.strip().lower() == state_name.lower():
+        rest = rest.strip()
+        label = string.capwords(rest) if rest == rest.lower() else rest[:1].upper() + rest[1:]
+    return label
+
+
+def tell_apart(code: str, regions: list[Region]) -> None:
+    """Give two regions of one state that `region_label` names alike their
+    own labels (docs/DECISIONS.md 0023). NOAA splits a region across a page
+    break ("MAINE, outer coast" and "MAINE, outer coast-cont."), so its own
+    detail is only "continued"; the parts are told apart by where NOAA puts
+    their stations, "(north)" and "(south)", as NOAA writes "(inside)" and
+    "(outside)". That holds only when every station of one part is north of
+    every station of the other; anything else stops the build."""
+    by_label: dict[str, list[Region]] = defaultdict(list)
+    for r in regions:
+        by_label[r.name].append(r)
+    for label, same in by_label.items():
+        if len(same) == 1:
+            continue
+        if len(same) > 2:
+            raise ValueError(f"{code}: {len(same)} regions are labeled {label!r}")
+        south, north = sorted(same, key=lambda r: min(s.lat for s in r.stations))
+        if max(s.lat for s in south.stations) >= min(s.lat for s in north.stations):
+            raise ValueError(f"{code}: the two {label!r} regions overlap north to south")
+        south.name, north.name = f"{label} (south)", f"{label} (north)"
 
 
 @dataclass
@@ -131,8 +196,9 @@ def group(stations: list[Station]) -> list[State]:
                 continue
             r = regions.get(s.region)
             if r is None:
-                r = regions[s.region] = Region(code, s.region, slug(s.region))
+                r = regions[s.region] = Region(code, region_label(s.region, STATE_NAMES.get(code)), slug(s.region))
             r.stations.append(s)
+        tell_apart(code, list(regions.values()))
         slugs = [r.slug for r in regions.values()]
         if len(slugs) != len(set(slugs)):
             raise ValueError(f"{code}: two regions share a URL slug")
@@ -201,6 +267,7 @@ def env() -> Environment:
     e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
     e.globals.update(
         minutes=offset_phrase,
+        station_title=station_title,
         fill=ktformat.fill,
         fmt_date=ktformat.fmt_date,
         fmt_long_date=ktformat.fmt_long_date,
@@ -208,6 +275,8 @@ def env() -> Environment:
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
         fmt_months=ktformat.fmt_months,
+        zone_label=zone_label,
+        zone_unknown=ZONE_UNKNOWN,
     )
     return e
 
@@ -356,7 +425,11 @@ def moved_pages(template: Template, common: dict[str, Any], states: list[State])
         built = [(regions[new][0], regions[new][1], stations) for new, stations in news.items() if new in regions]
         if old in regions or not built:
             continue
-        name = built[0][0].name if len(news) == 1 else next(s.noaa_region for ss in news.values() for s in ss)
+        if len(news) == 1:
+            name = built[0][0].name
+        else:
+            first = next(s for ss in news.values() for s in ss)
+            name = region_label(first.noaa_region or "", STATE_NAMES.get(first.noaa_state))
         ctx: dict[str, Any] = {"path": old, "noindex": True, "name": name, "destinations": built}
         if len(news) == 1:
             ctx["canonical_path"] = built[0][0].path

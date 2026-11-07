@@ -2,6 +2,10 @@
 
 ## 0.1.0 (unreleased)
 
+- The king-tide page's title names Washington, Oregon and California in
+  full, and its description leads with the next dates and names Seattle,
+  Puget Sound and the Oregon coast, the words people search with
+  (DECISIONS 0025).
 - Winter king-tide calendars by month for Washington, Oregon and California
   (`/king-tides/washington/`, `/king-tides/oregon/`,
   `/king-tides/california/`): each place's runs of predicted king tides from

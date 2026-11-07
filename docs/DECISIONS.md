@@ -715,3 +715,38 @@ against Washington Sea Grant's table and California's peaks against the
 Coastal Commission's dates, with a negative control for the check.
 
 **For the app:** nothing changes.
+
+## 0025: Name the states in full in the king-tide page's title (2026-11-07)
+
+(0019 and 0021 are reserved for other branches.) Search Console for
+sc-domain:tidehours.com, Oct 10 to Nov 7, 2026 (data from Nov 3 on): 289
+impressions, 0 clicks, average position 33.6. The English king-tide page had
+84 of 306 page impressions at an average position of 8.1, the only page with
+real volume on Google's first page. Its queries name a month or a place in
+full and ask when: "king tides november 2026", "when are the king tides this
+year", "king tides oregon 2026 schedule", "king tides puget sound 2026",
+"king tides seattle 2026", "washington state king tides 2026". The title said
+"WA, OR and CA", and the description led with "West Coast" and "Bellingham to
+San Diego".
+
+- **Title (in season):** "King tides {months}: Washington, Oregon and
+  California" (54 characters for "November 2026", under 0020's 60), in place
+  of "King tides {months}: WA, OR and CA dates and times". The months still
+  come from 0015, and `scripts/check_site.py` still checks them.
+- **Title (out of season):** "King tides 2026–27: Washington, Oregon and
+  California dates".
+- **Description (in season):** answer first: "The next West Coast king tides
+  are {range}: the peak day, local time and height at {count} NOAA stations,
+  from Seattle and Puget Sound to the Oregon coast and San Diego." Seattle,
+  Tacoma, Olympia and five Oregon coast stations are on the page, so each
+  name is something the page has.
+- **Not changed:** the Spanish page (no Spanish queries yet), the H1 and
+  body (the dates already lead, 0015), and station and region titles. Station
+  pages averaged position 40 to 100, beyond Google's second page, where a
+  title cannot earn a click; their fix is time and links, not copy.
+
+At position 8 an 84-impression sample would expect about one to three
+clicks, so 0 clicks is weak evidence on its own. Recheck the page's
+click-through rate after the Nov 23 run.
+
+**For the app:** nothing changes.

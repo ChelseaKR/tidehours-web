@@ -185,7 +185,11 @@ class StationSeason:
     series: list[list[Day]]
 
     def above_mhhw(self, day: Day) -> float:
-        return round(day.height, 2) - self.mhhw_ft
+        """Feet above MHHW from the unrounded height, rounded once when shown,
+        like every other height. Heights carry 3 decimals and MHHW 2, so
+        round(..., 3) only drops float noise (10.374 - 8.32 is
+        2.0540000000000003), never a digit."""
+        return round(day.height - self.mhhw_ft, 3)
 
 
 def window(start: str = SEASON_START, days: int = SEASON_DAYS) -> tuple[str, str]:

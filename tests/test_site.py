@@ -689,8 +689,9 @@ def test_king_tides_coming_up(built: Path) -> None:
     lead with it and name the month, and nearby pages link to it (0015)."""
     en = (built / "king-tides/index.html").read_text(encoding="utf-8")
     es = (built / "es/king-tides/index.html").read_text(encoding="utf-8")
-    assert "<title>King tides November 2026: WA, OR and CA dates and times | Tide Hours</title>" in en
-    assert 'content="West Coast king tides Nov 23–Dec 1, 2026:' in en
+    assert "<title>King tides November 2026: Washington, Oregon and California | Tide Hours</title>" in en
+    assert 'content="The next West Coast king tides are Nov 23–Dec 1, 2026: the peak day, local time' in en
+    assert "height at 31 NOAA stations, from Seattle and Puget Sound to the Oregon coast" in en
     assert "The next king tides: Nov 23–Dec 1, 2026" in en
     assert en.index('id="kt-next"') < en.index('id="kt-safety"') < en.index('id="kt-california"')
     assert en.count("data-kt-next=") == 31 and es.count("data-kt-next=") == 31
@@ -728,7 +729,7 @@ def test_king_tides_out_of_season(tmp_path: Path) -> None:
     out = tmp_path / "march"
     assert cli.main(["--out", str(out), "--now", "2027-03-15T12:00:00Z", "--states", "CA"]) == 0
     en = (out / "king-tides/index.html").read_text(encoding="utf-8")
-    assert "<title>King tides 2026–27: WA, OR and CA dates and heights | Tide Hours</title>" in en
+    assert "<title>King tides 2026–27: Washington, Oregon and California dates | Tide Hours</title>" in en
     assert "kt-next" not in en and "data-kt-next" not in en
     sf = (out / "stations/9414290/index.html").read_text(encoding="utf-8")
     assert "data-kt-run" not in sf and 'href="/king-tides/#station-9414290"' in sf  # the section lower down

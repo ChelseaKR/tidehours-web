@@ -23,7 +23,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat
+from . import affiliate, indexnow, kingtides, ktformat, llms
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -633,6 +633,9 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
     (out / "404.html").write_text(e.get_template("404.html.jinja").render(**common, path="404"), encoding="utf-8")
     (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
+    # /llms.txt (llms.py); deploy.sh uploads non-HTML files with the type the
+    # extension gives, text/plain for .txt, as it does for robots.txt.
+    (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
     # The IndexNow ownership file (indexnow.py), served from the domain's

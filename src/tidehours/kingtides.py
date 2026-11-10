@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from .catalog import Catalog
@@ -298,6 +299,31 @@ CALENDAR_STATES: dict[str, tuple[str, str]] = {
 }
 
 
+# What each calendar page's title and description name, matched to the
+# searches the king-tide page gets ("king tides puget sound 2026", "king tides
+# oregon 2026 schedule", "king tides seattle 2026"; docs/DECISIONS.md 0028).
+# Every place named is a king-tide station's place or its catalog region,
+# which tests/test_king_calendar.py checks, so a title never names a place
+# the page has no dates for. Titles stay within 60 characters (0020).
+CALENDAR_SEARCH: dict[str, dict[str, Any]] = {
+    "WA": {
+        "title": "Washington king tides 2026–27: Seattle, Puget Sound, coast",
+        "where": "in Washington",
+        "places": ["Seattle", "Tacoma", "Olympia", "Puget Sound", "Neah Bay", "Willapa Bay"],
+    },
+    "OR": {
+        "title": "Oregon king tides 2026–27: coast schedule by month, Nov–Feb",
+        "where": "on the Oregon coast",
+        "places": ["Astoria", "Tillamook Bay", "Newport", "Coos Bay", "Port Orford"],
+    },
+    "CA": {
+        "title": "California king tides 2026–27: San Francisco to San Diego",
+        "where": "in California",
+        "places": ["Crescent City", "San Francisco Bay", "Monterey", "Los Angeles", "San Diego"],
+    },
+}
+
+
 def calendar_path(state: str) -> str:
     return f"king-tides/{CALENDAR_STATES[state][1]}/"
 
@@ -322,6 +348,16 @@ class CalendarMonth:
     def stations(self) -> int:
         """How many stations have a run here; one can have two in a month."""
         return len({u.season.id for u in self.runs})
+
+    @property
+    def span(self) -> tuple[str, str, str, str] | None:
+        """(first day, last day, earliest peak, latest peak) over the month's
+        runs, or None for a month with none: what the month's sentence and the
+        page's summary at the top both say, so the two cannot disagree."""
+        if not self.runs:
+            return None
+        peaks = [u.peak.date for u in self.runs]
+        return min(u.first for u in self.runs), max(u.last for u in self.runs), min(peaks), max(peaks)
 
 
 def calendar(

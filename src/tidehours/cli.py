@@ -42,6 +42,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ga4-id", default="")
     ap.add_argument("--app-store-url", default="")
     ap.add_argument("--amazon-tag", default="")
+    ap.add_argument(
+        "--previous",
+        type=Path,
+        help="directory holding the live sitemap.xml and lastmod.json: unchanged pages keep their lastmod",
+    )
     args = ap.parse_args(argv)
     if args.ga4_id and not args.ga4_id.startswith("G-"):
         raise SystemExit("--ga4-id must look like G-XXXXXXX")
@@ -55,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.states:
         states = {s.strip().upper() if s.strip() != "other" else "other" for s in args.states.split(",")}
     cfg = site.Config(args.base_url, args.ga4_id, args.app_store_url, states, args.amazon_tag)
-    n = site.write(cat, cfg, parse_now(args.now), args.out)
+    n = site.write(cat, cfg, parse_now(args.now), args.out, args.previous)
     print(f"tidehours: {n} pages in {time.monotonic() - started:.1f}s -> {args.out}")
     return 0
 

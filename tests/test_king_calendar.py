@@ -94,7 +94,8 @@ def test_built_pages(built: Path) -> None:
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
     for code, (name, slug) in kt.CALENDAR_STATES.items():
         html = (built / "king-tides" / slug / "index.html").read_text(encoding="utf-8")
-        assert f"<title>{name} king tides 2026–27: dates by month, Nov–Feb | Tide Hours</title>" in html
+        title = kt.CALENDAR_SEARCH[code]["title"]
+        assert title.startswith(f"{name} king tides") and f"<title>{title} | Tide Hours</title>" in html
         assert "These are predictions, not observations or flood forecasts." in html
         assert "feet above mean lower low water (MLLW)" in html
         assert "mean higher high water (MHHW)" in html and "1983–2001 tidal datum epoch" in html
@@ -171,3 +172,74 @@ def test_calendar_rows_show_the_computed_numbers(built: Path, seasons: list[kt.S
     assert f"{round(peak.height, 1):.1f} ft" in cells
     assert "Nov 24–26, 2026" in cells and "Nov 25, 2026, 10:49 AM" in cells
     assert re.search(r"\+\d\.\d ft", cells)
+
+
+def _unbacked(seasons: list[kt.StationSeason], code: str, places: list[str]) -> list[str]:
+    """Places a calendar page's title or description would name that are not
+    a king-tide station's place or catalog region in that state."""
+    cat = load()
+    known = [s.place for s in seasons if s.state == code]
+    regions = set()
+    for s in seasons:
+        st = cat.station(s.id)
+        if s.state == code and st is not None and st.region:
+            regions.add(st.region)
+    return [p for p in places if p not in regions and not any(p in k for k in known)]
+
+
+def test_search_copy_names_only_places_with_dates(seasons: list[kt.StationSeason]) -> None:
+    """DECISIONS 0028: each calendar title and description names places the
+    page has dates for, its state, and fits in 60 characters (0020)."""
+    assert set(kt.CALENDAR_SEARCH) == set(kt.CALENDAR_STATES)
+    for code, (name, _) in kt.CALENDAR_STATES.items():
+        search = kt.CALENDAR_SEARCH[code]
+        assert search["title"].startswith(f"{name} king tides 2026–27")
+        assert len(search["title"]) <= 60
+        assert _unbacked(seasons, code, search["places"]) == []
+    assert "Puget Sound" in kt.CALENDAR_SEARCH["WA"]["places"]
+    # Negative control: a place with no king-tide station is caught.
+    assert _unbacked(seasons, "OR", ["Astoria", "Portland"]) == ["Portland"]
+    assert _unbacked(seasons, "WA", ["San Diego"]) == ["San Diego"]
+
+
+def test_month_span(seasons: list[kt.StationSeason]) -> None:
+    wa = kt.calendar(seasons, "WA")
+    assert wa[0].span == ("2026-11-23", "2026-12-01", "2026-11-25", "2026-11-27")
+    ca = kt.calendar(seasons, "CA")
+    assert ca[0].span == ("2026-11-23", "2026-11-27", "2026-11-25", "2026-11-25")
+    assert ca[3].span is None  # February 2027: no run, never an empty span
+
+
+def test_answer_first_summary_and_links(built: Path, seasons: list[kt.StationSeason]) -> None:
+    """The month summary comes before the first month's table and agrees with
+    it; the king-tide pages define the term and link the calendars before the
+    station lists; the home page links each calendar."""
+    for code, (name, slug) in kt.CALENDAR_STATES.items():
+        html = (built / "king-tides" / slug / "index.html").read_text(encoding="utf-8")
+        glance = html.index(f"When are the king tides in {name}?")
+        assert glance < html.index("data-kt-cal-month=") and glance < html.index('id="kt-safety"')
+        for m in kt.calendar(seasons, code):
+            key = f"{m.year}-{m.month:02d}"
+            item = re.search(rf'<li data-kt-glance="{key}">(.*?)</li>', html, re.S)
+            assert item is not None, key
+            text = re.sub(r"<[^>]+>", "", item.group(1))
+            if m.span is None:
+                assert "no run of the year's highest predicted tides peaks this month" in text
+            else:
+                assert f'href="#m-{key}"' in item.group(1)
+                assert f"Together the runs span {text.split(': ', 1)[1].split(',')[0]}" in html
+        assert "Pacific time" in html and "MLLW" in html
+    ca = (built / "king-tides/california/index.html").read_text(encoding="utf-8")
+    assert "February 2027: no run of the year's highest predicted tides peaks this month" in ca
+    en = (built / "king-tides/index.html").read_text(encoding="utf-8")
+    es = (built / "es/king-tides/index.html").read_text(encoding="utf-8")
+    assert "is a popular, non-scientific name for the highest predicted tides" in en
+    assert "It does not forecast storms, waves or flooding." in en
+    assert "nombre popular, no científico" in es
+    for page in (en, es):
+        links = page.index("data-kt-calendars")
+        assert links < page.index('id="kt-definition"') < page.index('id="kt-safety"')
+        assert links < page.index('id="kt-stations"')
+    home = (built / "index.html").read_text(encoding="utf-8")
+    for slug in ("washington", "oregon", "california"):
+        assert f'href="/king-tides/{slug}/"' in home

@@ -11,6 +11,7 @@
 <h1>{{ c.heading }}</h1>
 <p class="lead">{{ c.lead }}</p>
 <p class="meta">{{ fill(c.updated, date=fmt_long_date(retrieved, lang, c)) }}</p>
+<p data-kt-calendars>{{ c.calendarLinks }} {% for region in ["WA", "OR", "CA"] %}<a href="/{{ calendar_path(region) }}"{% if lang != "en" %} hreflang="en"{% endif %}>{{ c.stations.regions[region] }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
 
 {% if king_up %}
 <section class="callout kt-next" aria-labelledby="kt-next">
@@ -49,6 +50,11 @@
   <p class="meta">{{ c.next.note }}</p>
 </section>
 {% endif %}
+
+<section aria-labelledby="kt-definition">
+  <h2 id="kt-definition">{{ c.definition.heading }}</h2>
+  {% for p in c.definition.body %}<p>{{ p }}</p>{% endfor %}
+</section>
 
 <section class="callout warning" aria-labelledby="kt-safety">
   <h2 id="kt-safety">{{ c.safety.heading }}</h2>

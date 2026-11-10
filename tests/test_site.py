@@ -801,3 +801,51 @@ def test_site_checks_sample_skips_redirect_stubs(tmp_path: Path) -> None:
         p.parent.relative_to(out).as_posix() + "/" for p in out.glob("states/*/*/index.html")
     ]
     assert "states/nc/" in picked and "stations/1630000/" in picked
+
+
+def _lastmods(root: Path) -> dict[str, str]:
+    text = (root / "sitemap.xml").read_text(encoding="utf-8")
+    return dict(re.findall(r"<loc>https://tidehours\.com/([^<]*)</loc><lastmod>([^<]*)</lastmod>", text))
+
+
+def test_sitemap_lastmod_carries_over_for_unchanged_pages(tmp_path: Path, built: Path) -> None:
+    """DECISIONS 0028: with the live sitemap and lastmod.json, a page whose
+    HTML is unchanged keeps the date it last changed, and a changed page gets
+    the build date. Without them, or with a record that cannot be trusted,
+    every page gets the build date."""
+    prev = tmp_path / "prev"
+    prev.mkdir()
+    shutil.copy(built / "lastmod.json", prev / "lastmod.json")
+    old = (built / "sitemap.xml").read_text(encoding="utf-8").replace("<lastmod>2026-11-01<", "<lastmod>2026-10-20<")
+    (prev / "sitemap.xml").write_text(old, encoding="utf-8")
+    # Negative control: the about page's recorded fingerprint no longer
+    # matches, so it must get the build date, not the carried one.
+    manifest = json.loads((prev / "lastmod.json").read_text(encoding="utf-8"))
+    manifest["pages"]["/about/"]["fingerprint"] = "0" * 64
+    (prev / "lastmod.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert "<lastmod>2026-10-20<" in old and "2026-11-01" not in old  # the sabotage applied
+
+    out = tmp_path / "next"
+    assert (
+        cli.main(
+            ["--out", str(out), "--now", "2026-11-02T11:20:00Z", "--states", "CA,HI,other", "--previous", str(prev)]
+        )
+        == 0
+    )
+    mods = _lastmods(out)
+    # Unchanged since the previous build: the king-tide calendars, privacy, terms.
+    for path in ("king-tides/california/", "privacy/", "terms/"):
+        assert mods[path] == "2026-10-20", path
+    assert mods["about/"] == "2026-11-02"  # the record no longer matched
+    assert mods["stations/9414290/"] == "2026-11-02"  # today's tides are new
+    assert set(mods.values()) == {"2026-10-20", "2026-11-02"}
+
+    # Nothing to compare with, or a lastmod after the build date: build date.
+    assert set(_lastmods(built).values()) == {"2026-11-01"}
+    (prev / "lastmod.json").unlink()
+    assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-11-02") == {}
+    assert site.previous_lastmods(None, "https://tidehours.com/", "2026-11-02") == {}
+    shutil.copy(built / "lastmod.json", prev / "lastmod.json")
+    assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-10-19") == {}
+    (prev / "lastmod.json").write_text("not json", encoding="utf-8")
+    assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-11-02") == {}

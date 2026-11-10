@@ -396,6 +396,7 @@ def king_calendar_pages(
             calendar_first=kingtides.CALENDAR_FIRST,
             calendar_last=kingtides.CALENDAR_LAST,
             calendar_states=kingtides.CALENDAR_STATES,
+            search=kingtides.CALENDAR_SEARCH[code],
             **king_common,
         )
 
@@ -593,9 +594,47 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     return pages
 
 
-def sitemap(pages: list[Page], base: str, built: str) -> str:
+def fingerprint(page: Page) -> str:
+    return hashlib.sha256(page.html.encode("utf-8")).hexdigest()
+
+
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def previous_lastmods(previous: Path | None, base: str, built: str) -> dict[str, tuple[str, str]]:
+    """Page path ("" for home) -> (fingerprint, lastmod) from the live site's
+    sitemap.xml and lastmod.json, saved into `previous` before the build
+    (publish.yml). A page whose HTML is unchanged keeps the date it last
+    changed instead of the build date (docs/DECISIONS.md 0028). Anything
+    missing or unreadable gives {}: every page then gets the build date, as
+    before, which is never earlier than the truth."""
+    if previous is None:
+        return {}
+    try:
+        mods = indexnow.parse_sitemap((previous / "sitemap.xml").read_text(encoding="utf-8"))
+        pages = json.loads((previous / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+        out: dict[str, tuple[str, str]] = {}
+        for path, entry in pages.items():
+            mod = mods.get(base.rstrip("/") + path, "")
+            if _ISO_DATE.fullmatch(mod) and mod <= built:
+                out[path[1:]] = (str(entry["fingerprint"]), mod)
+        return out
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {}
+
+
+def sitemap(pages: list[Page], base: str, built: str, previous: dict[str, tuple[str, str]] | None = None) -> str:
+    """Each indexable page with its lastmod: the date its HTML last changed
+    when the previous build's record says it is unchanged, else the build
+    date."""
+    prev = previous or {}
+
+    def lastmod(p: Page) -> str:
+        have = prev.get(p.path)
+        return have[1] if have and have[0] == fingerprint(p) else built
+
     rows = [
-        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{built}</lastmod></url>"
+        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{lastmod(p)}</lastmod></url>"
         for p in pages
         if p.path != "404" and p.index
     ]
@@ -605,7 +644,7 @@ def sitemap(pages: list[Page], base: str, built: str) -> str:
     )
 
 
-def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
+def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path | None = None) -> int:
     """Builds into `out` (replaced). Returns the number of HTML pages."""
     pages = render(cat, cfg, now)
     e = env()
@@ -631,7 +670,9 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
         "station_count": len(cat.stations),
     }
     (out / "404.html").write_text(e.get_template("404.html.jinja").render(**common, path="404"), encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
+    (out / "sitemap.xml").write_text(
+        sitemap(pages, base, built, previous_lastmods(previous, base, built)), encoding="utf-8"
+    )
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
     # /llms.txt (llms.py); deploy.sh uploads non-HTML files with the type the
     # extension gives, text/plain for .txt, as it does for robots.txt.
@@ -649,15 +690,10 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
 
 def page_manifest(pages: list[Page]) -> str:
     """Each sitemap page's path and a SHA-256 of its HTML (schema 1, as read
-    by indexnow.py's "manifest" kind). The sitemap's lastmod is the build date
-    on every page, so it cannot tell a changed page from an unchanged one;
-    this can, because a rebuild of the same day is byte-identical. The next
-    build compares its manifest with the live one and announces only the pages
-    whose HTML changed (docs/DECISIONS.md 0011). Noindex pages are left out,
-    as they are from the sitemap (0013)."""
-    entries = {
-        "/" + p.path: {"fingerprint": hashlib.sha256(p.html.encode("utf-8")).hexdigest()}
-        for p in pages
-        if p.path != "404" and p.index
-    }
+    by indexnow.py's "manifest" kind). A rebuild of the same day is
+    byte-identical, so the next build compares its manifest with the live one
+    and announces only the pages whose HTML changed (docs/DECISIONS.md 0011),
+    and keeps an unchanged page's sitemap lastmod (0028). Noindex pages are
+    left out, as they are from the sitemap (0013)."""
+    entries = {"/" + p.path: {"fingerprint": fingerprint(p)} for p in pages if p.path != "404" and p.index}
     return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

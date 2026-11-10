@@ -19,9 +19,17 @@
       "missing": "{count} of the {total} stations have no king-tide run in the next {days} days. Their dates are in the lists below.",
       "note": "These are predictions, not observations, and not for navigation. Storms, wind and river flow can push the water higher. Read the warning below."
     },
+    "definition": {
+      "heading": "What is a king tide?",
+      "body": [
+        "“King tide” is a popular, non-scientific name for the highest predicted tides of the year. NOAA says higher than normal tides typically come with a new or full moon, when the moon is closest to Earth (perigee), or in certain seasons. On this page a king tide is one of each station's runs of its highest predicted high tides, picked as described under “How these dates were picked.”",
+        "A king tide is a prediction of the tide alone. It does not forecast storms, waves or flooding."
+      ]
+    },
     "heading": "King tides 2026–27 on the West Coast",
     "lead": "The days with the highest predicted tides of the year at 31 NOAA tide stations from Bellingham to San Diego, with times and heights.",
     "updated": "Computed from NOAA CO-OPS harmonic constants retrieved {date}.",
+    "calendarLinks": "King tide dates by month, November to February:",
     "california": {
       "heading": "California's 2026–27 king tide dates",
       "body": [
@@ -170,9 +178,17 @@
       "missing": "{count} de las {total} estaciones no tienen una serie de mareas reales en los próximos {days} días. Sus fechas están en las listas de abajo.",
       "note": "Son predicciones, no observaciones, y no sirven para la navegación. Las tormentas, el viento y el caudal de los ríos pueden subir el agua. Lea el aviso de abajo."
     },
+    "definition": {
+      "heading": "¿Qué es una marea real (king tide)?",
+      "body": [
+        "“King tide” (marea real) es un nombre popular, no científico, para las mareas previstas más altas del año. Según NOAA, las mareas más altas de lo normal suelen darse con la luna nueva o llena, cuando la luna está más cerca de la Tierra (perigeo) o en ciertas estaciones del año. En esta página, una marea real es una de las series de pleamares previstas más altas de cada estación, elegidas como se explica en “Cómo se eligieron estas fechas”.",
+        "Una marea real es una predicción de la marea y nada más. No pronostica tormentas, oleaje ni inundaciones."
+      ]
+    },
     "heading": "Mareas reales (king tides) 2026–27 en la costa oeste",
     "lead": "Los días con las mareas previstas más altas del año en 31 estaciones mareográficas de NOAA, de Bellingham a San Diego, con horas y alturas.",
     "updated": "Calculado con las constantes armónicas de NOAA CO-OPS obtenidas el {date}.",
+    "calendarLinks": "Fechas de las mareas reales por mes, de noviembre a febrero (en inglés):",
     "california": {
       "heading": "Fechas de las mareas reales 2026–27 en California",
       "body": [

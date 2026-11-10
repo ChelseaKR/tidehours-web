@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- King-tide calendars open with the answer: "When are the king tides in
+  Washington?", one line per month with the days and peak days. Their titles
+  and descriptions name the places people search (Seattle, Puget Sound, the
+  Oregon coast, San Francisco, San Diego). The king-tide pages define "king
+  tide" as a popular, non-scientific name and link the three calendars
+  under the lead, as does the home page. The sitemap's `lastmod` is now the
+  date a page last changed, not the build date (DECISIONS 0028).
 - The king-tide page's title names Washington, Oregon and California in
   full, and its description leads with the next dates and names Seattle,
   Puget Sound and the Oregon coast, the words people search with

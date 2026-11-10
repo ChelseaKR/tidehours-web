@@ -750,3 +750,54 @@ clicks, so 0 clicks is weak evidence on its own. Recheck the page's
 click-through rate after the Nov 23 run.
 
 **For the app:** nothing changes.
+
+## 0028: King-tide pages answer the winter searches first; sitemap lastmod is the date a page changed (2026-11-09)
+
+(0026 and 0027 are reserved for other branches.) Search Console for
+sc-domain:tidehours.com, Aug 10 to Nov 7, 2026 (data from Nov 3 on): the
+English king-tide page had 112 impressions, 1 click, average position 8.3,
+the only page with real volume. Its named queries ask when, by month or
+place: "king tides november 2026", "when are the king tides this year",
+"king tides oregon 2026 schedule", "king tides puget sound 2026", "king
+tides washington coast 2026", "washington state king tides 2026", "king
+tides december 2026", "king tides seattle 2026". The three state calendars
+(0024) had no impressions yet. Every sitemap `lastmod` was the build date, so
+the king-tide pages claimed a change every day though their HTML had not
+changed.
+
+- **State calendars, title and description:** named for the places on
+  them that people search ("Washington king tides 2026–27: Seattle, Puget
+  Sound, coast"; "Oregon king tides 2026–27: coast schedule by month,
+  Nov–Feb"; "California king tides 2026–27: San Francisco to San Diego"),
+  from `kingtides.CALENDAR_SEARCH`. Every place named is a king-tide
+  station's place or its catalog region (Puget Sound is Seattle's, Tacoma's
+  and Olympia's region; San Francisco Bay is Golden Gate's, Alameda's and
+  Redwood City's), checked by `tests/test_king_calendar.py`, with a
+  negative control. Titles stay within 60 characters (0020).
+- **Answer first:** each calendar opens with "When are the king tides in
+  {state}?", one line per month: the days, the peak days and how many
+  stations, from the same `CalendarMonth.span` the month's sentence uses,
+  so the two cannot disagree. A month without a run says so in words. Still
+  pinned to the season, never rolled by the build date (0024).
+- **Definition:** the king-tide pages (English and Spanish) say that "king
+  tide" is a popular, non-scientific name, as NOAA does, give NOAA's reason
+  for higher tides, say what it means on the page, and say it does not
+  forecast storms, waves or flooding.
+- **Links:** the king-tide pages link the three calendars right under the
+  lead, and the home page's king-tide paragraph links them too.
+- **No region pages.** Puget Sound and San Francisco Bay have three
+  king-tide stations each, all already on their state's calendar; a page of
+  its own would repeat those rows (0022's thin-page concern). The titles and
+  descriptions name them instead.
+- **Sitemap lastmod:** `publish.yml` saves the live `sitemap.xml` and
+  `lastmod.json` before the build, and `tidehours --previous` keeps a page's
+  live `lastmod` when its SHA-256 matches the live one (0011); a changed or
+  new page gets the build date. If either file is missing or unreadable, or a
+  date is later than the build, every page gets the build date, as before.
+  Station pages still change daily (today's tides), so they still carry the
+  build date.
+
+Not changed: the king-tide page's title and description (0025), the Spanish
+title, URLs, and the app.
+
+**For the app:** nothing changes.

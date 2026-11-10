@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
-{% block title %}{{ state_name }} king tides 2026–27: dates by month, Nov–Feb | Tide Hours{% endblock %}
-{% block description %}Predicted king tide dates in {{ state_name }} for winter 2026–27, month by month from November 2026 to February 2027: each place's highest tides, local time and height at {{ kt_station_count }} NOAA stations.{% endblock %}
+{% block title %}{{ search.title }} | Tide Hours{% endblock %}
+{% block description %}Predicted king tides {{ search.where }} by month, Nov 2026 to Feb 2027: {{ search.places[:-1]|join(", ") }} and {{ search.places[-1] }}, with times and heights.{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
   "@context": "https://schema.org",
@@ -21,6 +21,18 @@
 </nav>
 <h1>{{ state_name }} king tides 2026–27, by month</h1>
 <p class="lead">The days with the highest predicted tides from {{ fmt_long_date(calendar_first, "en", kc) }} to {{ fmt_long_date(calendar_last, "en", kc) }} at {{ kt_station_count }} NOAA tide stations in {{ state_name }}, computed from NOAA's harmonic constants.</p>
+
+<section class="callout kt-next" aria-labelledby="kt-glance">
+  <h2 id="kt-glance">When are the king tides in {{ state_name }}?</h2>
+  <ul>
+  {% for m in calendar %}
+    {% set month_name = kc.monthsLong[m.month - 1] ~ " " ~ m.year %}
+    {% set sp = m.span %}
+    <li data-kt-glance="{{ m.year }}-{{ "%02d"|format(m.month) }}">{% if sp %}<a href="#m-{{ m.year }}-{{ "%02d"|format(m.month) }}">{{ month_name }}</a>: {{ fmt_range(sp[0], sp[1], "en", kc) }}, {% if sp[2] == sp[3] %}highest on {{ fmt_date(sp[2], "en", kc) }}{% else %}highest {{ fmt_range(sp[2], sp[3], "en", kc) }} depending on the place{% endif %} ({% if m.stations == kt_station_count %}all {{ kt_station_count }}{% else %}{{ m.stations }} of {{ kt_station_count }}{% endif %} stations){% else %}{{ month_name }}: no run of the year's highest predicted tides peaks this month{% endif %}</li>
+  {% endfor %}
+  </ul>
+  <p class="meta">Predicted, not observed. Each month below lists every place's days, the time of its highest tide (Pacific time) and its height in feet above MLLW.</p>
+</section>
 <p>These are predictions, not observations or flood forecasts. Times are Pacific time. Heights are feet above mean lower low water (MLLW), the datum on NOAA charts. “Above a normal high tide” is the height above mean higher high water (MHHW), the average of each day's higher high tide at that station{% if epochs|length == 1 %}, for NOAA's {{ epochs[0]|replace("-", "–") }} tidal datum epoch{% else %}, for NOAA's tidal datum epochs {{ epochs|join(", ")|replace("-", "–") }}{% endif %}.</p>
 <p class="meta">Computed from NOAA CO-OPS harmonic constants retrieved {{ fmt_long_date(retrieved, "en", kc) }}.</p>
 
@@ -36,10 +48,8 @@
 <section aria-labelledby="{{ mid }}" data-kt-cal-month="{{ m.year }}-{{ "%02d"|format(m.month) }}">
   <h2 id="{{ mid }}">{{ month_name }}</h2>
   {% if m.runs %}
-  {% set firsts = m.runs|map(attribute="first")|list %}
-  {% set lasts = m.runs|map(attribute="last")|list %}
-  {% set peaks = m.runs|map(attribute="peak")|map(attribute="date")|list %}
-  <p>{% if m.stations == kt_station_count %}All {{ kt_station_count }}{% else %}{{ m.stations }} of {{ kt_station_count }}{% endif %} stations have a run of the year's highest predicted tides that peaks in {{ month_name }}{% if m.runs|length == m.stations + 1 %} (one has two){% elif m.runs|length > m.stations %} (some have two){% endif %}. Together the runs span {{ fmt_range(firsts|min, lasts|max, "en", kc) }}, {% if peaks|min == peaks|max %}highest on {{ fmt_date(peaks|min, "en", kc) }}{% else %}highest {{ fmt_range(peaks|min, peaks|max, "en", kc) }} depending on the place{% endif %}.</p>
+  {% set sp = m.span %}
+  <p>{% if m.stations == kt_station_count %}All {{ kt_station_count }}{% else %}{{ m.stations }} of {{ kt_station_count }}{% endif %} stations have a run of the year's highest predicted tides that peaks in {{ month_name }}{% if m.runs|length == m.stations + 1 %} (one has two){% elif m.runs|length > m.stations %} (some have two){% endif %}. Together the runs span {{ fmt_range(sp[0], sp[1], "en", kc) }}, {% if sp[2] == sp[3] %}highest on {{ fmt_date(sp[2], "en", kc) }}{% else %}highest {{ fmt_range(sp[2], sp[3], "en", kc) }} depending on the place{% endif %}.</p>
   <div class="table-scroll" role="region" tabindex="0" aria-labelledby="{{ mid }}-cap">
   <table class="events">
     <caption id="{{ mid }}-cap">Predicted king tides in {{ state_name }}, {{ month_name }}</caption>

@@ -115,3 +115,10 @@
 - GA4 hook, off by default. Sitemap, robots.txt, canonical URLs.
 - Hosting as code (`infra/site.yaml`: S3, CloudFront, ACM, Route 53, the
   OIDC deploy role) and a deploy job in `publish.yml` (DECISIONS 0009).
+- A high or low in the first 30 minutes of a GMT year (7:00 to 7:30 PM
+  Eastern, 4:00 to 4:30 PM Pacific on New Year's Eve) now matches NOAA's
+  published one. NOAA finds it with the old year's lunar-node constants; the
+  engine used the new year's, which put Bar Harbor's 2028-01-01 00:09 GMT
+  low at 00:07 and 0.465 ft against NOAA's 0.377 ft. Measured at 18 stations
+  around the 2027 and 2028 new years; the tide curve is unchanged, as NOAA's
+  is (DECISIONS 0031).

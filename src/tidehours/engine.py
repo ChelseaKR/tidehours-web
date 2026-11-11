@@ -6,7 +6,8 @@ same numbers from the same NOAA constants.
 Harmonic stations: h(t) = Z0 + sum f_i H_i cos(a_i t + (V0 + u)_i - kappa_i),
 t in hours from 00:00 UTC on January 1, with V0 + u and f held for the
 calendar year (Schureman, NOAA Special Publication 98; node factors at
-July 2, 12:00 UTC, as the app does).
+July 2, 12:00 UTC, as the app does). Highs and lows keep a year's constants
+for 30 minutes into the next year, as NOAA's published ones do (YEAR_CARRY).
 
 Subordinate stations: NOAA's method. Take the reference station's highs and
 lows, shift their times by the published minutes, and scale or offset their
@@ -274,6 +275,28 @@ def drop_stands(events: Sequence[TideEvent]) -> list[TideEvent]:
         del ev[best : best + 2]
 
 
+# NOAA's curve changes to the new year's constants at 00:00 GMT on January 1,
+# as `heights` does, but its published highs and lows do not: a high or low
+# that the old year's constants put before 00:30 GMT is published from the
+# old year. Measured 2026-11-10 on NOAA's predictions around 2027-01-01 and
+# 2028-01-01 at 18 stations (docs/DECISIONS.md 0031). The 10 tides the old
+# constants put from 5 minutes before midnight to 29.96 minutes after
+# (Kodiak, Womens Bay) are NOAA's to 0.007 ft with the old year's constants
+# and 0.07 to 0.27 ft off with the new year's; the 7 they put from 30.28
+# minutes after (Ouzinkie) to 62 are NOAA's to 0.009 ft with the new year's
+# and 0.04 to 0.24 ft off with the old. A subordinate station follows its
+# reference (Birch Islands, ME, 01:33, from Eastport's 00:20 low). NOAA's
+# 6-minute heights at Fire Island, AK follow the new year from 00:00 on,
+# 0.27 ft below its own 00:26 low.
+YEAR_CARRY = 30 * 60.0
+
+
+def tide_year(t: float) -> int:
+    """The year whose constants find a high or low at `t`: the UTC year,
+    kept for YEAR_CARRY into the next."""
+    return utc_year(t - YEAR_CARRY)
+
+
 class HarmonicPredictor:
     """The app's HarmonicPredictor, vectorized over time with numpy."""
 
@@ -306,13 +329,21 @@ class HarmonicPredictor:
             self._terms[year] = t
         return t
 
-    def _eval(self, times: FloatArray, derivative: bool) -> FloatArray:
+    def _eval(self, times: FloatArray, derivative: bool, held: int | None = None) -> FloatArray:
+        """Heights, or rates, with each instant's own UTC year's constants;
+        with `held`, that one year's constants at every instant."""
         out = np.empty(times.shape, dtype=np.float64)
         if times.size == 0:
             return out
-        years = np.array([utc_year(float(t)) for t in (times.min(), times.max())])
-        for year in range(int(years[0]), int(years[1]) + 1):
-            mask = (times >= year_start(year)) & (times < year_start(year + 1))
+        if held is None:
+            first, last = utc_year(float(times.min())), utc_year(float(times.max()))
+        else:
+            first = last = held
+        for year in range(first, last + 1):
+            if held is None:
+                mask = (times >= year_start(year)) & (times < year_start(year + 1))
+            else:
+                mask = np.ones(times.shape, dtype=np.bool_)
             if not mask.any():
                 continue
             start, amp, arg0 = self._year_terms(year)
@@ -348,14 +379,51 @@ class HarmonicPredictor:
         return [e for e in drop_stands(raw) if start <= e.time < end]
 
     def raw_events(self, start: float, end: float) -> list[TideEvent]:
-        """Every high and low in [start, end): sign changes of dh/dt on a
-        6-minute grid, each refined by bisection to under one second. This is
-        exactly the app's HarmonicPredictor.events."""
+        """Every high and low in [start, end). Each year's constants find the
+        highs and lows up to YEAR_CARRY after the year ends, as NOAA's do;
+        everywhere else this is exactly the app's HarmonicPredictor.events."""
+        if end <= start:
+            return []
+        out: list[TideEvent] = []
+        for year in range(tide_year(start), tide_year(end) + 1):
+            first = year_start(year) + YEAR_CARRY
+            found = self._held_events(max(start, first), min(end, year_start(year + 1) + YEAR_CARRY), year)
+            if start < first + STAND_MINUTES * 60:
+                found = [e for e in self._hand_over(first, year, found) if start <= e.time < end]
+            out += found
+        return out
+
+    def _hand_over(self, t: float, year: int, found: list[TideEvent]) -> list[TideEvent]:
+        """`found`, highs and lows of `year`, as they follow the year
+        before, which stops finding them at `t` (YEAR_CARRY into `year`).
+        If the two years agree at `t` on whether the tide is rising, nothing
+        changes. If they do not, one of them has passed a high or low that
+        the other has not reached. Where the old year has passed it, the old
+        year found it, and the new year's copy of the same tide, which
+        follows `t` as a stand would, is left out (Kodiak, Womens Bay,
+        2028-01-01: 00:29.96 and 00:30.71). Where the new year has passed
+        it, neither found it, and it is put at `t` with the new year's
+        height (NOAA's 00:30 low at Milbridge, ME, the same day)."""
+        at = np.array([t])
+        before = float(self._eval(at, derivative=True, held=year - 1)[0])
+        after = float(self._eval(at, derivative=True, held=year)[0])
+        if not (before < 0 < after or after < 0 < before):
+            return found
+        joint = TideEvent(t, float(self._eval(at, derivative=False, held=year)[0]), "H" if before > 0 else "L")
+        copy = self._held_events(t, t + STAND_MINUTES * 60, year)[:1]
+        if copy and abs(copy[0].height - joint.height) < STAND_FEET:
+            return [e for e in found if e.time > copy[0].time + 1]  # a second: two searches' rounding
+        return [joint, *found]
+
+    def _held_events(self, start: float, end: float, year: int) -> list[TideEvent]:
+        """The highs and lows in [start, end) with `year`'s constants: sign
+        changes of dh/dt on a 6-minute grid, each refined by bisection to
+        under one second."""
         if end <= start:
             return []
         grid = np.arange(start, end, self.STEP, dtype=np.float64)
         grid = np.append(grid, end) if grid[-1] < end else grid
-        r = self.rates(grid)
+        r = self._eval(grid, derivative=True, held=year)
         r0, r1 = r[:-1], r[1:]
         crossing = ((r0 > 0) & (r1 <= 0)) | ((r0 < 0) & (r1 >= 0))
         idx = np.nonzero(crossing)[0]
@@ -367,13 +435,13 @@ class HarmonicPredictor:
         while np.any(hi - lo > 0.5):
             active = hi - lo > 0.5
             mid = lo + (hi - lo) / 2
-            rm = self.rates(mid)
+            rm = self._eval(mid, derivative=True, held=year)
             go_lo = active & ((rm > 0) == rising)
             go_hi = active & ~((rm > 0) == rising)
             lo = np.where(go_lo, mid, lo)
             hi = np.where(go_hi, mid, hi)
         t = lo + (hi - lo) / 2
-        h = self.heights(t)
+        h = self._eval(t, derivative=False, held=year)
         return [
             TideEvent(float(tt), float(hh), "H" if up else "L")
             for tt, hh, up in zip(t, h, rising, strict=True)

@@ -853,3 +853,187 @@ remove the code, drop `printshop.py`, the copy file, the template and its
 two includes, the privacy and terms lines, and the check.
 
 **For the app:** nothing changes.
+
+## 0031: Highs and lows keep a year's constants for 30 minutes into the next (2026-11-10)
+
+**What was wrong.** The engine picks each instant's lunar-node constants (f
+and V0 + u) by its GMT year, as the app does, so its curve steps at 00:00
+GMT on January 1 and it found every high and low on that stepped curve.
+NOAA's published highs and lows do not all step there. At Bar Harbor
+(8413320) NOAA's low on 2028-01-01 is at 00:09 GMT and 0.377 ft; the engine
+said 00:07 and 0.465 ft. No test looked at this hour: the fixtures were
+November 2026 and June 2031.
+
+**Measured (2026-11-10).** 20 requests to NOAA's predictions API, each for
+two days, two seconds apart (`scripts/fetch_golden.py --year-boundary`,
+`tests/fixtures/golden-year-boundary.json`): the highs and lows at 18
+stations, the 6-minute heights at one, and Bar Harbor's highs and lows
+again, asked for from January 1. The stations were chosen with
+the engine: harmonic stations with a high or low near 00:00 GMT on
+2028-01-01 or 2027-01-01, spread over the first hour, where the two years'
+constants give heights at least 0.04 ft apart. Each row is NOAA's tide
+nearest midnight, where each year's constants, held, put that tide (minutes
+after 00:00 GMT), and how far each is from NOAA's height.
+
+2028-01-01:
+
+| Station | NOAA (GMT) | Old year puts it at | and is off by | New year puts it at | and is off by | NOAA's is |
+|---|---|---|---|---|---|---|
+| Wauna, OR 9439099 | 23:55 H 6.820 ft | -4.94 min | +0.003 ft | -4.24 min | -0.107 ft | old |
+| Popokamute, AK 9466057 | 00:02 H 5.444 ft | +2.39 min | +0.001 ft | +0.02 min | +0.188 ft | old |
+| Bar Harbor, ME 8413320 | 00:09 L 0.377 ft | +8.86 min | +0.001 ft | +7.18 min | +0.088 ft | old |
+| Oceanville, ME 8414249 | 00:25 L -0.251 ft | +24.96 min | -0.007 ft | +22.63 min | +0.130 ft | old |
+| Fire Island, AK 9455912 | 00:26 L 5.634 ft | +25.88 min | -0.004 ft | +25.37 min | -0.273 ft | old |
+| Wells, ME 8419317 | 00:29 L 0.125 ft | +29.17 min | -0.000 ft | +27.15 min | +0.072 ft | old |
+| Kodiak, Womens Bay, AK 9457292 | 00:30 H 8.700 ft | +29.96 min | -0.001 ft | +30.71 min | -0.073 ft | old |
+| Ouzinkie, AK 9457287 | 00:31 H 8.136 ft | +30.28 min | +0.061 ft | +31.04 min | +0.003 ft | new |
+| Milbridge, ME 8412581 | 00:30 L 0.647 ft | +30.44 min | -0.040 ft | +29.45 min | +0.006 ft | new |
+| New Haven, CT 8465705 | 00:31 L 0.164 ft | +31.64 min | -0.059 ft | +30.69 min | -0.000 ft | new |
+| Pettegrove Point, ME 8410834 | 00:34 L 0.866 ft | +35.27 min | -0.237 ft | +34.09 min | +0.005 ft | new |
+| Birch Islands, ME 8410875 (subordinate) | 01:33 L 0.461 ft | +93.00 min | -0.005 ft | +91.63 min | +0.104 ft | old |
+
+2027-01-01:
+
+| Station | NOAA (GMT) | Old year puts it at | and is off by | New year puts it at | and is off by | NOAA's is |
+|---|---|---|---|---|---|---|
+| Anchor Point, AK 9455606 | 00:02 L 3.252 ft | +1.87 min | -0.003 ft | -1.22 min | -0.179 ft | old |
+| Port Angeles, WA 9444090 | 00:19 L 1.763 ft | +18.88 min | +0.007 ft | +16.40 min | -0.117 ft | old |
+| Lomavik, AK 9466328 | 00:28 L 0.162 ft | +28.52 min | -0.001 ft | +25.75 min | -0.146 ft | old |
+| Dolgoi Harbor, AK 9459758 | 00:32 L 1.561 ft | +33.77 min | +0.067 ft | +31.72 min | +0.005 ft | new |
+| Platinum, AK 9465396 | 00:35 H 8.262 ft | +36.17 min | -0.227 ft | +35.42 min | -0.009 ft | new |
+| Goodnews Bay, AK 9465438 | 01:01 H 8.317 ft | +61.68 min | -0.210 ft | +60.96 min | +0.009 ft | new |
+
+Three rows measured earlier the same day and not in the fixture agree:
+Eastport (8410140) 2028-01-01 00:20 L 0.615 ft is the old year's (-0.007
+ft), and Anchorage (9455920) 00:37 L 5.904 ft and 06:05 H 27.812 ft are the
+new year's. Every other tide in the two days at the 18 stations, 108 of
+them, is the year's own to 0.010 ft: all of December 31 the old year's,
+all from 05:54 GMT on January 1 the new year's.
+
+**The rule that fits every row.** A high or low that the old year's
+constants put before 00:30 GMT on January 1 is published with the old
+year's constants. Otherwise it is published with the new year's. What
+decides is where the old year's constants put the tide, not where the new
+year's do and not NOAA's printed minute: Kodiak, Womens Bay (old year
+00:29.96, new year 00:30.71) is the old year's, and Milbridge (old year
+00:30.44, new year 00:29.45) is the new year's, though NOAA prints both at
+00:30. The cutoff is between 29.96 and 30.28 minutes in 2028 and between
+28.52 and 33.77 in 2027; 30 minutes is the one round number in both.
+
+Also measured:
+
+- **Before midnight.** No tide before 00:00 GMT uses the next year's
+  constants (Wauna, five minutes before; every December 31 tide).
+- **NOAA's curve is different.** NOAA's 6-minute heights at Fire Island,
+  AK follow the old year's constants through 23:54 and the new year's from
+  00:00 on, each to 0.007 ft. Its own curve reads 5.37 ft where its
+  published 00:26 low says 5.634 ft. So NOAA's curve steps at midnight, as
+  this engine's does, and only its list of highs and lows runs on.
+- **Subordinate stations follow the reference's tide.** Birch Islands'
+  01:33 low, 93 minutes after midnight, is the old year's: it is Eastport's
+  00:20 low moved 73 minutes.
+- **The answer does not depend on the request.** Bar Harbor asked for from
+  January 1 gives the same 00:09 low, 0.377 ft, as asked for from December
+  31.
+
+**What changed.** `engine.py`, highs and lows only. `raw_events` finds
+them year by year, each year's constants held from 30 minutes after its
+start to 30 minutes after its end (`YEAR_CARRY`, `tide_year`), on a curve
+with no step in it. At the hand-over (00:30 GMT) the two years can
+disagree on whether the tide is rising (`_hand_over`):
+
+- The old year has just passed a high or low and the new year has not
+  reached it (Kodiak): the old year's stands, and the new year's copy of
+  the same tide, which follows within the stand rule's 120 minutes and 0.06
+  ft (0004), is left out.
+- The new year has passed it and the old year has not reached it
+  (Milbridge): neither finds it, so it is put at 00:30 with the new year's
+  height there. NOAA prints that low at 00:30, half a minute after the new
+  year's own 00:29.45.
+
+`heights`, `height` and `curve` are unchanged: they step at 00:00 GMT, as
+NOAA's 6-minute heights do. So for up to 30 minutes a year a high or low
+can sit off the drawn curve by the size of the step (0.08 ft at Bar Harbor,
+0.27 ft at Fire Island), as NOAA's does. Subordinate stations needed no
+change: they take the reference station's highs and lows.
+
+Finding highs and lows on a curve without a step also removes what the
+step made. At Hanbury Point, WA on 2028-01-01 the old engine listed a
+"low" of 6.148 ft followed by a "high" of 6.062 ft, one from each year's
+constants; now the old year's 0.018 ft pair is a stand and is dropped.
+
+**How much.** Over the ten new years 2026 to 2035 at the 1,232 harmonic
+stations, 1,055 of 12,320 station-years change. In 1,053 one tide changes:
+274 by 0.05 ft or more, 98 by 0.10 ft or more, the largest 0.27 ft. In the
+other two (Hanbury Point and Telegraph Bay, WA, 2028) the pair above is no
+longer listed. The changed tides are between 10 minutes before and 47
+minutes after midnight, except 12 flat tides in Florida, Alabama,
+Mississippi and Louisiana that the two years' constants put 22 minutes to
+three hours apart, where the old year's is now the one kept (South Pass,
+LA 2035: two minutes before midnight, not 51 after). A build on New Year's
+Eve 2026 changes a row in the tide table of 147 station pages, and moves a
+chart coordinate by half a unit or less on 879 more. The pinned build that
+`make verify` makes (2026-11-01) is byte for byte the same, so no page's
+HTML changes today.
+
+**Tests.** `tests/test_golden.py`: each of the 18 stations passes the
+existing comparison (3 minutes, 0.05 ft, same count) over its two days,
+and its tide nearest midnight is within a minute and 0.02 ft of NOAA's,
+which tells the two years apart at every station. Negative controls set
+the carry to 0 (10 stations miss, Bar Harbor by 0.088 ft), 29.9 minutes
+(Kodiak misses), 30.5 (Ouzinkie and Milbridge miss) and 60 (six of the
+seven new-year stations miss). The 6-minute heights pin the curve to the
+calendar year. On the engine before this change the tests of the 10
+stations whose tide NOAA takes from the old year fail. No existing test
+changed, no tolerance was loosened, and nothing was added to
+`KNOWN_DIVERGENCES`: no divergence remains in the fixture.
+
+**Not known.**
+
+- Whether the cutoff is exactly 30 minutes, and whether a tide at 00:30:00
+  itself is the old year's. Kodiak is 2.3 seconds inside it.
+- Whether NOAA prints a tide the hand-over puts at 00:30 at that minute.
+  It does at Milbridge, but there the new year's own low is only half a
+  minute earlier. Kings Point, NY (8516945) on 2028-01-01 would settle it
+  and narrow the cutoff: the old year puts the low at 00:30.21 and the new
+  year at 00:27.40, 0.068 ft apart. The rule says NOAA's is the new year's,
+  and the engine prints it at 00:30; NOAA prints 00:27 or 00:30. One
+  request (add the station to `YEAR_BOUNDARY`); the 20 allowed for this
+  measurement were used before the station was noticed.
+- What NOAA publishes where the two years put one flat tide more than 30
+  minutes apart on either side of 00:30 (12 station-years in ten above).
+  The engine keeps one tide, never two or none; NOAA was not asked.
+- Why NOAA does it. One mechanism reproduces every row, Milbridge's
+  printed minute included: a search for changes of sign in the rate on
+  6-minute steps, with a year's constants used through the 00:30 step.
+  That is what `raw_events` now does, but it is a fit to what NOAA
+  publishes at two new years, not NOAA's description. A third
+  (2029-01-01) would be a cheap check: the same script with a new list of
+  stations.
+
+**For the app.** TideCore still finds highs and lows on the stepped
+curve, so on New Year's Eve (the 30 minutes from 7:00 PM Eastern, 4:00 PM
+Pacific, 3:00 PM Alaska, 2:00 PM Hawaii) the app can show a tide a few
+minutes and up to 0.27 ft from NOAA's and from this site. To stay in step,
+`HarmonicPredictor.events` in `Prediction.swift` would have to:
+
+1. Evaluate dh/dt and the height in the search with one year's constants
+   held, the year of `t - 1800 s`, not each instant's own year; and split
+   the search at `yearStart(Y) + 1800 s`, so no 6-minute step or bisection
+   straddles two years.
+2. At each split point inside the range, or less than two hours before its
+   start, compare the sign of dh/dt there under the old year's and the new
+   year's constants. If they agree, do nothing. If they differ, take the
+   new year's first high or low after the split point: when it is less
+   than 120 minutes later and less than 0.06 ft from the new year's height
+   at the split point, drop it (the old year already found that tide);
+   otherwise add an event at the split point with the new year's height
+   there, a low if the old year's curve was falling and a high if rising.
+3. Leave `height(at:)` and the curve alone: they change constants at 00:00
+   GMT, as NOAA's do.
+4. Copy `tests/fixtures/golden-year-boundary.json` into TideCore's
+   fixtures and assert the 18 tides nearest midnight to a minute and 0.02
+   ft. The subordinate predictor needs no change.
+
+The app is not changed here. Until it is, this is the second stated
+difference between the site and the app, after 0004.

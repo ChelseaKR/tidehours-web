@@ -4,11 +4,14 @@
               [--base-url https://tidehours.com/] [--ga4-id G-...]
               [--app-store-url https://apps.apple.com/...]
               [--amazon-tag tidehours-20]
+              [--print-shop-url https://www.etsy.com/shop/...]
 
 `--now` pins the clock (tests and reproducible builds); without it the
 build uses the current time. `--amazon-tag` turns on the Amazon links on
 the English king-tide page (docs/DECISIONS.md 0016); empty, the default,
-leaves them off. Each station's "today" is its own local date at
+leaves them off. `--print-shop-url` turns on the link to the Tide Hours
+shop on Etsy on the About page and the English king-tide page
+(docs/DECISIONS.md 0029); empty, the default, leaves it off. Each station's "today" is its own local date at
 that instant. Nothing is fetched: the NOAA data is committed in
 src/tidehours/data/ (scripts/refresh_data.py refreshes it).
 """
@@ -21,7 +24,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import affiliate, catalog, site
+from . import affiliate, catalog, printshop, site
 
 
 def parse_now(text: str | None) -> dt.datetime:
@@ -42,6 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ga4-id", default="")
     ap.add_argument("--app-store-url", default="")
     ap.add_argument("--amazon-tag", default="")
+    ap.add_argument("--print-shop-url", default="")
     ap.add_argument(
         "--previous",
         type=Path,
@@ -54,12 +58,14 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--app-store-url must be an https://apps.apple.com/ link")
     if args.amazon_tag and not affiliate.valid_tag(args.amazon_tag):
         raise SystemExit("--amazon-tag must be an Associates tracking ID like tidehours-20")
+    if args.print_shop_url and not printshop.valid_url(args.print_shop_url):
+        raise SystemExit("--print-shop-url must be an Etsy shop address like https://www.etsy.com/shop/TideHours")
     started = time.monotonic()
     cat = catalog.load()
     states = None
     if args.states:
         states = {s.strip().upper() if s.strip() != "other" else "other" for s in args.states.split(",")}
-    cfg = site.Config(args.base_url, args.ga4_id, args.app_store_url, states, args.amazon_tag)
+    cfg = site.Config(args.base_url, args.ga4_id, args.app_store_url, states, args.amazon_tag, args.print_shop_url)
     n = site.write(cat, cfg, parse_now(args.now), args.out, args.previous)
     print(f"tidehours: {n} pages in {time.monotonic() - started:.1f}s -> {args.out}")
     return 0

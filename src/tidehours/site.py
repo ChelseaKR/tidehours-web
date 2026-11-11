@@ -23,7 +23,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat, llms
+from . import affiliate, indexnow, kingtides, ktformat, llms, printshop
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -153,6 +153,9 @@ class Config:
     # Amazon Associates tracking ID. Empty (the default) means off: no
     # affiliate link anywhere (docs/DECISIONS.md 0016).
     amazon_tag: str = ""
+    # The Tide Hours shop on Etsy. Empty (the default) means off: no link
+    # anywhere (docs/DECISIONS.md 0029).
+    print_shop_url: str = ""
 
 
 @dataclass
@@ -497,6 +500,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
+        "print_shop": printshop.block(cfg.print_shop_url),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
@@ -665,6 +669,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
+        "print_shop": printshop.block(cfg.print_shop_url),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),

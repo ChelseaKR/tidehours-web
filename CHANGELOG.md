@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- A link to the Tide Hours print shop on Etsy, off by default. With the
+  repository variable `PRINT_SHOP_URL` set to the shop's address, the About
+  page and the English king-tide page each carry one sentence with one plain
+  link, the privacy page says where it goes, and the terms page names Etsy.
+  Unset, the build has no trace of it. `check_site.py --print-shop-url`
+  fails the build if the link is missing, repeated, on another page or not
+  the configured address (DECISIONS 0029).
 - King-tide calendars open with the answer: "When are the king tides in
   Washington?", one line per month with the days and peak days. Their titles
   and descriptions name the places people search (Seattle, Puget Sound, the

@@ -801,3 +801,55 @@ Not changed: the king-tide page's title and description (0025), the Spanish
 title, URLs, and the app.
 
 **For the app:** nothing changes.
+
+## 0029: A link to the Tide Hours print shop on Etsy, off by default (2026-11-10)
+
+(0026 and 0027 are reserved for other branches.) On 2026-11-10 the owner
+opened an Etsy shop, TideHours, with one listing: a made-to-order print of
+the tide at one place on one day, drawn by this site's engine. Each print's
+footer names tidehours.com. The owner asked for a link back from the site.
+The site's traffic is small (0028: the English king-tide page is the only
+page with real volume), so this is a courtesy to a reader who wants the
+print, not a traffic plan.
+
+**The switch.** `Config.print_shop_url` (`--print-shop-url`, the repository
+variable `PRINT_SHOP_URL`). Empty, the default, means off, and off leaves no
+trace: no link, no section, and the privacy and terms pages as they were.
+The value must be an Etsy shop's own address
+(`https://www.etsy.com/shop/Name`): no listing, query string or tracking
+parameter. A listing address changes when a listing is renewed or replaced;
+the shop's does not.
+
+**On.** The About page and the English king-tide page each end with a
+"Prints" section of one sentence and one link (`rel="noopener"`). The copy
+is in `src/tidehours/copy/print_shop.json`. The Spanish king-tide page has no
+link, because the sentence has had no native-Spanish review. Station, state
+and region pages have none: they are a reference, and 3,700 links to a shop
+would read as an ad on every page. The privacy page says where the link goes
+and that this site sends nothing to Etsy; the terms page adds Etsy to the
+names and trademarks.
+
+**Not an affiliate link.** The shop is Tide Hours' own. There is no tag, no
+click event and no `sponsored` rel, and the sentence states no price and
+makes no claim (a test refuses the same words 0016 refuses). The privacy
+page's "no ads" sentence is unchanged: this is the site naming its own
+print, as it names its own app.
+
+**Checked.** `scripts/check_site.py --print-shop-url` fails the build if,
+with no address, "etsy" appears in any page, the sitemap, robots.txt,
+lastmod.json or llms.txt; or if, with one, either page lacks the link, has
+it twice, or has another address or rel, or any other page links to or
+mentions Etsy (the privacy and terms pages may name it). `publish.yml`
+passes the same variable to the build and the check.
+`tests/test_print_shop.py` covers both states and has negative controls for
+each rule, each asserting the sabotage changed the build.
+
+**What it changes for the print test.** Views that arrive from this site
+count toward Etsy's view total, so the 2027-01-15 read of the listing is no
+longer a read of Etsy's search alone.
+
+**Reversible.** Yes: empty the variable and the next build has no link. To
+remove the code, drop `printshop.py`, the copy file, the template and its
+two includes, the privacy and terms lines, and the check.
+
+**For the app:** nothing changes.

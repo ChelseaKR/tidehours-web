@@ -40,7 +40,8 @@ at 81 stations. The one deliberate difference from the app, removing
 
 Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 `--base-url`, `--ga4-id` (empty: no analytics), `--app-store-url`,
-`--amazon-tag` (empty: no Amazon links; DECISIONS 0016).
+`--amazon-tag` (empty: no Amazon links; DECISIONS 0016), `--print-shop-url`
+(empty: no link to the print shop; DECISIONS 0029).
 
 ## CI
 

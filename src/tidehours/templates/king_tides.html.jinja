@@ -135,4 +135,7 @@
 {% if affiliate %}
 {% include "_affiliate_block.html.jinja" %}
 {% endif %}
+{% if print_shop and lang == "en" %}
+{% include "_print_shop.html.jinja" %}
+{% endif %}
 {% endblock %}

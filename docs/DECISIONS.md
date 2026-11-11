@@ -86,6 +86,9 @@ pair 99 minutes apart and 0.07 ft).
 to TideCore is a recommended follow-up, so the app and the site agree
 everywhere.
 
+Update, 2026-11-11: the app made this change in ChelseaKR/tide-hours#2, so
+the site and the app no longer differ here.
+
 ## 0005: States, regions and stations NOAA lists without a state
 
 States come from the station bundle; regions are NOAA's own region names
@@ -1148,3 +1151,9 @@ minutes and up to 0.27 ft from NOAA's and from this site. To stay in step,
 
 The app is not changed here. Until it is, this is the second stated
 difference between the site and the app, after 0004.
+
+Update, 2026-11-11: the app made the same change the same day
+(ChelseaKR/tide-hours DECISIONS 0006, #16); both engines give the same
+highs and lows at the fixture's 18 stations and on three ordinary days at
+three more, so
+the site and the app no longer differ here.

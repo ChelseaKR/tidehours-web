@@ -28,9 +28,10 @@ TideCore. `make verify` checks it against NOAA's own published predictions:
 a week at 16 stations (the app's fixture), three days at a harmonic and a
 subordinate station in every state, every high and low of November 2026
 at 81 stations, and the two days around 00:00 GMT on January 1 of 2027 and
-2028 at 18 stations. The two deliberate differences from the app are
-removing "stands" (DECISIONS 0004) and keeping a year's constants for the
-highs and lows of the first 30 minutes of the next (DECISIONS 0031).
+2028 at 18 stations. The app's engine makes the same two choices: it
+removes "stands" (DECISIONS 0004; the app's #2) and keeps a year's
+constants for the highs and lows of the first 30 minutes of the next
+(DECISIONS 0031; the app's DECISIONS 0006, #16).
 
 ## Commands
 

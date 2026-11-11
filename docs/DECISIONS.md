@@ -853,3 +853,114 @@ remove the code, drop `printshop.py`, the copy file, the template and its
 two includes, the privacy and terms lines, and the check.
 
 **For the app:** nothing changes.
+
+## 0030: A station page links to its own printed booklet on Amazon (2026-11-10)
+
+(0026 and 0027 are reserved for other branches.) On 2026-11-10 the owner
+published printed 2027 tide-table booklets through Amazon KDP under the
+author name Tide Hours, one station each, computed by this site's engine:
+Bar Harbor (station 8413320) and Half Moon Bay (9414131) are in Amazon's
+review, and Garibaldi (9437540) and Brewster Flats (8447241) follow. The
+reader of a station's page is the reader that station's booklet is for, so
+the page says the booklet exists. None is on sale yet, so the list ships
+empty.
+
+**The list.** `src/tidehours/copy/booklets.json` maps a station id to its
+booklet's ASIN, year and title. It ships empty, and empty leaves no trace:
+the full build with the pinned clock is byte for byte the build before this
+change (3,761 files compared, with the switches off and with all of them
+on). There is no repository variable. An entry is added by a pull request
+when a booklet is live, so an ASIN is reviewed like code and the same list
+is what `check_site.py` reads. `--booklets FILE` on the build and on
+`check_site.py` names another list; it is for tests.
+
+**What the list refuses.** An ASIN that is not ten characters of "B0" and
+eight capitals or digits, or an ISBN-10 whose check digit is right (a KDP
+paperback has one or the other), matched in full, so a whole address, a
+tag or a trailing space stops the build. A year that is not a whole number
+from 2000 to 2099. A title that is not "YEAR Tide Tables: Place" with the
+entry's own year. Any other key. One ASIN under two stations. A station id
+the catalog does not have.
+
+**The title is the booklet's own.** The first proposal was to build the
+link text from the station's name ("Bar Harbor Tide Tables 2027"). The
+titles the owner approved for the covers are "2027 Tide Tables: Bar Harbor",
+"2027 Tide Tables: Half Moon Bay" and so on, and this site's names for two
+of the stations are "Pillar Point Harbor, Half Moon Bay, CA" and "Sesuit
+Harbor, East Dennis, MA" (the Brewster Flats booklet). A title built from
+the station's name would be one no booklet has, so each entry carries the
+title printed on its cover, and its shape is checked.
+
+**The link.** Exactly `https://www.amazon.com/dp/ASIN`, with nothing after
+it: no Associates tag, no query string, no tracking parameter, no click
+event, `rel="noopener"` as in 0029. This is Tide Hours linking to its own
+book, not an affiliate link, and it stays untagged when the affiliate switch
+(0016) is on. Whether the Associates Operating Agreement asks for anything
+when a site in the program also links to its own book without a tag was not
+read for this change; that is with the owner.
+
+**Where.** Only on that station's own page: one sentence with one link,
+after the tide tables and the paragraph about the app and NOAA's own
+predictions, before the type of tide, the nearby stations and the closing
+notes. "A printed 2027 tide table for this station is sold on Amazon as
+2027 Tide Tables: Bar Harbor." with the title as the link. It states no
+price and makes no claim (a test refuses the words 0029 refuses). Not on
+state, region, home or king-tide pages, and not in the page's title,
+description or JSON-LD, the sitemap, robots.txt or llms.txt. `lastmod.json`
+changes only in that page's fingerprint.
+
+**When it leaves.** The link shows while the first day on the page, which
+is the station's own date when the site was built, is in the booklet's year
+or earlier. A 2027 booklet shows from the day it is listed until
+December 31, 2027 at the station, and the build of January 1, 2028 has no
+trace of it, with nobody editing a file. The entry can be removed whenever.
+
+**Privacy and terms.** While at least one page in the build shows a link,
+the privacy page has a "Booklet links" section (`/privacy/#booklets`) that
+says Tide Hours publishes the booklet, that the link is plain, where it
+goes and that this site sends nothing to Amazon; and the terms page names
+Amazon among the trademarks, once, whether or not the affiliate switch is
+also on. The sentence for every earlier combination of switches is
+unchanged. The privacy page's "no ads" sentence is unchanged, as in 0029:
+this is the site naming its own book.
+
+**What changed in 0016's check.** Before: with no tag, "amazon" appears
+nowhere; with one, an Amazon link appears only on the English king-tide
+page. Now `check_site.py` reads the list, works out from each listed
+station page's own date which pages are due the sentence, checks that
+sentence by itself, takes it out of the page, and runs 0016's rules,
+unchanged, on everything that is left. With no booklet listed the only
+difference is that llms.txt joins the files that may never mention Amazon.
+With one listed, the build fails if a due page has no sentence or two; if
+the sentence has more than one link, an address that is not exactly the
+booklet's, a rel other than `noopener` or a click event; if it sits before
+the tide tables or after the closing notes; if a sentence is on any page
+that is not due one, which covers a booklet whose year is over; or if
+Amazon is linked or named anywhere else. With no tag, the privacy and terms
+pages may name Amazon in words while a link shows, never with a link.
+
+**Analytics.** The link has no event of its own. If the GA4 property's
+Enhanced measurement counts outbound clicks, Google Analytics records a
+click on any link that leaves the site, with its address; that is a
+setting in the property, not in this repository, and it is with the owner
+to check.
+
+**What it changes elsewhere.** Listing a booklet, or its year ending,
+changes that station's page and the privacy and terms pages, so their
+sitemap `lastmod` moves and IndexNow announces them (0011, 0028); that is
+expected.
+
+**Tests.** `tests/test_station_booklets.py`: the empty list leaves no
+trace; one booklet changes that page, privacy, terms and their
+fingerprints and nothing else; bad entries are refused; the link leaves at
+the year's end by the station's date; the affiliate switch and a booklet
+together pass; and a negative control for each rule above, each asserting
+the sabotage changed the build. `tests/test_site.py` builds California
+with an empty list, so its tests do not change when a California booklet is
+listed.
+
+**Reversible.** Yes: empty the list and the next build has no link. To
+remove the code, drop `booklets.py`, the two copy files, the template and
+its include, the privacy and terms lines, and the check.
+
+**For the app:** nothing changes.

@@ -2,6 +2,14 @@
 
 ## 0.1.0 (unreleased)
 
+- A station's page can link to that station's printed tide-table booklet
+  on Amazon. `src/tidehours/copy/booklets.json` lists the booklets on sale
+  (station id, ASIN, year, title) and ships empty, which leaves the build
+  byte for byte as it was. A listed station's page carries one sentence with
+  one plain link, `https://www.amazon.com/dp/ASIN`, with no tag even when
+  the affiliate switch is on, until the booklet's year is over; the privacy
+  page says where it goes and the terms page names Amazon. `check_site.py`
+  allows that one link on that one page and nothing else (DECISIONS 0030).
 - A link to the Tide Hours print shop on Etsy, off by default. With the
   repository variable `PRINT_SHOP_URL` set to the shop's address, the About
   page and the English king-tide page each carry one sentence with one plain

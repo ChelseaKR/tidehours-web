@@ -29,7 +29,12 @@ NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
 @pytest.fixture(scope="module")
 def built(tmp_path_factory: pytest.TempPathFactory) -> Path:
     out = tmp_path_factory.mktemp("site")
-    assert cli.main(["--out", str(out), "--now", NOW, "--states", "CA,HI,other"]) == 0
+    # An empty booklet list, so these tests stay about the site without one
+    # when a California booklet is listed (docs/DECISIONS.md 0030;
+    # tests/test_station_booklets.py covers a listed one).
+    no_booklets = tmp_path_factory.mktemp("lists") / "booklets.json"
+    no_booklets.write_text('{"booklets": {}}', encoding="utf-8")
+    assert cli.main(["--out", str(out), "--now", NOW, "--states", "CA,HI,other", "--booklets", str(no_booklets)]) == 0
     return out
 
 

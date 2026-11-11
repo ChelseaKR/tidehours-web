@@ -4,6 +4,7 @@ golden fixture for tests/test_golden.py. Network; run by hand.
     uv run python scripts/fetch_golden.py            # golden-sample.json
     uv run python scripts/fetch_golden.py --month    # golden-month.json
     uv run python scripts/fetch_golden.py --add      # golden-sample.json, missing keys only
+    uv run python scripts/fetch_golden.py --year-boundary   # golden-year-boundary.json, missing keys only
 
 The sample: for every state code in the catalog (and the stations NOAA lists
 without one), one harmonic and one subordinate station, picked by the
@@ -43,11 +44,27 @@ SMALL_RANGE = [
     "9751494", "9751639", "9755371", "8729840", "8771450", "8724580", "8779770",
     "8775870", "8735180", "8747437", "8760922", "9751364", "8723214", "1612340",
 ]  # fmt: skip
+YEAR_BOUNDARY_OUT = ROOT / "tests" / "fixtures" / "golden-year-boundary.json"
+# Stations with a high or low near 00:00 GMT on January 1, chosen with the
+# engine itself so the minutes after midnight are spread out and the change
+# of lunar-node constants is large enough to see (DECISIONS 0031). Each is
+# fetched for December 31 and January 1 (GMT).
+YEAR_BOUNDARY: dict[int, list[str]] = {
+    2028: ["8413320", "9466057", "9439099", "8414249", "9455912", "8419317", "9457292", "8410834",
+           "9457287", "8412581", "8465705", "8410875"],
+    2027: ["9444090", "9466328", "9459758", "9465396", "9455606", "9465438"],
+}  # fmt: skip
+# NOAA's 6-minute heights from 22:00 to 02:00 GMT around the same midnight,
+# to see where its curve changes constants.
+YEAR_BOUNDARY_SERIES: dict[int, list[str]] = {2028: ["9455912"]}
+# The same highs and lows asked for from January 1 on (January 1 and 2), to
+# see whether NOAA's answer depends on where the request starts.
+YEAR_BOUNDARY_FROM_JAN1: dict[int, list[str]] = {2028: ["8413320"]}
 API = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
 BEGIN, END = "20261101", "20261103"
 
 
-def pred(station: str, begin: str, end: str, interval: str) -> list[list[Any]]:
+def pred(station: str, begin: str, end: str, interval: str, attempts: int = 4) -> list[list[Any]]:
     q = urllib.parse.urlencode(
         {
             "product": "predictions",
@@ -63,14 +80,15 @@ def pred(station: str, begin: str, end: str, interval: str) -> list[list[Any]]:
         }
     )
     req = urllib.request.Request(f"{API}?{q}", headers={"User-Agent": "tidehours-web golden fixture"})  # noqa: S310
-    for attempt in range(1, 5):
+    for attempt in range(1, attempts + 1):
         # NOAA sometimes answers a valid request with "No Predictions data
         # was found"; the same request succeeds on a retry.
         with urllib.request.urlopen(req, timeout=60) as res:  # noqa: S310
             d = json.load(res)
         if "predictions" in d:
             break
-        time.sleep(3 * attempt)
+        if attempt < attempts:
+            time.sleep(3 * attempt)
     if "predictions" not in d:
         raise SystemExit(f"no predictions for {station}: {d}")
     rows: list[list[Any]] = []
@@ -97,7 +115,46 @@ def month(cat_ids: list[str]) -> None:
     print(f"wrote {MONTH_OUT}: {len(out['stations'])} stations")
 
 
+def year_boundary() -> None:
+    """The measurement behind DECISIONS 0031: NOAA's highs and lows on
+    December 31 and January 1 (GMT) at the YEAR_BOUNDARY stations, its
+    6-minute heights around that midnight at the YEAR_BOUNDARY_SERIES
+    stations, and its highs and lows at the YEAR_BOUNDARY_FROM_JAN1 stations
+    asked for from January 1 on. Keeps what the file already has and makes
+    one request, with no retry, for each key it lacks, two seconds apart."""
+    out: dict[str, Any] = {"retrieved": dt.date.today().isoformat()}
+    if YEAR_BOUNDARY_OUT.exists():
+        out = json.loads(YEAR_BOUNDARY_OUT.read_text(encoding="utf-8"))
+    out["source"] = "NOAA CO-OPS datagetter product=predictions (interval hilo, or 6 for series), datum MLLW, GMT, feet"
+    wanted = [
+        ("boundaries", YEAR_BOUNDARY, "hilo", 0),
+        ("series", YEAR_BOUNDARY_SERIES, "6", 0),
+        ("fromJanuary1", YEAR_BOUNDARY_FROM_JAN1, "hilo", 1),
+    ]
+    fetched = 0
+    for section, stations, interval, shift in wanted:
+        for year, ids in stations.items():
+            got = out.setdefault(section, {}).setdefault(str(year), {})
+            begin = dt.date(year - 1, 12, 31) + dt.timedelta(days=shift)
+            end = begin + dt.timedelta(days=1)
+            for sid in ids:
+                if sid in got:
+                    continue
+                rows = pred(sid, f"{begin:%Y%m%d}", f"{end:%Y%m%d}", interval, attempts=1)
+                if section == "series":
+                    rows = [r for r in rows if f"{year - 1}-12-31T22:00Z" <= r[0] <= f"{year}-01-01T02:00Z"]
+                got[sid] = rows
+                fetched += 1
+                YEAR_BOUNDARY_OUT.write_text(json.dumps(out, separators=(",", ":")) + "\n", encoding="utf-8")
+                print(f"{section} {year} {sid}: {len(rows)} rows", flush=True)
+                time.sleep(2)
+    print(f"{YEAR_BOUNDARY_OUT}: {fetched} requests")
+
+
 def main() -> int:
+    if sys.argv[1:] == ["--year-boundary"]:
+        year_boundary()
+        return 0
     cat = load()
     if sys.argv[1:] == ["--month"]:
         sample = json.loads(OUT.read_text(encoding="utf-8"))

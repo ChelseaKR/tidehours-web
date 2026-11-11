@@ -26,9 +26,11 @@ Nothing is fetched at build time. A full build is about 9 seconds and 54 MB
 The engine (`src/tidehours/engine.py`) is a line-for-line port of the app's
 TideCore. `make verify` checks it against NOAA's own published predictions:
 a week at 16 stations (the app's fixture), three days at a harmonic and a
-subordinate station in every state, and every high and low of November 2026
-at 81 stations. The one deliberate difference from the app, removing
-"stands", is DECISIONS 0004.
+subordinate station in every state, every high and low of November 2026
+at 81 stations, and the two days around 00:00 GMT on January 1 of 2027 and
+2028 at 18 stations. The two deliberate differences from the app are
+removing "stands" (DECISIONS 0004) and keeping a year's constants for the
+highs and lows of the first 30 minutes of the next (DECISIONS 0031).
 
 ## Commands
 
@@ -36,7 +38,7 @@ at 81 stations. The one deliberate difference from the app, removing
     make site-checks   # axe-core and pa11y-ci on a sample of 127 pages (needs Node 22 and Chrome)
     make site          # build with today's numbers into ./site
     uv run python scripts/refresh_data.py --app-checkout ~/portfolio/tide-app   # refresh NOAA data (network)
-    uv run python scripts/fetch_golden.py [--month]                              # refresh the NOAA fixtures (network)
+    uv run python scripts/fetch_golden.py [--month | --add | --year-boundary]    # refresh the NOAA fixtures (network)
 
 Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 `--base-url`, `--ga4-id` (empty: no analytics), `--app-store-url`,

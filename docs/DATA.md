@@ -33,3 +33,12 @@ on every page and says it is not a NOAA product.
   chelseakr.com king-tides page (ChelseaKR/personal-site
   `src/content/kingTides.data.json` at `6ae96ab`), built from NOAA's
   published high/low predictions and datums.
+- `tests/fixtures/golden-year-boundary.json`: NOAA's highs and lows on
+  December 31 and January 1 (GMT) at 18 stations with a high or low near
+  00:00 GMT on 2028-01-01 (12 stations, one of them subordinate) or
+  2027-01-01 (6), chosen with the engine so the tides are spread from 5
+  minutes before midnight to 61 after; NOAA's 6-minute heights at Fire
+  Island, AK from 22:00 to 02:00 around 2028-01-01; and Bar Harbor's highs
+  and lows asked for from January 1 on. `scripts/fetch_golden.py
+  --year-boundary`, 20 requests. Retrieved 2026-11-10 (DECISIONS 0031).
+  sha256 `aaaeac5bfda88237e6e2547fda681b6430c41b1bd9b7645fd0bb54bead9ad7a8`

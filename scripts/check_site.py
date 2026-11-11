@@ -15,9 +15,13 @@ tagged, with rel="sponsored nofollow noopener" and Amazon's disclosure right
 before them; with no tag, "amazon" appears nowhere in the build (0016). The
 link to the Tide Hours shop on Etsy appears only when a shop address is
 configured, once on the About page and once on the English king-tide page,
-with that exact address; with none, "etsy" appears nowhere (0029).
+with that exact address; with none, "etsy" appears nowhere (0029). A
+station whose printed booklet is listed (src/tidehours/copy/booklets.json)
+and whose year is not over links to it once, on its own page, with exactly
+https://www.amazon.com/dp/ASIN; that sentence is the one exception to the
+Amazon rules above, and with no booklet listed they are unchanged (0030).
 
-    uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL]
+    uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
 """
 
 from __future__ import annotations
@@ -31,7 +35,7 @@ import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, kingtides, ktformat, printshop, site
+from tidehours import affiliate, booklets, kingtides, ktformat, printshop, site
 from tidehours.catalog import Catalog, Station, load
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
@@ -50,6 +54,9 @@ TITLE = re.compile(r"<title>([^<]*)</title>")
 AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 REL_ATTR = re.compile(r'\brel="([^"]*)"')
 JSON_LD = re.compile(r'<script type="application/ld\+json">.*?</script>', re.S)
+BOOKLET_P = re.compile(r'<p class="booklet"[^>]*>.*?</p>', re.S)
+ANY_A = re.compile(r"<a\b[^>]*>", re.I)
+HREF_ATTR = re.compile(r'\bhref="([^"]*)"')
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -191,26 +198,93 @@ def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
-def check_affiliate(root: Path, html: list[Path], tag: str) -> list[str]:
+def booklet_pages(root: Path, listed: dict[str, booklets.Booklet]) -> tuple[dict[str, booklets.Booklet], list[str]]:
+    """The station pages of this build that must link to a booklet, as page
+    path -> booklet: each listed station that has a page, unless the page's
+    own date is past the booklet's year (docs/DECISIONS.md 0030)."""
+    want: dict[str, booklets.Booklet] = {}
+    problems: list[str] = []
+    for station_id, booklet in listed.items():
+        rel = f"stations/{station_id}/index.html"
+        if not (root / rel).is_file():
+            continue
+        dates = STATION_DATE.findall((root / rel).read_text(encoding="utf-8"))
+        if len(dates) != 1:
+            problems.append(f"{rel}: no date to tell whether its booklet's year is over")
+        elif booklets.shown(booklet, dt.date.fromisoformat(dates[0])):
+            want[rel] = booklet
+    return want, problems
+
+
+def _check_booklet(rel: str, text: str, want: booklets.Booklet | None) -> tuple[str, list[str]]:
+    """One page's booklet sentence. Returns the page without the sentence,
+    for the Amazon rules that apply to everything else, and the problems:
+    a sentence on a page that is due none; or, on a page that is due one,
+    none or more than one, more than one link in it, an address that is not
+    exactly the booklet's, a rel other than noopener, a click event, or a
+    place before the tide tables or after the page's closing notes."""
+    blocks = list(BOOKLET_P.finditer(text))
+    if want is None:
+        return text, ([f"{rel}: a booklet link on a page that is due none"] if blocks else [])
+    if len(blocks) != 1:
+        return BOOKLET_P.sub("", text), [f"{rel}: {len(blocks)} booklet links, exactly 1 expected"]
+    problems: list[str] = []
+    found = blocks[0]
+    anchors = ANY_A.findall(found.group(0))
+    if len(anchors) != 1 or found.group(0).count("http") != 1:
+        problems.append(f"{rel}: the booklet sentence has {len(anchors)} links, exactly 1 expected")
+    for a in anchors:
+        href_attr = HREF_ATTR.search(a)
+        href = htmllib.unescape(href_attr.group(1)) if href_attr else ""
+        if href != want.url:
+            problems.append(f"{rel}: {href} is not the booklet's address, {want.url}")
+        rel_attr = REL_ATTR.search(a)
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if tokens != set(booklets.REL.split()):
+            problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
+        if "data-ga" in a:
+            problems.append(f"{rel}: the booklet link carries a click event")
+    last_day = text.rfind('<section class="day"')
+    if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
+        problems.append(f"{rel}: the booklet link is not between the tide tables and the closing notes")
+    return text[: found.start()] + text[found.end() :], problems
+
+
+def check_affiliate(
+    root: Path, html: list[Path], tag: str, booklet_links: dict[str, booklets.Booklet] | None = None
+) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
     king-tide page links to Amazon: at most MAX_LINKS links, each a plain
     tagged search with the configured tag and the required rel, after the
     method section, with the exact disclosure right before the first link
     (in the same section, no heading between). Never in JSON-LD, the sitemap,
-    robots.txt or lastmod.json."""
+    robots.txt, lastmod.json or llms.txt.
+
+    The one exception (docs/DECISIONS.md 0030): `booklet_links`, from
+    booklet_pages, names the station pages that are due a booklet sentence.
+    That sentence is checked on its own (_check_booklet) and taken out of
+    the page before the rules above run on the rest, so they hold for
+    everything else, tag or no tag. While any page is due one, the privacy
+    and terms pages may name Amazon in words, never with a link."""
+    want = booklet_links or {}
+    named = {p + "index.html" for p in booklets.MENTION_PAGES} if want else set()
     problems: list[str] = []
-    for name in ("sitemap.xml", "robots.txt", "lastmod.json"):
+    for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
         if f.exists() and "amazon" in f.read_text(encoding="utf-8").lower():
             problems.append(f"{name}: mentions amazon")
     for f in html:
         rel = f.relative_to(root).as_posix()
-        text = f.read_text(encoding="utf-8")
+        page = f.read_text(encoding="utf-8")
+        text, found = _check_booklet(rel, page, want.get(rel))
+        problems += found
         if not tag:
-            if "amazon" in text.lower():
+            low = text.lower()
+            in_words_only = rel in named and not AMAZON_A.search(text) and "amazon.com" not in low
+            if "amazon" in low and not in_words_only:
                 problems.append(f"{rel}: mentions amazon with no tag set")
             continue
-        if any("amazon" in block.lower() for block in JSON_LD.findall(text)):
+        if any("amazon" in block.lower() for block in JSON_LD.findall(page)):
             problems.append(f"{rel}: amazon in JSON-LD")
         links = list(AMAZON_A.finditer(text))
         if rel != affiliate.PAGE + "index.html":
@@ -303,7 +377,7 @@ def _check_print_shop_page(rel: str, text: str, url: str, link_page: bool) -> li
     return problems
 
 
-def main(root: Path, amazon_tag: str = "", print_shop_url: str = "") -> int:
+def main(root: Path, amazon_tag: str = "", print_shop_url: str = "", booklets_file: Path | None = None) -> int:
     problems: list[str] = []
     cat = load()
     html = sorted(root.rglob("*.html"))
@@ -318,7 +392,9 @@ def main(root: Path, amazon_tag: str = "", print_shop_url: str = "") -> int:
     problems += check_tide_types(root, cat)
     problems += check_king_tides(root, cat)
     problems += check_king_calendar(root, cat)
-    problems += check_affiliate(root, html, amazon_tag)
+    booklet_links, undated = booklet_pages(root, booklets.load(booklets_file))
+    problems += undated
+    problems += check_affiliate(root, html, amazon_tag, booklet_links)
     problems += check_print_shop(root, html, print_shop_url)
     for p in problems[:50]:
         print(p, file=sys.stderr)
@@ -332,5 +408,6 @@ if __name__ == "__main__":
     ap.add_argument("site_dir", type=Path)
     ap.add_argument("--amazon-tag", default="")
     ap.add_argument("--print-shop-url", default="")
+    ap.add_argument("--booklets", type=Path, help="the booklet list the site was built with, if not the committed one")
     args = ap.parse_args()
-    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url))
+    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets))

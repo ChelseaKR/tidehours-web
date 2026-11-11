@@ -23,7 +23,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat, llms, printshop
+from . import affiliate, booklets, indexnow, kingtides, ktformat, llms, printshop
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -156,6 +156,10 @@ class Config:
     # The Tide Hours shop on Etsy. Empty (the default) means off: no link
     # anywhere (docs/DECISIONS.md 0029).
     print_shop_url: str = ""
+    # The list of printed booklets on sale. None (the default) reads the
+    # committed list, copy/booklets.json; a test passes its own
+    # (docs/DECISIONS.md 0030).
+    booklets_file: Path | None = None
 
 
 @dataclass
@@ -476,6 +480,20 @@ def moved_pages(template: Template, common: dict[str, Any], states: list[State])
     return pages
 
 
+def booklets_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, booklets.Booklet]:
+    """Station id -> the booklet its page links to in this build: a listed
+    booklet whose year is not over on the station's own date
+    (docs/DECISIONS.md 0030). A listed station the catalog does not have
+    stops the build."""
+    listed = booklets.load(cfg.booklets_file)
+    unknown = sorted(sid for sid in listed if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"booklets: no station {', '.join(unknown)} in the catalog")
+    return {
+        s.id: listed[s.id] for s in stations if s.id in listed and booklets.shown(listed[s.id], local_today(s, now))
+    }
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
@@ -492,6 +510,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     kt_months = kingtides.months(kt_up, kt_today)
     kt_states = {code: king_span([u for u in kt_up if u.season.state == code]) for code in ("WA", "OR", "CA")}
     links = king_links(stations, kt["seasons"], kt_today, cat)
+    booklet_of = booklets_shown(cat, stations, cfg, now)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
         "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
@@ -501,6 +520,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": printshop.block(cfg.print_shop_url),
+        "booklet_links": booklets.notice(bool(booklet_of)),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
@@ -594,6 +614,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             king_link=links.get(s.id),
             king_calendar=king_calendar(season, links.get(s.id)),
             kc=kt["copy"]["en"],
+            booklet=booklets.block(booklet_of.get(s.id)),
         )
     return pages
 

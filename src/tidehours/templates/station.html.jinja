@@ -96,6 +96,9 @@
   {% if app_store_url %}<a href="{{ app_store_url }}">Get Tide Hours on the App Store</a>.{% else %}<strong>Coming soon to the App Store.</strong>{% endif %}
   NOAA also publishes its own <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ station.id }}">predictions for station {{ station.id }}</a>.</p>
 </section>
+{% if booklet %}
+{% include "_booklet.html.jinja" %}
+{% endif %}
 
 {% if tide_type %}
 <section class="tide-type" aria-labelledby="type" data-tide-type="{{ tide_type.kind.key }}">

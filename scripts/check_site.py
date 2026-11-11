@@ -12,9 +12,12 @@ pages were built (0015), and each state's winter calendar lists exactly
 the computed runs by month (0024). Amazon affiliate links appear only when a tag is
 configured, only on the English king-tide page, after its method section,
 tagged, with rel="sponsored nofollow noopener" and Amazon's disclosure right
-before them; with no tag, "amazon" appears nowhere in the build (0016).
+before them; with no tag, "amazon" appears nowhere in the build (0016). The
+link to the Tide Hours shop on Etsy appears only when a shop address is
+configured, once on the About page and once on the English king-tide page,
+with that exact address; with none, "etsy" appears nowhere (0029).
 
-    uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG]
+    uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL]
 """
 
 from __future__ import annotations
@@ -28,7 +31,7 @@ import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, kingtides, ktformat, site
+from tidehours import affiliate, kingtides, ktformat, printshop, site
 from tidehours.catalog import Catalog, Station, load
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
@@ -247,7 +250,60 @@ def _check_affiliate_page(rel: str, text: str, links: list[re.Match[str]], tag: 
     return problems
 
 
-def main(root: Path, amazon_tag: str = "") -> int:
+ETSY_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*etsy\.com[^"]*)"[^>]*>', re.I)
+
+
+def check_print_shop(root: Path, html: list[Path], url: str) -> list[str]:
+    """With no shop address, "etsy" appears nowhere. With one, the About page
+    and the English king-tide page each link to it exactly once, with that
+    exact address and rel="noopener"; the privacy and terms pages may name
+    Etsy without linking; no other page mentions it. Never in JSON-LD, the
+    sitemap, robots.txt, lastmod.json or llms.txt (docs/DECISIONS.md 0029)."""
+    problems: list[str] = []
+    for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
+        f = root / name
+        if f.exists() and "etsy" in f.read_text(encoding="utf-8").lower():
+            problems.append(f"{name}: mentions etsy")
+    link_pages = {p + "index.html" for p in printshop.PAGES}
+    for f in html:
+        rel = f.relative_to(root).as_posix()
+        text = f.read_text(encoding="utf-8")
+        if "etsy" not in text.lower():
+            if url and rel in link_pages:
+                problems.append(f"{rel}: no shop link with a shop address set")
+        elif not url:
+            problems.append(f"{rel}: mentions etsy with no shop address set")
+        else:
+            problems += _check_print_shop_page(rel, text, url, rel in link_pages)
+    return problems
+
+
+def _check_print_shop_page(rel: str, text: str, url: str, link_page: bool) -> list[str]:
+    """One page that mentions Etsy, in a build with a shop address set."""
+    problems: list[str] = []
+    if any("etsy" in block.lower() for block in JSON_LD.findall(text)):
+        problems.append(f"{rel}: etsy in JSON-LD")
+    links = list(ETSY_A.finditer(text))
+    if not link_page:
+        if links:
+            problems.append(f"{rel}: etsy link outside {', '.join(printshop.PAGES)}")
+        elif rel not in {p + "index.html" for p in printshop.MENTION_PAGES}:
+            problems.append(f"{rel}: mentions etsy")
+        return problems
+    if len(links) != 1:
+        problems.append(f"{rel}: {len(links)} etsy links, exactly 1 expected")
+    for m in links:
+        href = htmllib.unescape(m.group(1))
+        if href != url:
+            problems.append(f"{rel}: {href} is not the configured shop address")
+        found = re.search(r'\brel="([^"]*)"', m.group(0))
+        tokens = set(found.group(1).split()) if found else set()
+        if tokens != set(printshop.REL.split()):
+            problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
+    return problems
+
+
+def main(root: Path, amazon_tag: str = "", print_shop_url: str = "") -> int:
     problems: list[str] = []
     cat = load()
     html = sorted(root.rglob("*.html"))
@@ -263,6 +319,7 @@ def main(root: Path, amazon_tag: str = "") -> int:
     problems += check_king_tides(root, cat)
     problems += check_king_calendar(root, cat)
     problems += check_affiliate(root, html, amazon_tag)
+    problems += check_print_shop(root, html, print_shop_url)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))
@@ -274,5 +331,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(prog="check_site")
     ap.add_argument("site_dir", type=Path)
     ap.add_argument("--amazon-tag", default="")
+    ap.add_argument("--print-shop-url", default="")
     args = ap.parse_args()
-    sys.exit(main(args.site_dir, args.amazon_tag))
+    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url))

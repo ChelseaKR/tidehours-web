@@ -76,16 +76,22 @@ jobs:
         # links on the English king-tide page from the next build; emptying
         # it is the kill switch. check_site gets the same value and fails the
         # build if a link is untagged, misplaced or missing its disclosure.
+        # PRINT_SHOP_URL is the same kind of switch for the link to the Tide
+        # Hours shop on Etsy (docs/DECISIONS.md 0029): unset or empty means no
+        # link anywhere; the shop's address turns it on from the next build.
         env:
           GA4_MEASUREMENT_ID: ${{ vars.GA4_MEASUREMENT_ID }}
           APP_STORE_URL: ${{ vars.APP_STORE_URL }}
           AMAZON_ASSOCIATE_TAG: ${{ vars.AMAZON_ASSOCIATE_TAG }}
+          PRINT_SHOP_URL: ${{ vars.PRINT_SHOP_URL }}
         run: |
           set -euo pipefail
           uv run --frozen tidehours --out site \
             --ga4-id "$GA4_MEASUREMENT_ID" --app-store-url "$APP_STORE_URL" \
-            --amazon-tag "$AMAZON_ASSOCIATE_TAG" --previous "$RUNNER_TEMP/previous"
-          uv run --frozen python scripts/check_site.py site --amazon-tag "$AMAZON_ASSOCIATE_TAG"
+            --amazon-tag "$AMAZON_ASSOCIATE_TAG" --print-shop-url "$PRINT_SHOP_URL" \
+            --previous "$RUNNER_TEMP/previous"
+          uv run --frozen python scripts/check_site.py site --amazon-tag "$AMAZON_ASSOCIATE_TAG" \
+            --print-shop-url "$PRINT_SHOP_URL"
 
       - name: pick the pages to announce to IndexNow
         # Runs BEFORE the deploy replaces the live site, because the live

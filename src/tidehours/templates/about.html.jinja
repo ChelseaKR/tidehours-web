@@ -38,4 +38,7 @@
     <li><a href="https://tidesandcurrents.noaa.gov/disclaimers.html">NOAA CO-OPS disclaimers</a></li>
   </ul>
 </section>
+{% if print_shop %}
+{% include "_print_shop.html.jinja" %}
+{% endif %}
 {% endblock %}

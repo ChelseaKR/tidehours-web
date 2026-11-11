@@ -1,0 +1,8 @@
+{#
+  The link to this station's printed tide-table booklet on Amazon
+  (docs/DECISIONS.md 0030). station.html.jinja includes this only on the
+  page of a station whose booklet is listed and whose year is not over. One
+  sentence, one plain link: no Associates tag, no query string, no price,
+  no claim, no image and no click event.
+#}
+<p class="booklet" data-booklet="{{ booklet.asin }}">{{ booklet.before }} <a href="{{ booklet.url }}" rel="{{ booklet.rel }}">{{ booklet.title }}</a>{{ booklet.after }}</p>

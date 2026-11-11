@@ -43,7 +43,9 @@ highs and lows of the first 30 minutes of the next (DECISIONS 0031).
 Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 `--base-url`, `--ga4-id` (empty: no analytics), `--app-store-url`,
 `--amazon-tag` (empty: no Amazon links; DECISIONS 0016), `--print-shop-url`
-(empty: no link to the print shop; DECISIONS 0029).
+(empty: no link to the print shop; DECISIONS 0029), `--booklets FILE` (a
+list of printed booklets in place of `src/tidehours/copy/booklets.json`,
+for tests; DECISIONS 0030).
 
 ## CI
 
@@ -74,3 +76,7 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    Associates website list and create the `tidehours-20` tracking ID. Only
    after Gate A passes (no earlier than 2026-12-01), set the repository
    variable `AMAZON_ASSOCIATE_TAG` to it. Empty it to turn the links off.
+6. Printed booklets (DECISIONS 0030): when a booklet is live on Amazon, add
+   its station id, ASIN, year and cover title to
+   `src/tidehours/copy/booklets.json` in a pull request. That station's page
+   then links to it until the booklet's year is over.

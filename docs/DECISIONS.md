@@ -282,6 +282,9 @@ weeks without a sitewide drop, allow subordinate pages back, a state or a
 named list at a time, and re-measure. Allowing a page back is a code change
 that adds it to the sitemap and `lastmod.json`, so IndexNow announces it.
 
+Superseded on 2026-11-12 by 0032: subordinate pages are indexed, except
+the two whose corrections make them copies of their reference station's.
+
 ## 0014: Each harmonic station's type of tide, from its own constants (2026-11-04)
 
 The 1,232 indexed station pages (0013) differ mostly in names and numbers. A
@@ -1157,3 +1160,94 @@ Update, 2026-11-11: the app made the same change the same day
 highs and lows at the fixture's 18 stations and on three ordinary days at
 three more, so
 the site and the app no longer differ here.
+
+## 0032: Index the subordinate station pages, except the twins (2026-11-12)
+
+Supersedes 0013's noindex on subordinate station pages. (0026 and 0027 are
+reserved for other branches.) 0013 held the 2,024 subordinate pages back on
+2026-11-03 because each "is close to a copy of another page here". Measured
+on a full build for 2026-11-12, that is true of two of them and not of the
+other 2,022:
+
+- **The answer differs.** A subordinate page's highs and lows are its
+  reference's moved by NOAA's published minutes and scaled or shifted by its
+  height corrections, so the table rows differ from the reference page's on
+  2,023 of the 2,024 pages. Ano Nuevo Island, CA against San Francisco
+  (Golden Gate): high 12:51 AM 3.9 ft against 2:15 AM 4.6 ft, and no row in
+  common over the two days. Sebastian, FL against Government Cut, Miami:
+  high 11:48 AM 0.4 ft against 10:16 AM 2.8 ft. Long Beach, Inner Harbor,
+  CA against Los Angeles (4 and 5 minutes later, x0.96) still differs in
+  every row.
+- **The rest of the page is its own.** Name, title, description, region,
+  breadcrumbs, coordinates, NOAA's own predictions link and nearby list are
+  the station's. Over the 2,022 pages, a median 40% of a page's text lines
+  (at least 19%) appear nowhere on its reference station's page, curves and
+  scripts left out.
+- **New on each page:** a "How this station is predicted" section that
+  names the reference station (linked), its distance, and NOAA's published
+  corrections in words ("high tide 1 h 24 min earlier, low tide 1 h 4 min
+  earlier; heights 0.7 ft lower at high tide and 0.1 ft lower at low tide").
+  That is data the reference page does not carry for this station in that
+  form, and it says plainly how the numbers are made.
+
+**Twins.** A subordinate station is a twin when both time corrections round
+to 0 minutes and the high-tide height is unchanged (x1.00, or 0.0 ft), so
+every time and every high tide on its page is its reference's, every day
+(`subordinate.is_twin`, `Station.twin_of`). Two are:
+
+- Cabrillo Beach, CA (9410650) from Los Angeles (Outer Harbor) (9410660):
+  0 min, 0 min, x1.00, x1.00. Its table rows are the reference's byte for
+  byte.
+- Great Diamond Island, ME (8417988) from Portland (8418150): 0 min, 0 min,
+  x1.00, x1.03; only the lows' heights can differ, by 3%.
+
+A twin's page is still built, linked from its state, region and reference
+pages and followed, but carries `noindex,follow`, a canonical link (and
+`og:url`) to its reference station's page, and a sentence saying why; it is
+left out of the sitemap and `lastmod.json`. Windham Bay, AK (9451962) has
+0-minute times but highs 1.1 ft lower than Juneau's, so it is not a twin.
+
+**Counts.** Station pages in the sitemap go from 1,232 to 3,254; the
+sitemap from 1,577 to 3,599 URLs (the full pinned build); noindex pages from
+2,177 to 155 (the 2 twins, the small region pages of 0022 and the moved
+region stubs of 0017 and 0018).
+
+**IndexNow.** `lastmod.json` holds only indexable pages, and today's tides
+change every station page daily, so a normal day now announces about 3,254
+station pages instead of about 1,232, under the 10,000 per request limit
+(0011). The first deploy announces the 2,022 newly listed pages within that
+count.
+
+**The risk 0013 named.** Trout Truck lost about 97% of its impressions in
+one re-rank on 2026-10-22, with a young domain of near-identical template
+pages the leading explanation. This change roughly doubles the indexable
+station pages on a domain under two weeks old. Two things make it a
+smaller bet than 0013 feared: the pages are not near-identical in what a
+searcher came for (the numbers differ on every indexed page), and 66
+subordinate pages already drew 90 of 306 impressions while noindex
+(growth/th-noindex-links-audit-2026-11-07.md), with 22 of them at a page-one
+average position. A later read (growth/th-seo-competitors-2026-11-12.md,
+876 impressions to 2026-11-12) found the noindex subordinate pages earning
+284 impressions at an average position of 52.5, against 273 at 63.8 for the
+indexed harmonic pages, and 25 subordinate pages with 3 or more impressions:
+Nantasket Beach (20), Sebastian (13), Hull (9), Kemp Channel Viaduct (8, at
+position 6), Bush Point (4, at position 14) and Norfolk (6, at position 23)
+among them. Google already wants these pages, by name. A smaller step was
+weighed: index only those 25 and 0013's five named places. It was not
+chosen because the test that matters, whether a page has its own answer,
+holds for 2,022 pages, not 30, and a named list would hold back pages on a
+rule they pass. That list stays the fallback. To watch: total impressions and indexed-page count in
+Search Console for four weeks after the deploy. If impressions fall
+sitewide by half or more for a week, revert this change (`site.indexable`
+is still the one place) and re-measure.
+
+**Checked.** `scripts/check_site.py` fails the build if a twin's page lacks
+noindex or its canonical to the reference, or any other station page has
+noindex or a canonical other than its own URL. `tests/test_site.py`: an
+indexed subordinate page's answer lines differ from its reference's; a
+negative control that Cabrillo Beach stays noindex with Los Angeles as its
+canonical, with its rows equal to Los Angeles's, and that a 1% change to
+its high-tide ratio ends the twin; the sitemap holds every station page but
+the twins (3,254 over the catalog).
+
+**For the app:** nothing changes.

@@ -121,6 +121,7 @@
 </section>
 {% endif %}
 
+{% if station.is_subordinate and reference %}{% include "_subordinate.html.jinja" %}{% endif %}
 {% if derived %}
 <section aria-labelledby="derived">
   <h2 id="derived">Stations predicted from this one</h2>

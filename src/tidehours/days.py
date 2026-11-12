@@ -1,8 +1,8 @@
 """One station's tides for one local day, ready for a page: highs and lows,
-the curve and an SVG of it, and the day's sunrise, sunset and moon phase
-(sky.py). Nothing here invents a value: a day with no high or low says so,
-a day the sun does not rise or set says so, and a missing curve draws
-nothing."""
+the curve and an SVG of it, and the day's sunrise, sunset, civil twilight,
+moon phase, moonrise and moonset (sky.py). Nothing here invents a value: a
+day with no high or low says so, a day the sun or moon does not rise or set
+says so, and a missing curve draws nothing."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 from .catalog import Station
 from .engine import HarmonicPredictor, Predictor, TideEvent
-from .sky import MoonDay, SunDay, moon_day, sun_day
+from .sky import MoonDay, MoonTimes, SunDay, moon_day, moon_times, sun_day
 
 MINUS = "−"
 
@@ -78,6 +78,44 @@ def sun_text(sun: SunDay) -> str:
     return text
 
 
+def civil_text(sun: SunDay) -> str:
+    """ "Civil dawn 6:12 AM, civil dusk 5:34 PM", in the order they happen.
+    A day without one says so in words."""
+    if not sun.civil:
+        if sun.civil_light_all_day:
+            return "It does not get darker than civil twilight on this day."
+        return "No civil twilight on this day: the sun stays more than 6° below the horizon."
+    parts = [f"civil {e.kind} {clock(e.time)}" for e in sun.civil]
+    text = ", ".join(parts)
+    text = text[0].upper() + text[1:] + "."
+    kinds = {e.kind for e in sun.civil}
+    if "dawn" not in kinds:
+        text += " No civil dawn on this day."
+    if "dusk" not in kinds:
+        text += " No civil dusk on this day."
+    return text
+
+
+def moonrise_text(moon: MoonTimes) -> str:
+    """ "Moonrise 3:05 AM, moonset 3:06 PM", in the order they happen. About
+    once a month a day has no moonrise or no moonset, and says so."""
+    if not moon.events:
+        return "The moon is up all day." if moon.up_all_day else "The moon does not rise on this day."
+    parts = [f"{'moonrise' if e.kind == 'rise' else 'moonset'} {clock(e.time)}" for e in moon.events]
+    text = ", ".join(parts)
+    text = text[0].upper() + text[1:] + "."
+    if moon.rise is None:
+        text += " No moonrise on this day."
+    if moon.set is None:
+        text += " No moonset on this day."
+    return text
+
+
+def sky_text(sun: SunDay, moon: MoonDay, times: MoonTimes) -> str:
+    """The whole sun and moon line for one day, as the page shows it."""
+    return f"{sun_text(sun)} {civil_text(sun)} {moon_text(moon)} {moonrise_text(times)}"
+
+
 def moon_text(moon: MoonDay) -> str:
     """ "Moon: waning crescent, 12% lit at noon", with the time of a new
     moon, quarter or full moon that falls on the day."""
@@ -98,14 +136,23 @@ class Day:
     approximate: bool
     sun: SunDay
     moon: MoonDay
+    moon_times: MoonTimes
 
     @property
     def sun_text(self) -> str:
         return sun_text(self.sun)
 
     @property
+    def civil_text(self) -> str:
+        return civil_text(self.sun)
+
+    @property
     def moon_text(self) -> str:
         return moon_text(self.moon)
+
+    @property
+    def moonrise_text(self) -> str:
+        return moonrise_text(self.moon_times)
 
     @property
     def long_date(self) -> str:
@@ -218,7 +265,8 @@ def station_day(station: Station, predictor: Predictor, d: dt.date, curve_step: 
     approximate = not isinstance(predictor, HarmonicPredictor)
     sun = sun_day(station.lat, station.lon, station.tz, d)
     svg = _svg(curve, events, start, end, zone, d, approximate, f"chart-title-{d.isoformat()}", sun.dark)
-    return Day(d, [_event(e, zone) for e in events], svg, approximate, sun, moon_day(station.tz, d))
+    times = moon_times(station.lat, station.lon, station.tz, d)
+    return Day(d, [_event(e, zone) for e in events], svg, approximate, sun, moon_day(station.tz, d), times)
 
 
 def local_today(station: Station, now: dt.datetime) -> dt.date:

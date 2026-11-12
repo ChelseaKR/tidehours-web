@@ -12,5 +12,13 @@
 <h2 id="affiliate">Affiliate links</h2>
 <p>The king tides page has links to Amazon searches. If you buy something after following one, this site earns a commission, and it costs you nothing extra. As an Amazon Associate I earn from qualifying purchases. The links are Tide Hours', not NOAA's or the California Coastal Commission's, and neither endorses them or Amazon. A link takes you to Amazon, where Amazon's own privacy notice applies. When analytics is on, this site counts a click on one of these links without recording the link's address.</p>
 {% endif %}
+{% if print_shop %}
+<h2 id="shop">{{ print_shop.text.privacyHeading }}</h2>
+<p>{{ print_shop.text.privacy }}</p>
+{% endif %}
+{% if booklet_links %}
+<h2 id="booklets">{{ booklet_links.heading }}</h2>
+<p>{{ booklet_links.body }}</p>
+{% endif %}
 <p>The Tide Hours iPhone app has its own privacy policy: <a href="https://chelseakr.com/tide-hours/privacy">Tide Hours app privacy</a>.</p>
 {% endblock %}

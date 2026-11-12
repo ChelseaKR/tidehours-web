@@ -26,9 +26,12 @@ Nothing is fetched at build time. A full build is about 9 seconds and 54 MB
 The engine (`src/tidehours/engine.py`) is a line-for-line port of the app's
 TideCore. `make verify` checks it against NOAA's own published predictions:
 a week at 16 stations (the app's fixture), three days at a harmonic and a
-subordinate station in every state, and every high and low of November 2026
-at 81 stations. The one deliberate difference from the app, removing
-"stands", is DECISIONS 0004.
+subordinate station in every state, every high and low of November 2026
+at 81 stations, and the two days around 00:00 GMT on January 1 of 2027 and
+2028 at 18 stations. The app's engine makes the same two choices: it
+removes "stands" (DECISIONS 0004; the app's #2) and keeps a year's
+constants for the highs and lows of the first 30 minutes of the next
+(DECISIONS 0031; the app's DECISIONS 0006, #16).
 
 ## Commands
 
@@ -36,11 +39,14 @@ at 81 stations. The one deliberate difference from the app, removing
     make site-checks   # axe-core and pa11y-ci on a sample of 127 pages (needs Node 22 and Chrome)
     make site          # build with today's numbers into ./site
     uv run python scripts/refresh_data.py --app-checkout ~/portfolio/tide-app   # refresh NOAA data (network)
-    uv run python scripts/fetch_golden.py [--month]                              # refresh the NOAA fixtures (network)
+    uv run python scripts/fetch_golden.py [--month | --add | --year-boundary]    # refresh the NOAA fixtures (network)
 
 Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 `--base-url`, `--ga4-id` (empty: no analytics), `--app-store-url`,
-`--amazon-tag` (empty: no Amazon links; DECISIONS 0016).
+`--amazon-tag` (empty: no Amazon links; DECISIONS 0016), `--print-shop-url`
+(empty: no link to the print shop; DECISIONS 0029), `--booklets FILE` (a
+list of printed booklets in place of `src/tidehours/copy/booklets.json`,
+for tests; DECISIONS 0030).
 
 ## CI
 
@@ -71,3 +77,7 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    Associates website list and create the `tidehours-20` tracking ID. Only
    after Gate A passes (no earlier than 2026-12-01), set the repository
    variable `AMAZON_ASSOCIATE_TAG` to it. Empty it to turn the links off.
+6. Printed booklets (DECISIONS 0030): when a booklet is live on Amazon, add
+   its station id, ASIN, year and cover title to
+   `src/tidehours/copy/booklets.json` in a pull request. That station's page
+   then links to it until the booklet's year is over.

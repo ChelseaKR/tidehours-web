@@ -1,8 +1,8 @@
-"""Sunrise, sunset and the moon's phase (src/tidehours/sky.py) against the
-U.S. Naval Observatory's published values (tests/fixtures/usno-sky-2026.json,
-scripts/fetch_golden.py --sky), the words for days without a sunrise or
-sunset, times in each station's own zone, and negative controls proving
-check_site fails a page whose sun line is missing or made up
+"""Sunrise, sunset, civil twilight, moonrise, moonset and the moon's phase
+(src/tidehours/sky.py) against the U.S. Naval Observatory's published values
+(tests/fixtures/usno-sky-2026.json, scripts/fetch_sky.py), the words for days
+without one of them, times in each station's own zone, and negative controls
+proving check_site fails a page whose sky line is missing or made up
 (docs/DECISIONS.md 0019)."""
 
 from __future__ import annotations
@@ -20,10 +20,11 @@ import pytest
 
 from tidehours import cli, sky
 from tidehours.catalog import load
-from tidehours.days import moon_text, station_day, sun_text
+from tidehours.days import civil_text, moon_text, moonrise_text, station_day, sun_text
 
 FIXTURE = Path(__file__).parent / "fixtures" / "usno-sky-2026.json"
-SUN_MINUTES = 2.0  # sunrise and sunset, minutes from USNO
+SUN_MINUTES = 2.0  # sunrise, sunset, civil dawn and dusk, minutes from USNO
+MOON_MINUTES = 2.0  # moonrise and moonset, minutes from USNO
 LIT_POINTS = 2  # percent of the moon lit, points from USNO
 PHASE_MINUTES = 2.0  # a primary phase's time, minutes from USNO
 PRUDHOE = "9497645"
@@ -76,6 +77,61 @@ def test_sun_matches_usno(sid: str, date: str) -> None:
         assert ours.up_all_day == ("above the Horizon" in always[0]), (sid, date)
 
 
+CIVIL = {"Begin Civil Twilight": "dawn", "End Civil Twilight": "dusk"}
+
+
+@pytest.mark.parametrize(("sid", "date"), station_days())
+def test_civil_twilight_matches_usno(sid: str, date: str) -> None:
+    """Civil dawn and dusk (the sun's center 6 degrees down) within 2 minutes
+    of USNO's, and the same days without them."""
+    u = fixture()["stations"][sid]["days"][date]
+    st = load().station(sid)
+    assert st is not None
+    d = dt.date.fromisoformat(date)
+    ours = sky.sun_day(st.lat, st.lon, st.tz, d)
+    theirs = sorted(
+        ((CIVIL[p["phen"]], usno_time(d, p["time"], u["tz"])) for p in u["sundata"] if p["phen"] in CIVIL),
+        key=lambda x: x[1],
+    )
+    assert [e.kind for e in ours.civil] == [k for k, _ in theirs], (sid, date)
+    for e, (_, t) in zip(ours.civil, theirs, strict=True):
+        assert abs((e.time - t).total_seconds()) <= SUN_MINUTES * 60, (sid, date, e, t)
+
+
+@pytest.mark.parametrize(("sid", "date"), station_days())
+def test_moonrise_matches_usno(sid: str, date: str) -> None:
+    """Moonrise and moonset within 2 minutes of USNO's, the same days
+    without one, and the same days the moon stays up or down."""
+    u = fixture()["stations"][sid]["days"][date]
+    st = load().station(sid)
+    assert st is not None
+    d = dt.date.fromisoformat(date)
+    ours = sky.moon_times(st.lat, st.lon, st.tz, d)
+    theirs = sorted(
+        ((p["phen"].lower(), usno_time(d, p["time"], u["tz"])) for p in u["moondata"] if p["phen"] in ("Rise", "Set")),
+        key=lambda x: x[1],
+    )
+    # USNO's day is 24 hours at the noon offset (dst=false); ours runs from
+    # local midnight to midnight, 23 or 25 hours on a daylight saving day.
+    # Compare where the two days overlap; only on such a day may either have
+    # an event outside the overlap.
+    zone = ZoneInfo(st.tz)
+    ours_begin = dt.datetime.combine(d, dt.time(), zone).timestamp()
+    ours_end = dt.datetime.combine(d + dt.timedelta(days=1), dt.time(), zone).timestamp()
+    usno_begin = usno_time(d, "00:00", u["tz"]).timestamp()
+    lo, hi = max(ours_begin, usno_begin), min(ours_end, usno_begin + 86400)
+    inside = [e for e in ours.events if lo <= e.ts < hi]
+    theirs_inside = [(k, w) for k, w in theirs if lo <= w.timestamp() < hi]
+    if ours_end - ours_begin == 86400:
+        assert (len(inside), len(theirs_inside)) == (len(ours.events), len(theirs)), (sid, date)
+    assert [e.kind for e in inside] == [k for k, _ in theirs_inside], (sid, date)
+    for e, (_, w) in zip(inside, theirs_inside, strict=True):
+        assert abs((e.time - w).total_seconds()) <= MOON_MINUTES * 60, (sid, date, e, w)
+    always = [p["phen"] for p in u["moondata"] if p["phen"].startswith("Object continuously")]
+    if always:
+        assert ours.up_all_day == ("above the Horizon" in always[0]), (sid, date)
+
+
 @pytest.mark.parametrize(("sid", "date"), station_days())
 def test_moon_matches_usno(sid: str, date: str) -> None:
     """The phase name and the share lit at local noon match USNO's (which
@@ -116,10 +172,30 @@ def test_polar_night_and_midnight_sun_are_words() -> None:
 def test_a_day_with_only_one_of_them_says_so() -> None:
     tz = ZoneInfo("America/Anchorage")
     at = dt.datetime(2027, 5, 1, 1, 5, tzinfo=tz)
-    only_set = sky.SunDay(at.date(), [sky.SunEvent("set", at, at.timestamp())], False, [])
+    only_set = sky.SunDay(at.date(), [sky.SunEvent("set", at, at.timestamp())], False, [], [], False)
     assert sun_text(only_set) == "Sunset 1:05 AM. No sunrise on this day."
-    only_rise = sky.SunDay(at.date(), [sky.SunEvent("rise", at, at.timestamp())], False, [])
+    only_rise = sky.SunDay(at.date(), [sky.SunEvent("rise", at, at.timestamp())], False, [], [], False)
     assert sun_text(only_rise) == "Sunrise 1:05 AM. No sunset on this day."
+    only_dusk = sky.SunDay(at.date(), [], True, [], [sky.SunEvent("dusk", at, at.timestamp())], False)
+    assert civil_text(only_dusk) == "Civil dusk 1:05 AM. No civil dawn on this day."
+    only_moonset = sky.MoonTimes(at.date(), [sky.SunEvent("set", at, at.timestamp())], False)
+    assert moonrise_text(only_moonset) == "Moonset 1:05 AM. No moonrise on this day."
+    only_moonrise = sky.MoonTimes(at.date(), [sky.SunEvent("rise", at, at.timestamp())], False)
+    assert moonrise_text(only_moonrise) == "Moonrise 1:05 AM. No moonset on this day."
+
+
+def test_no_twilight_and_no_moonrise_are_words() -> None:
+    """Days without civil twilight or without a moonrise or moonset have no
+    time in their words."""
+    d = dt.date(2027, 6, 21)
+    white = sky.SunDay(d, [], True, [], [], True)
+    assert civil_text(white) == "It does not get darker than civil twilight on this day."
+    deep = sky.SunDay(d, [], False, [], [], False)
+    assert civil_text(deep) == "No civil twilight on this day: the sun stays more than 6° below the horizon."
+    assert moonrise_text(sky.MoonTimes(d, [], True)) == "The moon is up all day."
+    assert moonrise_text(sky.MoonTimes(d, [], False)) == "The moon does not rise on this day."
+    for text in (civil_text(white), civil_text(deep), moonrise_text(sky.MoonTimes(d, [], True))):
+        assert not re.search(r"\d:\d", text), text
 
 
 def test_sun_times() -> None:
@@ -179,6 +255,9 @@ def test_station_day_carries_the_sky() -> None:
     day = station_day(st, cat.predictor(PRUDHOE), dt.date(2026, 12, 21))
     assert day.sun_text == "The sun does not rise on this day (polar night)."
     assert day.moon_text.startswith("Moon: ")
+    # The sun stays up to 4 degrees below the horizon at noon: civil twilight.
+    assert day.civil_text.startswith("Civil dawn ")
+    assert day.moonrise_text
     assert day.svg is not None and 'class="night"' in day.svg
 
 
@@ -203,7 +282,12 @@ def test_built_pages_show_the_sky(winter: Path) -> None:
     assert html.count("The sun does not rise on this day (polar night).") == 2
     assert '<span class="sun">Sunrise' not in html
     juneau = (winter / "stations/9452210/index.html").read_text(encoding="utf-8")
-    assert re.search(r'<span class="sun">Sunrise \d{1,2}:\d\d AM, sunset \d{1,2}:\d\d PM\.</span>', juneau)
+    assert re.search(
+        r'<span class="sun">Sunrise \d{1,2}:\d\d AM, sunset \d{1,2}:\d\d PM\. '
+        r"Civil dawn \d{1,2}:\d\d AM, civil dusk \d{1,2}:\d\d PM\.</span>",
+        juneau,
+    )
+    assert re.search(r"Moon(rise|set) \d{1,2}:\d\d [AP]M|No moon(rise|set) on this day", juneau)
 
 
 def _sabotage(page: Path, old: str, new: str) -> None:
@@ -213,7 +297,7 @@ def _sabotage(page: Path, old: str, new: str) -> None:
     assert page.read_text(encoding="utf-8") != html  # the sabotage applied
 
 
-@pytest.mark.parametrize("how", ["removed", "placeholder", "wrong-time", "moon"])
+@pytest.mark.parametrize("how", ["removed", "placeholder", "wrong-time", "moon", "civil", "moonrise"])
 def test_check_site_catches_a_bad_sun_line(tmp_path: Path, winter: Path, how: str) -> None:
     """Negative controls: check_sky passes the build, then fails each
     sabotage of one page's sun and moon line."""
@@ -239,11 +323,23 @@ def test_check_site_catches_a_bad_sun_line(tmp_path: Path, winter: Path, how: st
         assert m is not None
         _sabotage(juneau, m.group(0), "Sunrise 12:00 AM")
         expect = "stations/9452210: sun and moon"
-    else:
+    elif how == "moon":
         html = juneau.read_text(encoding="utf-8")
         m = re.search(r"Moon: [a-z ]+, \d+% lit", html)
         assert m is not None
         _sabotage(juneau, m.group(0), "Moon: full moon, 100% lit")
+        expect = "stations/9452210: sun and moon"
+    elif how == "civil":
+        html = juneau.read_text(encoding="utf-8")
+        m = re.search(r"civil dusk \d{1,2}:\d\d PM", html)
+        assert m is not None
+        _sabotage(juneau, m.group(0), "civil dusk 11:59 PM")
+        expect = "stations/9452210: sun and moon"
+    else:
+        html = juneau.read_text(encoding="utf-8")
+        m = re.search(r"Moon(rise|set) \d{1,2}:\d\d [AP]M", html)
+        assert m is not None
+        _sabotage(juneau, m.group(0), "Moonrise 12:00 AM")
         expect = "stations/9452210: sun and moon"
     found: list[str] = check.check_sky(root, cat)
     assert any(p.startswith(expect) for p in found), found

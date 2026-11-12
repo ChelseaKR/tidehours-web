@@ -11,7 +11,7 @@
     <li><strong>Subordinate stations:</strong> NOAA's method. The reference station's highs and lows are moved by the published minutes and scaled or offset by the published heights. NOAA does not publish a curve for these stations, so the curve here is an estimate between the highs and lows, drawn dashed.</li>
     <li><strong>Stands:</strong> where the water barely moves for an hour or two, the math can find a low and a high less than two hours apart and a few hundredths of a foot apart. NOAA's published tables leave those pairs out, and so does this site.</li>
   </ul>
-  <p><strong>Sunrise, sunset and the moon</strong> are computed too, with nothing fetched: sunrise and sunset from NOAA's Solar Calculator equations, at the station's position, when the sun's center is 0.833° below a flat horizon (the standard allowance for refraction and the sun's size); the moon's phase and the share of it lit at local noon from Jean Meeus's <cite>Astronomical Algorithms</cite>. Hills, cliffs and buildings can hide the real sunrise. In the Arctic, a day the sun does not rise or does not set says so.</p>
+  <p><strong>Sunrise, sunset, civil twilight and the moon</strong> are computed too, with nothing fetched: sunrise and sunset from NOAA's Solar Calculator equations, at the station's position, when the sun's center is 0.833° below a flat horizon (the standard allowance for refraction and the sun's size), and civil dawn and dusk when it is 6° below; moonrise, moonset, the moon's phase and the share of it lit at local noon from Jean Meeus's <cite>Astronomical Algorithms</cite>. Hills, cliffs and buildings can hide the real sunrise and moonrise. A day without a sunrise, sunset, civil twilight, moonrise or moonset says so.</p>
   <p>Heights are in feet above mean lower low water (MLLW), the datum on NOAA charts, with meters alongside. Times are local to each station, with daylight saving time where it applies.</p>
 </section>
 <section aria-labelledby="checked">
@@ -20,7 +20,7 @@
   <ul>
     <li>A month (November 2026) of every published high and low at 81 stations, 50 harmonic and 31 subordinate, in every state and territory on this site. Of NOAA's 8,406 highs and lows, 8,366 are within 3 minutes and 0.05 ft. Another 39 are at very flat highs or lows, where the time of the peak is uncertain by a few minutes: those are within 15 minutes, and the predicted tide at NOAA's minute is within 0.01 ft. One is a flat double high (two peaks 0.005 ft apart), where this site picks the other peak. This site also shows three small stands that NOAA leaves out.</li>
     <li>Hourly heights at 42 harmonic stations, all within 0.05 ft.</li>
-    <li>Sunrise and sunset on 186 days at 22 stations, from Guam to the Virgin Islands and Prudhoe Bay's polar night and midnight sun, all within 2 minutes of the U.S. Naval Observatory's published times, with the same days without a sunrise or sunset; the moon's phase name and the share lit, the same as the Naval Observatory's on every one of those days.</li>
+    <li>Sun and moon on 186 days at 22 stations, from Guam and Pago Pago to the Virgin Islands and Prudhoe Bay's polar night and midnight sun, against the U.S. Naval Observatory's published times: 350 sunrises and sunsets within 2 minutes (all but two within 1), 334 civil dawns and dusks and 310 moonrises and moonsets within 1 minute, the same days without one, and the moon's phase name and share lit the same on every day.</li>
     <li>King tide dates at 31 West Coast stations, against NOAA's published predictions and the dates the California Coastal Commission and Washington Sea Grant publish.</li>
   </ul>
 </section>
@@ -40,4 +40,7 @@
     <li><a href="https://tidesandcurrents.noaa.gov/disclaimers.html">NOAA CO-OPS disclaimers</a></li>
   </ul>
 </section>
+{% if print_shop %}
+{% include "_print_shop.html.jinja" %}
+{% endif %}
 {% endblock %}

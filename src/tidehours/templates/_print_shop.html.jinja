@@ -1,0 +1,10 @@
+{#
+  The link to the Tide Hours print shop on Etsy (docs/DECISIONS.md 0029).
+  about.html.jinja and the English king_tides.html.jinja include this only
+  when a shop address is configured. One sentence, one plain link: no price,
+  no claim, no image, no tracking parameter and no click event.
+#}
+<section class="print-shop" aria-labelledby="print-shop" data-print-shop="etsy">
+  <h2 id="print-shop">{{ print_shop.text.heading }}</h2>
+  <p>{{ print_shop.text.before }} <a href="{{ print_shop.url }}" rel="{{ print_shop.rel }}">{{ print_shop.text.link }}</a>{{ print_shop.text.after }}</p>
+</section>

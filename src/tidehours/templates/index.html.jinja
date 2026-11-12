@@ -1,6 +1,11 @@
 {% extends "base.html.jinja" %}
 {% block title %}Tide times today for every US tide station | Tide Hours{% endblock %}
 {% block description %}Free tide times for today and tomorrow at {{ "{:,}".format(station_count) }} NOAA tide prediction stations in the US, with high and low tides and a tide curve, computed from NOAA harmonic constants.{% endblock %}
+{% block jsonld %}
+{#- The site name and address only; the name is the header's brand. No
+    SearchAction: the site has no search page. -#}
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "WebSite", "name": "Tide Hours", "url": base_url}|tojson }}</script>
+{% endblock %}
 {% block content %}
 <h1>Tide times for every NOAA tide station in the US</h1>
 <p class="lead">Today's and tomorrow's high and low tides, with a tide curve, for {{ "{:,}".format(station_count) }} NOAA tide prediction stations from Alaska to Puerto Rico and Guam. Free, no account.</p>
@@ -17,7 +22,7 @@
 </section>
 <section aria-labelledby="kt">
   <h2 id="kt">{% if king_up %}King tides {{ fmt_months(king_months, "en", kc) }}{% else %}King tides 2026–27{% endif %}</h2>
-  <p>{% if king_up %}The next West Coast king tides are {{ fmt_range(king_span.first, king_span.last, "en", kc) }}, {% if king_span.peak_first == king_span.peak_last %}highest on {{ fmt_date(king_span.peak_first, "en", kc) }}{% else %}peaking {{ fmt_range(king_span.peak_first, king_span.peak_last, "en", kc) }} depending on the place{% endif %}. {% endif %}The highest predicted tides of the season at 31 stations in Washington, Oregon and California. <a href="/king-tides/">King tide dates, times and heights</a>.</p>
+  <p>{% if king_up %}The next West Coast king tides are {{ fmt_range(king_span.first, king_span.last, "en", kc) }}, {% if king_span.peak_first == king_span.peak_last %}highest on {{ fmt_date(king_span.peak_first, "en", kc) }}{% else %}peaking {{ fmt_range(king_span.peak_first, king_span.peak_last, "en", kc) }} depending on the place{% endif %}. {% endif %}The highest predicted tides of the season at 31 stations in Washington, Oregon and California. <a href="/king-tides/">King tide dates, times and heights</a>. By month, November to February: <a href="/king-tides/washington/">Washington</a> · <a href="/king-tides/oregon/">Oregon</a> · <a href="/king-tides/california/">California</a>.</p>
 </section>
 <section aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>

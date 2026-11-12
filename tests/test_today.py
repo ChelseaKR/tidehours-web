@@ -106,7 +106,7 @@ def battery(tmp_path_factory: pytest.TempPathFactory) -> str:
 
 @pytest.fixture(scope="module")
 def guam(tmp_path_factory: pytest.TempPathFactory) -> str:
-    out = build(tmp_path_factory.mktemp("other"), "other")
+    out = build(tmp_path_factory.mktemp("guam"), "GU")  # Apra Harbor is GU (DECISIONS 0018)
     return (out / "stations/1630000/index.html").read_text(encoding="utf-8")
 
 

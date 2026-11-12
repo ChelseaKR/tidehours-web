@@ -5,7 +5,7 @@
 <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li></ol></nav>
 <h1>{% if state.code == "other" %}{{ state.name }}{% else %}{{ state.name }} tide times{% endif %}</h1>
 {% if state.code == "other" %}
-<p class="lead">NOAA's station list gives these {{ state.count }} stations no state. They are grouped here by NOAA's region name.</p>
+<p class="lead">These {{ state.count }} stations have no state on this site. Most have none in NOAA's station list, and their position rules out their reference station's state (for example, they are across the Canadian border); one, Apia, is in independent Samoa. They are grouped here by NOAA's region name.</p>
 {% else %}
 <p class="lead">{{ state.count }} NOAA tide prediction stations, grouped by NOAA's regions.</p>
 {% endif %}
@@ -14,6 +14,9 @@
   <h2 id="king">King tides {{ fmt_months(king_months, "en", kc) }}</h2>
   <p>{{ state.name }}'s next king tides are {{ fmt_range(king.first, king.last, "en", kc) }}, {% if king.peak_first == king.peak_last %}highest on {{ fmt_date(king.peak_first, "en", kc) }}{% else %}peaking {{ fmt_range(king.peak_first, king.peak_last, "en", kc) }} depending on the place{% endif %}. <a href="/king-tides/#kt-{{ state.code }}">King tide dates, times and heights in {{ state.name }}</a>.</p>
 </section>
+{% endif %}
+{% if king_calendar %}
+<p><a href="/{{ king_calendar }}">{{ state.name }} king tides by month, November 2026 to February 2027</a>: each place's highest predicted tides of the winter.</p>
 {% endif %}
 {% for r in state.regions %}
 <section aria-labelledby="r-{{ r.slug }}">

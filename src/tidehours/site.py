@@ -11,7 +11,9 @@ import json
 import math
 import re
 import shutil
+import string
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -21,10 +23,12 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat
-from .catalog import DATA_DIR, Catalog, Station
+from . import affiliate, booklets, indexnow, kingtides, ktformat, llms, printshop
+from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
+from .zones import UNKNOWN as ZONE_UNKNOWN
+from .zones import label as zone_label
 
 DEFAULT_BASE_URL = "https://tidehours.com/"
 # Analytics regions where analytics_storage defaults to denied (EEA, UK, CH),
@@ -34,14 +38,6 @@ GA4_DENIED_REGIONS = [
     "LI", "LT", "LU", "MT", "NL", "NO", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "GB", "CH",
 ]  # fmt: skip
 
-STATE_NAMES = {
-    "AK": "Alaska", "AL": "Alabama", "AS": "American Samoa", "CA": "California", "CT": "Connecticut",
-    "DC": "District of Columbia", "DE": "Delaware", "FL": "Florida", "GA": "Georgia", "GU": "Guam",
-    "HI": "Hawaii", "LA": "Louisiana", "MA": "Massachusetts", "MD": "Maryland", "ME": "Maine",
-    "MS": "Mississippi", "NC": "North Carolina", "NH": "New Hampshire", "NJ": "New Jersey", "NY": "New York",
-    "OR": "Oregon", "PA": "Pennsylvania", "PR": "Puerto Rico", "RI": "Rhode Island", "SC": "South Carolina",
-    "TX": "Texas", "VA": "Virginia", "VI": "U.S. Virgin Islands", "WA": "Washington",
-}  # fmt: skip
 OTHER = "other"
 # Region pages that moved (docs/DECISIONS.md 0017): the old path is built as a
 # noindex stub, out of the sitemap, that sends visitors to the new page. The
@@ -65,9 +61,87 @@ def indexable(station: Station) -> bool:
     return not station.is_subordinate
 
 
+# A region page lists its stations, and its state page lists the same
+# stations under the same heading, so a region of one or two stations is a
+# near-empty copy of part of its state page (about 120 to 130 words). Those
+# pages are served, linked and followed, but carry noindex and are left out of
+# the sitemap and lastmod.json (docs/DECISIONS.md 0022). Their stations are
+# linked from the state page either way, and each station page is indexed or
+# not by its own rule (indexable above).
+REGION_MIN_STATIONS = 3
+
+
+def region_indexable(region: Region) -> bool:
+    """Whether a region page asks search engines to index it: only when it
+    lists at least REGION_MIN_STATIONS stations (docs/DECISIONS.md 0022)."""
+    return len(region.stations) >= REGION_MIN_STATIONS
+
+
 def slug(text: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return s or "region"
+
+
+# A station page's <title> (and og:title): the longest of these that fits in
+# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020).
+TITLE_MAX = 60
+TITLE_TIERS = ("{} tide times today | Tide Hours", "{} tide times today", "{} tide times")
+
+
+def station_title(name: str) -> str:
+    for tier in TITLE_TIERS:
+        title = tier.format(name)
+        if len(title) <= TITLE_MAX:
+            return title
+    return title
+
+
+# NOAA's region names with typos or case slips, written right
+# (docs/DECISIONS.md 0020). The region's URL keeps NOAA's name.
+REGION_FIXES = {
+    "Hawaiin Islands": "Hawaiian Islands",
+    "St. Johns Island": "St. John Island",
+    "Chesapeake Bay, western shore": "Chesapeake Bay, Western Shore",
+}
+REGION_SUFFIXES = ("-cont.", ", etc.")
+
+
+def region_label(region: str, state_name: str | None) -> str:
+    """How a region's name reads on the site: NOAA's typos fixed, out of
+    capitals ("MAINE and NEW HAMPSHIRE" -> "Maine and New Hampshire"),
+    without NOAA's page-break "-cont." or ", etc.", and without a leading
+    "STATE, " part on that state's own pages ("FLORIDA, East Coast" -> "East
+    Coast"). The region's page and URL are NOAA's region, unchanged."""
+    label = tidy_name(REGION_FIXES.get(region, region))
+    for suffix in REGION_SUFFIXES:
+        label = label.removesuffix(suffix)
+    head, sep, rest = label.partition(",")
+    if sep and state_name and head.strip().lower() == state_name.lower():
+        rest = rest.strip()
+        label = string.capwords(rest) if rest == rest.lower() else rest[:1].upper() + rest[1:]
+    return label
+
+
+def tell_apart(code: str, regions: list[Region]) -> None:
+    """Give two regions of one state that `region_label` names alike their
+    own labels (docs/DECISIONS.md 0023). NOAA splits a region across a page
+    break ("MAINE, outer coast" and "MAINE, outer coast-cont."), so its own
+    detail is only "continued"; the parts are told apart by where NOAA puts
+    their stations, "(north)" and "(south)", as NOAA writes "(inside)" and
+    "(outside)". That holds only when every station of one part is north of
+    every station of the other; anything else stops the build."""
+    by_label: dict[str, list[Region]] = defaultdict(list)
+    for r in regions:
+        by_label[r.name].append(r)
+    for label, same in by_label.items():
+        if len(same) == 1:
+            continue
+        if len(same) > 2:
+            raise ValueError(f"{code}: {len(same)} regions are labeled {label!r}")
+        south, north = sorted(same, key=lambda r: min(s.lat for s in r.stations))
+        if max(s.lat for s in south.stations) >= min(s.lat for s in north.stations):
+            raise ValueError(f"{code}: the two {label!r} regions overlap north to south")
+        south.name, north.name = f"{label} (south)", f"{label} (north)"
 
 
 @dataclass
@@ -79,6 +153,13 @@ class Config:
     # Amazon Associates tracking ID. Empty (the default) means off: no
     # affiliate link anywhere (docs/DECISIONS.md 0016).
     amazon_tag: str = ""
+    # The Tide Hours shop on Etsy. Empty (the default) means off: no link
+    # anywhere (docs/DECISIONS.md 0029).
+    print_shop_url: str = ""
+    # The list of printed booklets on sale. None (the default) reads the
+    # committed list, copy/booklets.json; a test passes its own
+    # (docs/DECISIONS.md 0030).
+    booklets_file: Path | None = None
 
 
 @dataclass
@@ -123,8 +204,9 @@ def group(stations: list[Station]) -> list[State]:
                 continue
             r = regions.get(s.region)
             if r is None:
-                r = regions[s.region] = Region(code, s.region, slug(s.region))
+                r = regions[s.region] = Region(code, region_label(s.region, STATE_NAMES.get(code)), slug(s.region))
             r.stations.append(s)
+        tell_apart(code, list(regions.values()))
         slugs = [r.slug for r in regions.values()]
         if len(slugs) != len(set(slugs)):
             raise ValueError(f"{code}: two regions share a URL slug")
@@ -193,6 +275,7 @@ def env() -> Environment:
     e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
     e.globals.update(
         minutes=offset_phrase,
+        station_title=station_title,
         fill=ktformat.fill,
         fmt_date=ktformat.fmt_date,
         fmt_long_date=ktformat.fmt_long_date,
@@ -200,6 +283,9 @@ def env() -> Environment:
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
         fmt_months=ktformat.fmt_months,
+        calendar_path=kingtides.calendar_path,
+        zone_label=zone_label,
+        zone_unknown=ZONE_UNKNOWN,
     )
     return e
 
@@ -231,6 +317,7 @@ def king_tide_context(cat: Catalog) -> dict[str, Any]:
         "window_start": first,
         "window_end": last,
         "datums_retrieved": datums_raw["retrieved"],
+        "datum_epochs": {k: str(v.get("epoch", "")) for k, v in datums_raw["datums"].items()},
         "copy": copy,
     }
 
@@ -298,6 +385,39 @@ def king_links(
     return out
 
 
+def king_calendar_pages(
+    page: Callable[..., None], kt: dict[str, Any], states: list[State], king_common: dict[str, Any]
+) -> None:
+    """The WA, OR and CA winter calendar pages (docs/DECISIONS.md 0024)."""
+    state_paths = {st.code: st.path for st in states}
+    for code, (name, _) in kingtides.CALENDAR_STATES.items():
+        page(
+            kingtides.calendar_path(code),
+            "king_tides_state.html.jinja",
+            state_code=code,
+            state_name=name,
+            state_path=state_paths.get(code),
+            calendar=kingtides.calendar(kt["seasons"], code),
+            kt_station_count=sum(1 for k in kt["seasons"] if k.state == code),
+            epochs=kingtides.epochs(kt["seasons"], kt["datum_epochs"], code),
+            calendar_first=kingtides.CALENDAR_FIRST,
+            calendar_last=kingtides.CALENDAR_LAST,
+            calendar_states=kingtides.CALENDAR_STATES,
+            search=kingtides.CALENDAR_SEARCH[code],
+            **king_common,
+        )
+
+
+def king_calendar(season: kingtides.StationSeason | None, link: KingLink | None) -> tuple[str, str] | None:
+    """The winter calendar page a station page links to, (path, state name):
+    its own state's, for a king-tide station, or the nearby king-tide
+    station's while that station's run is coming up."""
+    state = season.state if season is not None else link.up.season.state if link is not None else None
+    if state is None:
+        return None
+    return kingtides.calendar_path(state), kingtides.CALENDAR_STATES[state][0]
+
+
 def derived_from(cat: Catalog, by_id: dict[str, Station]) -> dict[str, list[Derived]]:
     """Reference station id -> the built subordinate stations predicted from
     it, nearest first."""
@@ -317,15 +437,61 @@ def region_king(region: Region, links: dict[str, KingLink], up: list[kingtides.U
     return [u for u in up if u.season.id in ids]
 
 
+def moved_regions(states: list[State]) -> dict[str, dict[str, list[Station]]]:
+    """Old region path -> each new region path its stations went to, with
+    those stations: MOVED_REGIONS, plus each region page whose stations are
+    now filed under another state or region (DECISIONS 0018), from NOAA's own
+    state and region for each station. An old region can split: NOAA's
+    "Hawaiin Islands" is now Johnston Atoll and Midway Islands."""
+    moves: dict[str, dict[str, list[Station]]] = defaultdict(lambda: defaultdict(list))
+    for st in states:
+        for r in st.regions:
+            for s in r.stations:
+                if s.noaa_region is None:
+                    continue
+                old = f"states/{(s.noaa_state or OTHER).lower()}/{slug(s.noaa_region)}/"
+                if old != r.path:
+                    moves[old][r.path].append(s)
+    for old, new in MOVED_REGIONS.items():
+        moves[old].setdefault(new, [])
+    return {old: dict(sorted(news.items())) for old, news in sorted(moves.items())}
+
+
 def moved_pages(template: Template, common: dict[str, Any], states: list[State]) -> list[Page]:
-    """A noindex stub at each moved region page's old path, sending visitors
-    to the new one, when this build has the new page and none at the old."""
-    names = {r.path: r.name for st in states for r in st.regions}
-    return [
-        Page(old, template.render(**common, path=old, noindex=True, canonical_path=new, name=names[new]), False)
-        for old, new in MOVED_REGIONS.items()
-        if new in names and old not in names
-    ]
+    """A noindex stub at each moved region page's old path, when this build
+    has no page there. A region that moved whole sends visitors to its new
+    page; one that split lists each new page and the stations it holds,
+    instead of picking one of them."""
+    regions = {r.path: (r, st) for st in states for r in st.regions}
+    pages: list[Page] = []
+    for old, news in moved_regions(states).items():
+        built = [(regions[new][0], regions[new][1], stations) for new, stations in news.items() if new in regions]
+        if old in regions or not built:
+            continue
+        if len(news) == 1:
+            name = built[0][0].name
+        else:
+            first = next(s for ss in news.values() for s in ss)
+            name = region_label(first.noaa_region or "", STATE_NAMES.get(first.noaa_state))
+        ctx: dict[str, Any] = {"path": old, "noindex": True, "name": name, "destinations": built}
+        if len(news) == 1:
+            ctx["canonical_path"] = built[0][0].path
+        pages.append(Page(old, template.render(**common, **ctx), False))
+    return pages
+
+
+def booklets_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, booklets.Booklet]:
+    """Station id -> the booklet its page links to in this build: a listed
+    booklet whose year is not over on the station's own date
+    (docs/DECISIONS.md 0030). A listed station the catalog does not have
+    stops the build."""
+    listed = booklets.load(cfg.booklets_file)
+    unknown = sorted(sid for sid in listed if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"booklets: no station {', '.join(unknown)} in the catalog")
+    return {
+        s.id: listed[s.id] for s in stations if s.id in listed and booklets.shown(listed[s.id], local_today(s, now))
+    }
 
 
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
@@ -344,6 +510,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     kt_months = kingtides.months(kt_up, kt_today)
     kt_states = {code: king_span([u for u in kt_up if u.season.state == code]) for code in ("WA", "OR", "CA")}
     links = king_links(stations, kt["seasons"], kt_today, cat)
+    booklet_of = booklets_shown(cat, stations, cfg, now)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
         "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
@@ -352,6 +519,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
+        "print_shop": printshop.block(cfg.print_shop_url),
+        "booklet_links": booklets.notice(bool(booklet_of)),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
@@ -397,11 +566,25 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             **kt,
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
+    king_calendar_pages(page, kt, states, king_common)
     for st in states:
-        page(st.path, "state.html.jinja", state=st, king=kt_states.get(st.code), **king_common)
+        page(
+            st.path,
+            "state.html.jinja",
+            state=st,
+            king=kt_states.get(st.code),
+            king_calendar=kingtides.calendar_path_for(st.code),
+            **king_common,
+        )
         for r in st.regions:
             page(
-                r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common
+                r.path,
+                "region.html.jinja",
+                index=region_indexable(r),
+                state=st,
+                region=r,
+                region_king=region_king(r, links, kt_up),
+                **king_common,
             )
     pages += moved_pages(e.get_template("moved.html.jinja"), common, states)
     for s in stations:
@@ -429,14 +612,54 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             king_season=season,
             king_next=kingtides.next_run(season, today) if season else None,
             king_link=links.get(s.id),
+            king_calendar=king_calendar(season, links.get(s.id)),
             kc=kt["copy"]["en"],
+            booklet=booklets.block(booklet_of.get(s.id)),
         )
     return pages
 
 
-def sitemap(pages: list[Page], base: str, built: str) -> str:
+def fingerprint(page: Page) -> str:
+    return hashlib.sha256(page.html.encode("utf-8")).hexdigest()
+
+
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def previous_lastmods(previous: Path | None, base: str, built: str) -> dict[str, tuple[str, str]]:
+    """Page path ("" for home) -> (fingerprint, lastmod) from the live site's
+    sitemap.xml and lastmod.json, saved into `previous` before the build
+    (publish.yml). A page whose HTML is unchanged keeps the date it last
+    changed instead of the build date (docs/DECISIONS.md 0028). Anything
+    missing or unreadable gives {}: every page then gets the build date, as
+    before, which is never earlier than the truth."""
+    if previous is None:
+        return {}
+    try:
+        mods = indexnow.parse_sitemap((previous / "sitemap.xml").read_text(encoding="utf-8"))
+        pages = json.loads((previous / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+        out: dict[str, tuple[str, str]] = {}
+        for path, entry in pages.items():
+            mod = mods.get(base.rstrip("/") + path, "")
+            if _ISO_DATE.fullmatch(mod) and mod <= built:
+                out[path[1:]] = (str(entry["fingerprint"]), mod)
+        return out
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {}
+
+
+def sitemap(pages: list[Page], base: str, built: str, previous: dict[str, tuple[str, str]] | None = None) -> str:
+    """Each indexable page with its lastmod: the date its HTML last changed
+    when the previous build's record says it is unchanged, else the build
+    date."""
+    prev = previous or {}
+
+    def lastmod(p: Page) -> str:
+        have = prev.get(p.path)
+        return have[1] if have and have[0] == fingerprint(p) else built
+
     rows = [
-        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{built}</lastmod></url>"
+        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{lastmod(p)}</lastmod></url>"
         for p in pages
         if p.path != "404" and p.index
     ]
@@ -446,7 +669,7 @@ def sitemap(pages: list[Page], base: str, built: str) -> str:
     )
 
 
-def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
+def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path | None = None) -> int:
     """Builds into `out` (replaced). Returns the number of HTML pages."""
     pages = render(cat, cfg, now)
     e = env()
@@ -467,13 +690,19 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
+        "print_shop": printshop.block(cfg.print_shop_url),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),
     }
     (out / "404.html").write_text(e.get_template("404.html.jinja").render(**common, path="404"), encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
+    (out / "sitemap.xml").write_text(
+        sitemap(pages, base, built, previous_lastmods(previous, base, built)), encoding="utf-8"
+    )
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
+    # /llms.txt (llms.py); deploy.sh uploads non-HTML files with the type the
+    # extension gives, text/plain for .txt, as it does for robots.txt.
+    (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
     # The IndexNow ownership file (indexnow.py), served from the domain's
@@ -487,15 +716,10 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
 
 def page_manifest(pages: list[Page]) -> str:
     """Each sitemap page's path and a SHA-256 of its HTML (schema 1, as read
-    by indexnow.py's "manifest" kind). The sitemap's lastmod is the build date
-    on every page, so it cannot tell a changed page from an unchanged one;
-    this can, because a rebuild of the same day is byte-identical. The next
-    build compares its manifest with the live one and announces only the pages
-    whose HTML changed (docs/DECISIONS.md 0011). Noindex pages are left out,
-    as they are from the sitemap (0013)."""
-    entries = {
-        "/" + p.path: {"fingerprint": hashlib.sha256(p.html.encode("utf-8")).hexdigest()}
-        for p in pages
-        if p.path != "404" and p.index
-    }
+    by indexnow.py's "manifest" kind). A rebuild of the same day is
+    byte-identical, so the next build compares its manifest with the live one
+    and announces only the pages whose HTML changed (docs/DECISIONS.md 0011),
+    and keeps an unchanged page's sitemap lastmod (0028). Noindex pages are
+    left out, as they are from the sitemap (0013)."""
+    entries = {"/" + p.path: {"fingerprint": fingerprint(p)} for p in pages if p.path != "404" and p.index}
     return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

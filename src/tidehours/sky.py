@@ -1,6 +1,6 @@
-"""Sunrise, sunset and the moon's phase for one station's local day,
-computed at build time with no data file and no network (docs/DECISIONS.md
-0019).
+"""Sunrise, sunset, civil twilight, moonrise, moonset and the moon's phase
+for one station's local day, computed at build time with no data file and no
+network (docs/DECISIONS.md 0019).
 
 The sun: NOAA's Solar Calculator equations (NOAA Global Monitoring
 Laboratory, after Meeus, *Astronomical Algorithms*), the sun's center at an
@@ -9,16 +9,25 @@ semidiameter), as the U.S. Naval Observatory defines sunrise and sunset. The
 altitude is evaluated every minute of the station's local day, midnight to
 midnight in its own IANA zone (so a daylight saving day has 23 or 25 hours),
 and each horizon crossing is placed between the two minutes either side of it.
+Civil twilight begins and ends with the sun's center 6 degrees below the
+horizon, with no refraction, as USNO defines it.
 
 The moon: Meeus chapter 47's main periodic terms for the moon's longitude,
 latitude and distance, and chapter 48 for the phase angle and the fraction
 of the disk lit. A primary phase (new moon, first quarter, full moon, last
 quarter) is the instant the moon's longitude minus the sun's is a multiple of
-90 degrees.
+90 degrees. Moonrise and moonset: the same series turned into right ascension
+and declination, the station's local sidereal time (Meeus 12.4), and the
+moon's center at a geocentric altitude of 0.7275 times its horizontal
+parallax less 0.5667 degrees (Meeus 15), which puts the upper limb on the
+horizon after refraction, as USNO defines moonrise and moonset. Like the sun,
+the altitude is sampled every minute of the local day.
 
 Nothing here makes up a value. A day the sun does not rise or does not set
 has no time for it: `rise` or `set` is None, and the page says so in words
 (polar night and midnight sun at Prudhoe Bay and the other Arctic stations).
+The same holds for civil twilight, and for a day without a moonrise or a
+moonset, which comes about once a month everywhere.
 """
 
 from __future__ import annotations
@@ -34,6 +43,9 @@ import numpy as np
 
 # The sun's center at sunrise and sunset (USNO's definition).
 HORIZON_DEG = -0.833
+# The sun's center at the start and end of civil twilight.
+CIVIL_DEG = -6.0
+EARTH_RADIUS_KM = 6378.14
 # TT - UT, seconds, for 2026-27 (IERS: about 69 s). Meeus's lunar series are
 # in TT; a minute's error here moves a primary phase by under a minute.
 DELTA_T = 69.0
@@ -82,7 +94,7 @@ def _sun_grid(start: float, n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]
     declination and equation of time at each. Shared by every station whose
     local day starts at the same instant (the same date and zone)."""
     ts = start + np.arange(n) * STEP
-    t = (julian_day(ts) - J2000) / 36525.0
+    t = np.asarray((julian_day(ts) - J2000) / 36525.0, dtype=np.float64)
     decl, eot, _ = _sun_terms(t)
     return ts, decl, eot
 
@@ -93,7 +105,8 @@ def sun_altitude(ts: np.ndarray, decl: np.ndarray, eot: np.ndarray, lat: float, 
     hour_angle = np.radians(np.mod(utc_minutes + eot + 4.0 * lon, 1440.0) / 4.0 - 180.0)
     la, dr = math.radians(lat), np.radians(decl)
     cos_zenith = np.clip(math.sin(la) * np.sin(dr) + math.cos(la) * np.cos(dr) * np.cos(hour_angle), -1.0, 1.0)
-    return 90.0 - np.degrees(np.arccos(cos_zenith))
+    altitude: np.ndarray = 90.0 - np.degrees(np.arccos(cos_zenith))
+    return altitude
 
 
 @dataclass(frozen=True)
@@ -114,6 +127,11 @@ class SunDay:
     # Unix-time spans of the day with the sun below the horizon, for the
     # curve's night shading.
     dark: list[tuple[float, float]]
+    # Civil dawn and dusk ("dawn", "dusk"), in time order; with none,
+    # `civil_light_all_day` says whether the sun stayed above -6 degrees
+    # all day or below it all day.
+    civil: list[SunEvent]
+    civil_light_all_day: bool
 
     @property
     def rise(self) -> dt.datetime | None:
@@ -128,29 +146,41 @@ def _minute(ts: float, zone: ZoneInfo) -> dt.datetime:
     return dt.datetime.fromtimestamp(round(ts / 60.0) * 60.0, zone)
 
 
-def sun_day(lat: float, lon: float, tz: str, d: dt.date) -> SunDay:
+def _crossings(ts: np.ndarray, h: np.ndarray) -> list[tuple[bool, float]]:
+    """Where h (sampled at ts, STEP apart) changes sign: (rising, instant),
+    linear between the two samples, since altitude is smooth over a minute."""
+    up = h >= 0
+    out: list[tuple[bool, float]] = []
+    for i in np.nonzero(up[1:] != up[:-1])[0]:
+        frac = float(h[i] / (h[i] - h[i + 1]))
+        out.append((bool(up[i + 1]), float(ts[i]) + frac * STEP))
+    return out
+
+
+def _local_day(tz: str, d: dt.date) -> tuple[ZoneInfo, float, float]:
     zone = ZoneInfo(tz)
     start = dt.datetime.combine(d, dt.time(), zone).timestamp()
     end = dt.datetime.combine(d + dt.timedelta(days=1), dt.time(), zone).timestamp()
+    return zone, start, end
+
+
+def sun_day(lat: float, lon: float, tz: str, d: dt.date) -> SunDay:
+    zone, start, end = _local_day(tz, d)
     ts, decl, eot = _sun_grid(start, round((end - start) / STEP) + 1)
-    h = sun_altitude(ts, decl, eot, lat, lon) - HORIZON_DEG
-    up = h >= 0
-    events: list[SunEvent] = []
-    crossings: list[float] = []
-    for i in np.nonzero(up[1:] != up[:-1])[0]:
-        # Linear between the two samples: the altitude is smooth over a minute.
-        frac = float(h[i] / (h[i] - h[i + 1]))
-        when = float(ts[i]) + frac * STEP
-        crossings.append(when)
-        events.append(SunEvent("rise" if up[i + 1] else "set", _minute(when, zone), when))
+    alt = sun_altitude(ts, decl, eot, lat, lon)
+    h = alt - HORIZON_DEG
+    crossings = _crossings(ts, h)
+    events = [SunEvent("rise" if rising else "set", _minute(when, zone), when) for rising, when in crossings]
     dark: list[tuple[float, float]] = []
-    edges = [start, *crossings, end]
-    below = not bool(up[0])
+    edges = [start, *(when for _, when in crossings), end]
+    below = not bool(h[0] >= 0)
     for a, b in itertools.pairwise(edges):
         if below:
             dark.append((a, b))
         below = not below
-    return SunDay(d, events, bool(up.all()), dark)
+    c = alt - CIVIL_DEG
+    civil = [SunEvent("dawn" if rising else "dusk", _minute(when, zone), when) for rising, when in _crossings(ts, c)]
+    return SunDay(d, events, bool((h >= 0).all()), dark, civil, bool((c >= 0).all()))
 
 
 def sun_times(lat: float, lon: float, tz: str, d: dt.date) -> tuple[float, float] | None:
@@ -190,34 +220,95 @@ _MOON_DIST = (
 AU_KM = 149_597_870.7
 
 
-def _series(rows: tuple[tuple[int, int, int, int, float], ...], args: tuple[float, ...], e: float, cos: bool) -> float:
+def _series(
+    rows: tuple[tuple[int, int, int, int, float], ...], args: tuple[np.ndarray, ...], e: np.ndarray, cos: bool
+) -> np.ndarray:
     d, m, mp, f = args
-    total = 0.0
+    total = np.zeros_like(d)
     for cd, cm, cmp, cf, coeff in rows:
         x = cd * d + cm * m + cmp * mp + cf * f
-        total += coeff * e ** abs(cm) * (math.cos(x) if cos else math.sin(x))
+        total = total + coeff * e ** abs(cm) * (np.cos(x) if cos else np.sin(x))
     return total
 
 
-def _moon_sun(ts: float) -> tuple[float, float, float]:
-    """(elongation in longitude, degrees 0-360; moon's latitude, degrees;
-    moon's distance, km) at Unix time ts."""
-    t = (float(julian_day(ts + DELTA_T)) - J2000) / 36525.0
+def _moon_ecliptic(t: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """The moon's apparent ecliptic longitude and latitude (degrees) and its
+    distance (km), for Julian centuries t (TT) since J2000."""
     lp = 218.3164477 + 481267.88123421 * t - 0.0015786 * t * t
-    d = math.radians(297.8501921 + 445267.1114034 * t - 0.0018819 * t * t)
-    m = math.radians(357.5291092 + 35999.0502909 * t - 0.0001536 * t * t)
-    mp = math.radians(134.9633964 + 477198.8675055 * t + 0.0087414 * t * t)
-    f = math.radians(93.2720950 + 483202.0175233 * t - 0.0036539 * t * t)
+    d = np.radians(297.8501921 + 445267.1114034 * t - 0.0018819 * t * t)
+    m = np.radians(357.5291092 + 35999.0502909 * t - 0.0001536 * t * t)
+    mp = np.radians(134.9633964 + 477198.8675055 * t + 0.0087414 * t * t)
+    f = np.radians(93.2720950 + 483202.0175233 * t - 0.0036539 * t * t)
     e = 1 - 0.002516 * t - 0.0000074 * t * t
     args = (d, m, mp, f)
     moon_lon = lp + _series(_MOON_LON, args, e, cos=False)
     moon_lat = _series(_MOON_LAT, args, e, cos=False)
     moon_dist = 385000.56 + _series(_MOON_DIST, args, e, cos=True)
-    _, _, sun_lon = _sun_terms(np.array([t]))
-    # sun_lon is apparent (nutation and aberration); the moon's takes the same
-    # nutation in longitude, so the elongation compares like with like.
-    moon_app = moon_lon - 0.00478 * math.sin(math.radians(125.04 - 1934.136 * t))
-    return (moon_app - float(sun_lon[0])) % 360.0, moon_lat, moon_dist
+    # The same nutation in longitude as the sun's apparent longitude.
+    moon_app = moon_lon - 0.00478 * np.sin(np.radians(125.04 - 1934.136 * t))
+    return moon_app, moon_lat, moon_dist
+
+
+def _moon_sun(ts: float) -> tuple[float, float, float]:
+    """(elongation in longitude, degrees 0-360; moon's latitude, degrees;
+    moon's distance, km) at Unix time ts."""
+    t = np.array([(float(julian_day(ts + DELTA_T)) - J2000) / 36525.0])
+    moon_app, moon_lat, moon_dist = _moon_ecliptic(t)
+    # sun_lon is apparent (nutation and aberration), like moon_app.
+    _, _, sun_lon = _sun_terms(t)
+    return float(moon_app[0] - sun_lon[0]) % 360.0, float(moon_lat[0]), float(moon_dist[0])
+
+
+@lru_cache(maxsize=256)
+def _moon_grid(start: float, n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Sample times from `start`, every STEP seconds, with the moon's right
+    ascension and declination (radians), the Greenwich mean sidereal time
+    (degrees) and the moonrise altitude (degrees) at each. Shared by every
+    station whose local day starts at the same instant."""
+    ts = start + np.arange(n) * STEP
+    jd_ut = np.asarray(julian_day(ts), dtype=np.float64)
+    t = np.asarray((julian_day(ts + DELTA_T) - J2000) / 36525.0, dtype=np.float64)
+    lam, beta, dist = _moon_ecliptic(t)
+    omega = np.radians(125.04 - 1934.136 * t)
+    eps = np.radians(23.4392911 - 0.0130042 * t + 0.00256 * np.cos(omega))
+    lr, br = np.radians(lam), np.radians(beta)
+    ra = np.arctan2(np.sin(lr) * np.cos(eps) - np.tan(br) * np.sin(eps), np.cos(lr))
+    dec = np.arcsin(np.sin(br) * np.cos(eps) + np.cos(br) * np.sin(eps) * np.sin(lr))
+    tu = (jd_ut - J2000) / 36525.0
+    gmst = 280.46061837 + 360.98564736629 * (jd_ut - J2000) + 0.000387933 * tu * tu - tu**3 / 38710000.0
+    gmst = np.asarray(gmst, dtype=np.float64)
+    h0 = np.asarray(0.7275 * np.degrees(np.arcsin(EARTH_RADIUS_KM / dist)) - 0.5667, dtype=np.float64)
+    return ts, np.asarray(ra, dtype=np.float64), np.asarray(dec, dtype=np.float64), gmst, h0
+
+
+@dataclass(frozen=True)
+class MoonTimes:
+    """Moonrise and moonset on one local day at one place, in time order;
+    with none, `up_all_day` says whether the moon stayed up or down."""
+
+    date: dt.date
+    events: list[SunEvent]  # kind "rise" or "set"
+    up_all_day: bool
+
+    @property
+    def rise(self) -> dt.datetime | None:
+        return next((e.time for e in self.events if e.kind == "rise"), None)
+
+    @property
+    def set(self) -> dt.datetime | None:
+        return next((e.time for e in self.events if e.kind == "set"), None)
+
+
+def moon_times(lat: float, lon: float, tz: str, d: dt.date) -> MoonTimes:
+    """Moonrise and moonset at the station's position on its local day."""
+    zone, start, end = _local_day(tz, d)
+    ts, ra, dec, gmst, h0 = _moon_grid(start, round((end - start) / STEP) + 1)
+    hour_angle = np.radians(gmst + lon) - ra
+    la = math.radians(lat)
+    sin_alt = np.clip(math.sin(la) * np.sin(dec) + math.cos(la) * np.cos(dec) * np.cos(hour_angle), -1.0, 1.0)
+    h = np.degrees(np.arcsin(sin_alt)) - h0
+    events = [SunEvent("rise" if rising else "set", _minute(when, zone), when) for rising, when in _crossings(ts, h)]
+    return MoonTimes(d, events, bool((h >= 0).all()))
 
 
 def illuminated(ts: float) -> float:

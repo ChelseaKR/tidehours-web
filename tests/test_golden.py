@@ -18,6 +18,11 @@ Two fixtures: golden-app.json is the app's own (12 harmonic and 4
 subordinate stations, a week in November 2026 plus three stations in June
 2031), and golden-sample.json is one harmonic and one subordinate station per
 state, chosen by hash (scripts/fetch_golden.py).
+
+A third, golden-year-boundary.json, is December 31 and January 1 (GMT) at
+18 stations with a high or low near 00:00 GMT on 2027-01-01 or 2028-01-01,
+the one hour of the year when NOAA's highs and lows and its curve use
+different years' constants (DECISIONS 0031).
 """
 
 from __future__ import annotations
@@ -29,8 +34,9 @@ from typing import Any
 
 import pytest
 
+from tidehours import engine
 from tidehours.catalog import Catalog, load
-from tidehours.engine import HarmonicPredictor, Predictor, TideEvent
+from tidehours.engine import HarmonicPredictor, Predictor, TideEvent, year_start
 
 FIXTURES = Path(__file__).parent / "fixtures"
 TIME_TOL = 180.0
@@ -188,3 +194,102 @@ def test_month_against_noaa(catalog: Catalog) -> None:
     assert not unexplained, unexplained
     assert used_known == set(KNOWN_DIVERGENCES), "a listed divergence no longer happens; update the list"
     assert matched / total >= 0.998, f"{matched}/{total}"
+
+
+# The year-boundary fixture (DECISIONS 0031, measured 2026-11-10). NOAA's
+# published highs and lows keep the old year's constants for the first 30
+# minutes of January 1 (GMT); its 6-minute heights do not.
+BOUNDARY = golden("golden-year-boundary.json")
+BOUNDARY_CASES = [(int(year), sid) for year, stations in BOUNDARY["boundaries"].items() for sid in sorted(stations)]
+# Each fixture station's tide nearest 00:00 GMT differs by 0.046 ft or more
+# between the two years' constants, and the engine is within 0.010 ft of
+# NOAA at every one, so this tolerance tells the years apart.
+BOUNDARY_HEIGHT_TOL = 0.02
+BOUNDARY_TIME_TOL = 60.0
+
+
+def boundary_miss(p: Predictor, year: int, rows: list[list[Any]]) -> tuple[float, float]:
+    """(seconds, feet) between NOAA's tide nearest 00:00 GMT on January 1
+    and ours of the same kind."""
+    midnight = year_start(year)
+    t, v, k = min(((ts(r[0]), float(r[1]), str(r[2])) for r in rows), key=lambda r: abs(r[0] - midnight))
+    assert abs(t - midnight) <= 95 * 60, "no tide near midnight in the fixture"
+    ours = [o for o in p.events(t - 3 * 3600, t + 3 * 3600) if o.kind == k]
+    m = min(ours, key=lambda o: abs(o.time - t))
+    return abs(m.time - t), abs(m.height - v)
+
+
+def boundary_misses(catalog: Catalog) -> list[str]:
+    out = []
+    for year, sid in BOUNDARY_CASES:
+        dt_s, dh = boundary_miss(catalog.predictor(sid), year, BOUNDARY["boundaries"][str(year)][sid])
+        if dt_s > BOUNDARY_TIME_TOL or dh > BOUNDARY_HEIGHT_TOL:
+            out.append(sid)
+    return out
+
+
+@pytest.mark.parametrize(("year", "sid"), BOUNDARY_CASES)
+def test_year_boundary_matches_noaa(catalog: Catalog, year: int, sid: str) -> None:
+    rows = BOUNDARY["boundaries"][str(year)][sid]
+    p = catalog.predictor(sid)
+    compare_hilo(rows, p)
+    dt_s, dh = boundary_miss(p, year, rows)
+    assert dt_s <= BOUNDARY_TIME_TOL and dh <= BOUNDARY_HEIGHT_TOL, f"{dt_s:.0f} s, {dh:.3f} ft"
+
+
+def test_year_boundary_fixture_covers_both_sides(catalog: Catalog) -> None:
+    assert len(BOUNDARY_CASES) == 18
+    assert {year for year, _ in BOUNDARY_CASES} == {2027, 2028}
+    subordinate = [sid for _, sid in BOUNDARY_CASES if not isinstance(catalog.predictor(sid), HarmonicPredictor)]
+    assert subordinate == ["8410875"]  # Birch Islands, from Eastport
+    assert boundary_misses(catalog) == []
+
+
+@pytest.mark.parametrize(
+    ("minutes", "missed"),
+    [
+        # No carry, the engine before 0031: the 10 tides after midnight that
+        # NOAA publishes from the old year miss, among them Bar Harbor's
+        # 00:09 low by 0.088 ft and Birch Islands' 01:33 low, which NOAA
+        # derives from Eastport's 00:20 low. (Anchor Point's 00:02 low
+        # misses by two minutes, not by height.)
+        (0.0, {"8413320", "9466057", "8414249", "9455912", "8419317", "9457292", "8410875",
+               "9444090", "9466328", "9455606"}),
+        # Just under 30 minutes: Kodiak, Womens Bay (the old year's high is
+        # at 00:29.96) goes to the new year. Just over: Ouzinkie (00:30.28)
+        # and Milbridge (00:30.44) stay with the old.
+        (29.9, {"9457292"}),
+        (30.5, {"9457287", "8412581"}),
+        # An hour: six of the seven tides NOAA publishes from the new year
+        # miss (the old year puts Goodnews Bay's at 01:01.68).
+        (60.0, {"9457287", "8412581", "8465705", "8410834", "9459758", "9465396"}),
+    ],
+)  # fmt: skip
+def test_year_boundary_carry_is_thirty_minutes(
+    catalog: Catalog, monkeypatch: pytest.MonkeyPatch, minutes: float, missed: set[str]
+) -> None:
+    """Negative controls: the fixture rejects any other carry."""
+    monkeypatch.setattr(engine, "YEAR_CARRY", minutes * 60)
+    assert set(boundary_misses(catalog)) == missed
+
+
+def test_curve_changes_year_at_midnight(catalog: Catalog) -> None:
+    """NOAA's 6-minute heights at Fire Island, AK follow the new year's
+    constants from 00:00 GMT, as `heights` does, though its 00:26 low
+    (5.634 ft) is the old year's: the curve reads 5.37 ft there."""
+    rows = BOUNDARY["series"]["2028"]["9455912"]
+    assert len(rows) == 41
+    p = catalog.harmonic("9455912")
+    for t, v in rows:
+        assert abs(p.height(ts(t)) - v) <= 0.01, t
+    low = next(r for r in BOUNDARY["boundaries"]["2028"]["9455912"] if r[0] == "2028-01-01T00:26Z")
+    assert low[1] - min(v for _, v in rows) > 0.25
+
+
+def test_noaa_answer_does_not_depend_on_request_start() -> None:
+    """Bar Harbor asked for from January 1 on gives the same 00:09 low as
+    asked for from December 31."""
+    from_dec31 = BOUNDARY["boundaries"]["2028"]["8413320"]
+    from_jan1 = BOUNDARY["fromJanuary1"]["2028"]["8413320"]
+    assert from_jan1[0] == ["2028-01-01T00:09Z", 0.377, "L"]
+    assert from_jan1[:4] == from_dec31[3:]

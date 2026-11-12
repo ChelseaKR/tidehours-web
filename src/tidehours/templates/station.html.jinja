@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
 {% set today = days[0] %}
-{% block title %}{{ station.display_name }} tide times today | Tide Hours{% endblock %}
+{% block title %}{{ station_title(station.display_name) }}{% endblock %}
 {% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% if king_link and king_link.own %} King tides {{ fmt_range(king_link.up.first, king_link.up.last, "en", kc) }}.{% endif %}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
@@ -13,6 +13,7 @@
             "geo": {"@type": "GeoCoordinates", "latitude": station.lat, "longitude": station.lon}},
   "isBasedOn": "https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=" ~ station.id
 }|tojson }}</script>
+{% with crumbs = [["Home", ""], [state.name, state.path]] + ([[region.name, region.path]] if region else []) %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}
 {% block main_attrs %} data-station-date="{{ today.date.isoformat() }}" data-tz="{{ station.tz }}"{% endblock %}
 {% block content %}
@@ -24,8 +25,17 @@
   </ol>
 </nav>
 <h1>{{ station.display_name }} tide times</h1>
-<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}, with sunrise, sunset and the moon's phase. Times are local ({{ station.tz }}); heights are feet above mean lower low water (MLLW).</p>
+<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW).</p>
 <p class="stale" id="stale" role="status" hidden></p>
+{% if station.filed_by == "reference" %}
+<p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, the state of the reference station NOAA predicts it from.</p>
+{% elif station.filed_by in ("territory", "name") %}
+<p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, where NOAA's station name places it.</p>
+{% elif station.filed_by == "place" %}
+<p>NOAA's station list gives this station no state. {{ station.correction_note }}</p>
+{% elif station.filed_by == "correction" %}
+<p>NOAA's station list codes this station {{ station.noaa_state }}. {{ station.correction_note }}</p>
+{% endif %}
 
 {% if king_link %}
 {% set u = king_link.up %}
@@ -39,6 +49,7 @@
   <p>The nearest station on the king-tide page is {{ u.season.place }}, {{ "%.0f"|format(king_link.km * 0.621371) }} mi away: its highest predicted tides of the season are {{ fmt_range(u.first, u.last, "en", kc) }}, highest on {{ fmt_date(u.peak.date, "en", kc) }} at {{ fmt_time(u.peak.time, "en") }}, {{ u.peak.height|feet }}. Those are that station's predictions, not this one's; the tides here can differ in time and height.</p>
   <p><a href="/king-tides/#station-{{ u.season.id }}">King tide dates and times at {{ u.season.place }}</a>.</p>
   {% endif %}
+  {% if king_calendar %}<p><a href="/{{ king_calendar[0] }}">{{ king_calendar[1] }} king tides by month, November to February</a>.</p>{% endif %}
 </section>
 {% endif %}
 
@@ -68,7 +79,7 @@
   {% else %}
   <p class="none">No high or low tide is predicted at this station on this day.</p>
   {% endif %}
-  <p class="sky" data-sky="{{ day.date.isoformat() }}"><span class="sun">{{ day.sun_text }}</span> <span class="moon">{{ day.moon_text }}</span></p>
+  <p class="sky" data-sky="{{ day.date.isoformat() }}"><span class="sun">{{ day.sun_text }} {{ day.civil_text }}</span> <span class="moon">{{ day.moon_text }} {{ day.moonrise_text }}</span></p>
   {% if day.svg %}
   <figure class="chart">
     {{ day.svg|safe }}
@@ -86,6 +97,9 @@
   {% if app_store_url %}<a href="{{ app_store_url }}">Get Tide Hours on the App Store</a>.{% else %}<strong>Coming soon to the App Store.</strong>{% endif %}
   NOAA also publishes its own <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ station.id }}">predictions for station {{ station.id }}</a>.</p>
 </section>
+{% if booklet %}
+{% include "_booklet.html.jinja" %}
+{% endif %}
 
 {% if tide_type %}
 <section class="tide-type" aria-labelledby="type" data-tide-type="{{ tide_type.kind.key }}">
@@ -104,6 +118,7 @@
   {% else %}
   <p><a href="/king-tides/#station-{{ station.id }}">This season's king tide dates</a>.</p>
   {% endif %}
+  {% if king_calendar %}<p><a href="/{{ king_calendar[0] }}">{{ king_calendar[1] }} king tides by month, November to February</a>.</p>{% endif %}
 </section>
 {% endif %}
 
@@ -130,7 +145,7 @@
 
 <section class="about-numbers" aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>
-  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Sunrise, sunset and the moon's phase are computed for the station's position; hills and buildings can hide the real sunrise. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
+  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Sunrise, sunset, twilight and the moon are computed for the station's position with NOAA's Solar Calculator equations and Jean Meeus's <cite>Astronomical Algorithms</cite>; hills and buildings can hide the real sunrise. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
   <p class="meta">Station {{ station.id }} · {{ "%.4f"|format(station.lat) }}, {{ "%.4f"|format(station.lon) }} · NOAA data retrieved {{ retrieved }} · page built {{ built }} (UTC)</p>
 </section>
 {% endblock %}

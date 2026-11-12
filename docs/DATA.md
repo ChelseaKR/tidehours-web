@@ -24,8 +24,11 @@ on every page and says it is not a NOAA product.
   in June 2031.
 - `tests/fixtures/golden-sample.json`: one harmonic and one subordinate
   station per state code (where one exists), picked by the smallest SHA-256
-  of the station id: 30 harmonic and 27 subordinate stations, 2026-11-01 to
+  of the station id: 32 harmonic and 31 subordinate stations, 2026-11-01 to
   03, with hourly heights for the harmonic ones. `scripts/fetch_golden.py`.
+  Retrieved 2026-10-31; the 6 stations covering states that changed with
+  DECISIONS 0018 (GU, AS, MP, PR subordinate, and no state) were added on
+  2026-11-05 with `--add`.
 - `tests/fixtures/golden-month.json`: every NOAA high and low in November
   2026 at the 73 fixture stations above plus 14 small-range Gulf and
   Caribbean stations (81 distinct). `scripts/fetch_golden.py --month`.
@@ -33,9 +36,20 @@ on every page and says it is not a NOAA product.
   chelseakr.com king-tides page (ChelseaKR/personal-site
   `src/content/kingTides.data.json` at `6ae96ab`), built from NOAA's
   published high/low predictions and datums.
+- `tests/fixtures/golden-year-boundary.json`: NOAA's highs and lows on
+  December 31 and January 1 (GMT) at 18 stations with a high or low near
+  00:00 GMT on 2028-01-01 (12 stations, one of them subordinate) or
+  2027-01-01 (6), chosen with the engine so the tides are spread from 5
+  minutes before midnight to 61 after; NOAA's 6-minute heights at Fire
+  Island, AK from 22:00 to 02:00 around 2028-01-01; and Bar Harbor's highs
+  and lows asked for from January 1 on. `scripts/fetch_golden.py
+  --year-boundary`, 20 requests. Retrieved 2026-11-10 (DECISIONS 0031).
+  sha256 `aaaeac5bfda88237e6e2547fda681b6430c41b1bd9b7645fd0bb54bead9ad7a8`
 - `tests/fixtures/usno-sky-2026.json`: the U.S. Naval Observatory's sunrise,
-  sunset, moon phase, share lit and nearest primary phase (`api/rstt/oneday`)
-  for 186 station-days: 22 stations on 7 dates plus 32 days at Prudhoe Bay
-  around polar night and the midnight sun. Retrieved 2026-11-05.
-  `scripts/fetch_golden.py --sky`. U.S. Government work; used as a test
-  oracle only, not shown on the site.
+  sunset, civil twilight, moonrise, moonset, moon phase, share lit and
+  nearest primary phase (`api/rstt/oneday`) for 186 station-days: 22
+  stations on 7 dates plus 32 days at Prudhoe Bay around polar night and the
+  midnight sun. Retrieved 2026-11-12 with `scripts/fetch_sky.py`, 186
+  requests (DECISIONS 0019). U.S. Government work; used as a test oracle
+  only, not shown on the site.
+  sha256 `4e9fe78be1c24b2be63a06dc46060ccb96bcc2367eb61c83717965c66c9abf96`

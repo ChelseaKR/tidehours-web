@@ -2,13 +2,82 @@
 
 ## 0.1.0 (unreleased)
 
-- Station pages show sunrise, sunset and the moon's phase for both days on
-  the page, in the station's own time zone, and shade the night on the tide
-  curve. All of it is computed at build time (NOAA Solar Calculator
-  equations, Meeus for the moon) and checked against the U.S. Naval
-  Observatory: sun times within 2 minutes on 186 station-days. Days without
-  a sunrise or sunset, as in Prudhoe Bay's polar night and midnight sun, say
-  so in words, never with a stand-in time (DECISIONS 0019).
+- Station pages show sunrise, sunset, civil dawn and dusk, the moon's phase,
+  moonrise and moonset for both days on the page, in the station's own time
+  zone, and shade the night on the tide curve. All of it is computed at
+  build time (NOAA Solar Calculator equations, Meeus for the moon) and
+  checked against the U.S. Naval Observatory on 186 station-days at 22
+  stations, 7 in Alaska: every time within 2 minutes, nearly all within 1.
+  Days without one, as in Prudhoe Bay's polar night and midnight sun or a
+  day the moon does not rise, say so in words, never with a stand-in time
+  (DECISIONS 0019).
+- A high or low in the first 30 minutes of a GMT year (7:00 to 7:30 PM
+  Eastern, 4:00 to 4:30 PM Pacific on New Year's Eve) now matches NOAA's
+  published one. NOAA finds it with the old year's lunar-node constants; the
+  engine used the new year's, which put Bar Harbor's 2028-01-01 00:09 GMT
+  low at 00:07 and 0.465 ft against NOAA's 0.377 ft. Measured at 18 stations
+  around the 2027 and 2028 new years; the tide curve is unchanged, as NOAA's
+  is (DECISIONS 0031).
+- A station's page can link to that station's printed tide-table booklet
+  on Amazon. `src/tidehours/copy/booklets.json` lists the booklets on sale
+  (station id, ASIN, year, title) and ships empty, which leaves the build
+  byte for byte as it was. A listed station's page carries one sentence with
+  one plain link, `https://www.amazon.com/dp/ASIN`, with no tag even when
+  the affiliate switch is on, until the booklet's year is over; the privacy
+  page says where it goes and the terms page names Amazon. `check_site.py`
+  allows that one link on that one page and nothing else (DECISIONS 0030).
+- A link to the Tide Hours print shop on Etsy, off by default. With the
+  repository variable `PRINT_SHOP_URL` set to the shop's address, the About
+  page and the English king-tide page each carry one sentence with one plain
+  link, the privacy page says where it goes, and the terms page names Etsy.
+  Unset, the build has no trace of it. `check_site.py --print-shop-url`
+  fails the build if the link is missing, repeated, on another page or not
+  the configured address (DECISIONS 0029).
+- King-tide calendars open with the answer: "When are the king tides in
+  Washington?", one line per month with the days and peak days. Their titles
+  and descriptions name the places people search (Seattle, Puget Sound, the
+  Oregon coast, San Francisco, San Diego). The king-tide pages define "king
+  tide" as a popular, non-scientific name and link the three calendars
+  under the lead, as does the home page. The sitemap's `lastmod` is now the
+  date a page last changed, not the build date (DECISIONS 0028).
+- The king-tide page's title names Washington, Oregon and California in
+  full, and its description leads with the next dates and names Seattle,
+  Puget Sound and the Oregon coast, the words people search with
+  (DECISIONS 0025).
+- Winter king-tide calendars by month for Washington, Oregon and California
+  (`/king-tides/washington/`, `/king-tides/oregon/`,
+  `/king-tides/california/`): each place's runs of predicted king tides from
+  November 2026 to February 2027, with dates, Pacific times and heights above
+  MLLW and MHHW. Linked from the king-tide pages, the three state pages and
+  king-tide and nearby station pages (DECISIONS 0024).
+- Region pages that shared a label now say which part they are, from
+  NOAA's coordinates: "Outer Coast (north)" and "(south)" in Maine and South
+  Carolina, "Gulf Coast (north)" and "(south)" in Florida and "Delaware River
+  (north)" and "(south)" in New Jersey. Five St. John, Virgin Islands station
+  names say "St. John", not "St. Johns". No URL changes (DECISIONS 0023).
+- Station names are corrected for display: 40 NOAA misspellings backed by
+  USGS GNIS names (Chickahominy, Sergius Narrows, Frederiksted), Spanish and
+  Hawaiian diacritics (Mayagüez, Nāwiliwili), casing, punctuation and "St."
+  slips, and four pairs of stations that shared a title. Station titles drop
+  " | Tide Hours", then "today", when needed to fit in 60 characters. Region
+  labels read as names ("East Coast", not "FLORIDA, East Coast"; "Hawaiian
+  Islands"). No URL changes (DECISIONS 0020).
+- Stations NOAA lists without a state are filed under a state: by a hand
+  map for island stations (GU, AS, and new U.S. Minor Outlying Islands and
+  Northern Mariana Islands pages), by the state their NOAA name ends in, or
+  by their reference station's state, unless a border check rules it out.
+  Tanapag Harbor, Saipan moves from GU to MP, and Apia (independent Samoa)
+  leaves American Samoa and takes Samoa's time zone. Chelsea (Arthur Kill)
+  is filed under New York. Ten western Aleutian stations now filed under
+  Alaska use America/Adak, so their summer times are no longer an hour early. 186 stations change
+  state, including Apra Harbor, Guam, Cape Hatteras and Key Largo; 11 stay on
+  "Stations without a state". Names no longer repeat their state ("Apra
+  Harbor, Guam", not "Apra Harbor, Guam, GU"). Old region pages send visitors
+  to the new ones (DECISIONS 0018).
+- Region pages that list only one or two stations (66 of 370, about 130
+  words each, the same list their state page shows) carry noindex and are
+  left out of the sitemap and lastmod.json. They keep their URLs and links;
+  station and state pages are unchanged (DECISIONS 0022).
 - The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
   Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
   in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are

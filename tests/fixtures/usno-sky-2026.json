@@ -1,6 +1,6 @@
 {
  "retrieved": "2026-11-12",
- "source": "U.S. Naval Observatory, Astronomical Applications API, api/rstt/oneday (dst=false)",
+ "source": "U.S. Naval Observatory Astronomical Applications Department, one-day rise, set and transit data (rstt/oneday, dst=false)",
  "stations": {
   "1612340": {
    "days": {

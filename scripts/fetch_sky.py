@@ -81,7 +81,7 @@ def main() -> int:
     out: dict[str, Any] = {"stations": {}}
     if SKY_OUT.exists():
         out = json.loads(SKY_OUT.read_text(encoding="utf-8"))
-    out["source"] = "U.S. Naval Observatory, Astronomical Applications API, api/rstt/oneday (dst=false)"
+    out["source"] = "U.S. Naval Observatory Astronomical Applications Department, one-day rise, set and transit data (rstt/oneday, dst=false)"
     jobs = [(sid, d) for sid in SKY_STATIONS for d in SKY_DATES] + [(PRUDHOE, d) for d in PRUDHOE_DATES]
     fetched = 0
     for sid, d in jobs:

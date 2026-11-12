@@ -52,4 +52,4 @@ on every page and says it is not a NOAA product.
   midnight sun. Retrieved 2026-11-12 with `scripts/fetch_sky.py`, 186
   requests (DECISIONS 0019). U.S. Government work; used as a test oracle
   only, not shown on the site.
-  sha256 `4e9fe78be1c24b2be63a06dc46060ccb96bcc2367eb61c83717965c66c9abf96`
+  sha256 `d5f3a9347d750e2ff6b5033a157e31fa1c5be6b3a507355da03825d19b825cbb`

@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+- Station pages carry a schema.org `Place` (the catalog's coordinates) and
+  a `Dataset` for the two days shown, with NOAA CO-OPS credited as the
+  source; the king-tide pages carry a `Dataset` for the season. Every page in the sitemap carries a
+  `dateModified` equal to its sitemap lastmod. The About page links
+  `/llms.txt` (DECISIONS 0034).
 - A high or low in the first 30 minutes of a GMT year (7:00 to 7:30 PM
   Eastern, 4:00 to 4:30 PM Pacific on New Year's Eve) now matches NOAA's
   published one. NOAA finds it with the old year's lunar-node constants; the

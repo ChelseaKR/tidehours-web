@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="/style.css">
 {% block jsonld %}{% endblock %}
 {% if ga4_measurement_id %}{% include "_ga4.html.jinja" %}{% endif %}
+{% include "_jsonld.html.jinja" %}
 </head>
 <body>
 <a class="skip" href="#main">{{ t.skip }}</a>

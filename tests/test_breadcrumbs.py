@@ -103,8 +103,9 @@ def test_station_breadcrumb(built: Path) -> None:
             "item": BASE + "states/ca/san-francisco-bay/",
         },
     ]
-    # The station's existing WebPage node is still there and still first.
-    assert [n["@type"] for n in nodes(page)] == ["WebPage", "BreadcrumbList"]
+    # The station's existing WebPage node is still there and still first;
+    # its Place and Dataset (tests/test_jsonld.py) follow.
+    assert [n["@type"] for n in nodes(page)] == ["WebPage", "BreadcrumbList", "Place", "Dataset"]
 
 
 def test_state_page_has_no_breadcrumb_markup(built: Path) -> None:

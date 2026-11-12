@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import html as htmllib
 import importlib.util
 import json
 import re
@@ -21,7 +22,7 @@ import pytest
 from tidehours import catalog as catalog_mod
 from tidehours import cli, site, tidetype
 from tidehours.catalog import Station, load, tidy_name
-from tidehours.days import feet, meters, no_negative_zero, station_day
+from tidehours.days import Day, Event, feet, meters, no_negative_zero, station_day
 
 NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
 
@@ -65,7 +66,7 @@ def test_every_page_has_the_promises(built: Path) -> None:
 
 def test_station_pages(built: Path) -> None:
     sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
-    assert "San Francisco (Golden Gate), CA tide times" in sf and "SAN FRANCISCO" not in sf
+    assert "<h1>San Francisco (Golden Gate), CA tides today</h1>" in sf and "SAN FRANCISCO" not in sf
     assert "Sunday, November 1, 2026" in sf and "Monday, November 2, 2026" in sf
     assert sf.count('<svg class="tide-chart"') == 2
     assert "stroke-dasharray" not in sf
@@ -392,10 +393,10 @@ def test_filed_stations_pages(tmp_path: Path) -> None:
     nc = (out / "states/nc/index.html").read_text(encoding="utf-8")
     assert 'href="/stations/TEC2789/"' in nc and 'href="/states/nc/outer-banks/"' in nc
     hatteras = (out / "stations/TEC2789/index.html").read_text(encoding="utf-8")
-    assert "Cape Hatteras, NC tide times" in hatteras
+    assert "<h1>Cape Hatteras, NC tides today</h1>" in hatteras
     assert "listed under North Carolina, the state of the reference station" in hatteras
     apra = (out / "stations/1630000/index.html").read_text(encoding="utf-8")
-    assert "<h1>Apra Harbor, Guam tide times</h1>" in apra and "where NOAA's station name places it" in apra
+    assert "<h1>Apra Harbor, Guam tides today</h1>" in apra and "where NOAA's station name places it" in apra
     assert 'href="/states/gu/guam/"' in apra and "Northern Marianas" not in apra
     tanapag = (out / "stations/1633227/index.html").read_text(encoding="utf-8")
     assert "codes this station GU. Tanapag Harbor is on Saipan" in tanapag
@@ -854,3 +855,201 @@ def test_sitemap_lastmod_carries_over_for_unchanged_pages(tmp_path: Path, built:
     assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-10-19") == {}
     (prev / "lastmod.json").write_text("not json", encoding="utf-8")
     assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-11-02") == {}
+
+
+# Answer first (docs/DECISIONS.md 0032): the title in the shape people search
+# with, each day's highs and lows under a plain question before anything
+# else, the same answer in the meta description, and a nearby list by radius.
+
+
+def _meta_description(html: str) -> str:
+    m = re.search(r'<meta name="description" content="([^"]*)">', html)
+    assert m
+    return htmllib.unescape(m.group(1))
+
+
+def test_station_title_shape_and_lead_answer(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    assert "<title>San Francisco (Golden Gate), CA tides today: high and low</title>" in sf
+    # The answer comes before the first table, tide chart and nearby list.
+    answer = sf.index('<div class="answer">')
+    assert answer < sf.index('<table class="events">') < sf.index('id="near"')
+    assert sf.index("<h1>") < answer
+    assert "When is high tide at San Francisco (Golden Gate), CA today?</h2>" in sf
+    assert "When is low tide at San Francisco (Golden Gate), CA today?</h2>" in sf
+    block = sf[answer : sf.index("</div>", answer)]
+    # Each question lists both days, by date, in the order of the page.
+    for kind in ("high", "low"):
+        part = block[block.index(f'id="q-{kind}"') :]
+        assert part.index('data-date="2026-11-01"') < part.index('data-date="2026-11-02"')
+    # The 5:40 AM high (the golden fixture's NOAA high at 13:40Z) is the
+    # first high of November 1, with its height.
+    high = block[block.index('id="q-high"') :]
+    first = high[high.index('data-date="2026-11-01"') : high.index("</li>")]
+    assert "Sunday, Nov 1: " in first and '<time datetime="2026-11-01T05:40-08:00">5:40 AM</time></strong> (' in first
+    assert re.search(r"\(−?\d+\.\d ft\)", first)
+    lead = re.search(r'<p class="lead">(.*?)</p>', sf, re.S)
+    assert lead and "Times are Pacific Time (PT), local to the station;" in lead.group(1)
+
+
+def test_meta_description_carries_the_answer(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    desc = _meta_description(sf)
+    assert desc.startswith("San Francisco (Golden Gate), CA tides Nov 1: high 5:40 AM (")
+    assert "; low " in desc
+    for f in built.glob("stations/*/index.html"):
+        d = _meta_description(f.read_text(encoding="utf-8"))
+        assert len(d) <= site.DESCRIPTION_MAX, (f, len(d))
+        assert " tides Nov " in d or " high and low tides, " in d, f
+
+
+def test_description_tiers_and_absence() -> None:
+    def ev(kind: str, time: str, ft: str) -> Event:
+        return Event(kind, time, "", ft, "", 0.0)
+
+    one = Day(dt.date(2026, 11, 1), [ev("High", "5:40 AM", "5.6 ft"), ev("Low", "11:58 AM", "0.8 ft")], None, False)
+    two = Day(dt.date(2026, 11, 2), [ev("High", "6:20 AM", "5.5 ft")], None, False)
+    empty = Day(dt.date(2026, 11, 2), [], None, False)
+    assert site.day_answer(one) == "high 5:40 AM (5.6 ft); low 11:58 AM (0.8 ft)"
+    assert site.day_answer(two) == "high 6:20 AM (5.5 ft); no low tide"  # absence says so
+    assert site.day_answer(empty) == "no high or low tide predicted"
+    assert site.station_description("Monterey, CA", [one, two]) == (
+        "Monterey, CA tides Nov 1: high 5:40 AM (5.6 ft); low 11:58 AM (0.8 ft). Nov 2: high 6:20 AM (5.5 ft); no low tide."
+    )
+    long = "x" * 60  # tomorrow no longer fits; today does
+    assert site.station_description(long, [one, two]).endswith("Nov 2 too, with a tide chart.")
+    longer = "x" * 120
+    assert site.station_description(longer, [one, two]) == f"{longer} high and low tides, Nov 1 and Nov 2."
+    # An extra sentence is added only when it fits.
+    assert site.station_description("Monterey, CA", [one, two], "King tides Nov 24–26.").endswith(
+        "King tides Nov 24–26."
+    )
+    assert "King" not in site.station_description("x" * 60, [one, two], "King tides Nov 24–26.")
+
+
+def test_nearby_list_by_radius_and_state(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    near = sf[sf.index('id="near"') : sf.index("</section>", sf.index('id="near"'))]
+    miles = [int(m) for m in re.findall(r'<span class="dist">(\d+) mi</span>', near)]
+    assert 1 <= len(re.findall(r"<li>", near)) <= site.NEARBY_MAX
+    assert miles == sorted(miles) and all(m <= site.NEARBY_MILES for m in miles)
+    assert "within 25 miles" in near
+    cat = load()
+    stations = [s for s in cat.stations if s.state in ("CA", "HI", "")]
+    near_all = site.Nearby(stations)
+    for f in built.glob("stations/*/index.html"):
+        sid = f.parent.name
+        html = f.read_text(encoding="utf-8")
+        s = cat.station(sid)
+        assert s is not None
+        expect = site.neighbors(near_all, s)
+        assert ('id="near"' in html) == bool(expect), sid
+        for other, km in expect:
+            assert other.state == s.state and km <= site.NEARBY_KM
+            assert f'href="/stations/{other.id}/"' in html
+
+
+def test_no_neighbor_within_the_radius_renders_no_list(built: Path) -> None:
+    # Negative control: a station with no other station of its state within
+    # the radius gets no "Nearby" section at all, not an empty one.
+    cat = load()
+    stations = [s for s in cat.stations if s.state in ("CA", "HI", "")]
+    near_all = site.Nearby(stations)
+    alone = [s for s in stations if not site.neighbors(near_all, s)]
+    assert alone
+    for s in alone[:5]:
+        html = (built / f"stations/{s.id}/index.html").read_text(encoding="utf-8")
+        assert 'id="near"' not in html and ">Nearby<" not in html, s.id
+    # Unit level: two stations 30 miles apart are not neighbors; 20 miles
+    # apart they are; across a state line they are not.
+    base = Station("A", "A", "CA", 37.0, -122.0, "America/Los_Angeles", None, None)
+    far = dataclasses.replace(base, id="B", lat=37.0 + 30 / 69.05)
+    close = dataclasses.replace(base, id="C", lat=37.0 + 20 / 69.05)
+    other = dataclasses.replace(base, id="D", state="OR", lat=37.0 + 1 / 69.05)
+    assert [s.id for s, _ in site.neighbors(site.Nearby([base, far, close, other]), base)] == ["C"]
+    assert site.neighbors(site.Nearby([base, far, other]), base) == []
+
+
+def test_state_and_region_pages_lead_with_the_list(built: Path) -> None:
+    ca = (built / "states/ca/index.html").read_text(encoding="utf-8")
+    assert re.search(r"<title>California tides today: tide times at \d+ stations</title>", ca)
+    assert "<h1>California tides today</h1>" in ca
+    first_list = ca.index('<ul class="stations">')
+    if 'id="king"' in ca:
+        assert first_list < ca.index('id="king"')
+    assert ca.count("<p", ca.index("<h1>"), first_list) == 1  # one line of lead, then the list
+    region = (built / "states/ca/san-francisco-bay/index.html").read_text(encoding="utf-8")
+    assert "<title>San Francisco Bay, California tides today: tide times</title>" in region
+    assert "<h1>San Francisco Bay tides today</h1>" in region
+    lst = region.index('<ul class="stations">')
+    assert region.count("<p", region.index("<h1>"), lst) == 1
+    if 'id="king"' in region:
+        assert lst < region.index('id="king"')
+    for f in list(built.glob("states/*/index.html")) + list(built.glob("states/*/*/index.html")):
+        title = re.search(r"<title>([^<]*)</title>", f.read_text(encoding="utf-8"))
+        assert title and len(htmllib.unescape(title.group(1))) <= site.TITLE_MAX, f
+
+
+def test_searched_place_names_lead_their_pages(built: Path) -> None:
+    # copy/place_names.json (DECISIONS 0032): each entry names a station that
+    # exists, is pinned to its current display name, comes from a Search
+    # Console query, and leads with the searched place, then the station.
+    cat = load()
+    names = site.place_names()
+    assert len(names) >= 5
+    titles = Counter(site.station_title(site.place_name(s, names)) for s in cat.stations)
+    assert [t for t, n in titles.items() if n > 1] == []
+    for sid, entry in names.items():
+        s = cat.station(sid)
+        assert s is not None, sid
+        assert entry["station"] == s.display_name, sid  # a rename makes this fail
+        assert entry["query"] and entry["basis"], sid
+        assert s.display_name in entry["name"] and not entry["name"].startswith(s.display_name), sid
+        assert site.place_name(s, names) == entry["name"]
+        assert len(site.station_title(entry["name"])) <= site.TITLE_MAX, sid
+    kahului = (built / "stations/1615680/index.html").read_text(encoding="utf-8")
+    assert "<title>Maui (Kahului, HI) tides today: high and low tide chart</title>" in kahului
+    assert "<h1>Maui (Kahului, HI) tides today</h1>" in kahului
+    assert "When is high tide at Maui (Kahului, HI) today?" in kahului
+    assert _meta_description(kahului).startswith("Maui (Kahului, HI) tides Nov 1: ")
+    # Negative control: an entry pinned to a name the station no longer has
+    # does not apply, and a station without an entry keeps its own name.
+    s = cat.station("1615680")
+    assert s is not None
+    stale = {"1615680": {**names["1615680"], "station": "Kahului Harbor, HI"}}
+    assert site.place_name(s, stale) == "Kahului, HI"
+    sf = cat.station("9414290")
+    assert sf is not None and site.place_name(sf, names) == sf.display_name
+
+
+def test_region_pages_do_not_repeat_the_state() -> None:
+    cat = load()
+    states = {st.code: st for st in site.group(cat.stations)}
+    regions = {r.path: (r, st) for st in states.values() for r in st.regions}
+    al, al_st = regions["states/al/alabama/"]
+    assert site.region_place(al, al_st) == "Alabama"
+    assert site.region_title(al, al_st) == "Alabama tides today: tide times"
+    keys = next((r, st) for r, st in regions.values() if r.name == "Florida Keys")
+    assert site.region_place(*keys) == "Florida Keys"
+    hawaiian = next((r, st) for r, st in regions.values() if r.name == "Hawaiian Islands")
+    assert site.region_place(*hawaiian) == "Hawaiian Islands, Hawaii"  # a word, not a substring
+    sf = regions["states/ca/san-francisco-bay/"]
+    assert site.region_place(*sf) == "San Francisco Bay, California"
+    for r, st in regions.values():
+        place = site.region_place(r, st)
+        named = re.findall(rf"\b{re.escape(st.name)}\b", place, re.I)
+        assert len(named) <= 1, place  # "Alabama, Alabama" never
+        assert len(site.region_title(r, st)) <= site.TITLE_MAX, place
+    for st in states.values():
+        assert len(site.state_title(st)) <= site.TITLE_MAX, st.code
+
+
+def test_every_station_description_can_fit() -> None:
+    # The shortest description tier fits for every station's name (the
+    # longest date is "Sep 30"), so no station page's meta description can
+    # exceed DESCRIPTION_MAX, whatever its day holds.
+    cat = load()
+    names = site.place_names()
+    for s in cat.stations:
+        fallback = f"{site.place_name(s, names)} high and low tides, Sep 30 and Sep 30."
+        assert len(fallback) <= site.DESCRIPTION_MAX, s.id

@@ -1,4 +1,8 @@
 {% extends "base.html.jinja" %}
+{#- CloudFront serves this page for every missing address with a 404, and
+    S3 serves it at /404.html with a 200, so base.html.jinja gives it no
+    canonical URL or og:url and asks not to index it. #}
+{% set not_found = true %}
 {% block title %}Page not found | Tide Hours{% endblock %}
 {% block description %}This page does not exist.{% endblock %}
 {% block content %}

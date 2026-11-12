@@ -249,7 +249,7 @@ class Station:
     noaa_region: str | None = None  # NOAA's region name, before REGION_CORRECTIONS
     # The reference station's id when NOAA's corrections leave every time and
     # every high-tide height as the reference's (subordinate.is_twin): the
-    # page is then a copy of the reference's page (DECISIONS 0032).
+    # page is then a copy of the reference's page (DECISIONS 0033).
     twin_of: str | None = None
 
     @property

@@ -4,7 +4,7 @@ renders as a value, every internal link and sitemap entry resolves, no page
 is unreasonably large, and the sitemap lists exactly the pages that may be
 indexed: a subordinate station whose corrections leave its times and high
 tides as its reference's (a twin) carries noindex and a canonical link to
-the reference's page and is left out (docs/DECISIONS.md 0032, superseding
+the reference's page and is left out (docs/DECISIONS.md 0033, superseding
 0013), and so do region pages of fewer than three stations (0022). A station page shows a type of tide exactly when
 its own constants give one, and it is the computed one (0014). The
 king-tide pages' summary of the runs coming up, their titles, and the

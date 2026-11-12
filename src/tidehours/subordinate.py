@@ -1,5 +1,5 @@
 """A subordinate station's NOAA corrections, in words, and the rule for when
-its page is a twin of its reference station's (docs/DECISIONS.md 0032).
+its page is a twin of its reference station's (docs/DECISIONS.md 0033).
 
 NOAA predicts a subordinate station by moving each of its reference
 station's highs and lows by a published number of minutes and scaling or

@@ -282,7 +282,7 @@ weeks without a sitewide drop, allow subordinate pages back, a state or a
 named list at a time, and re-measure. Allowing a page back is a code change
 that adds it to the sitemap and `lastmod.json`, so IndexNow announces it.
 
-Superseded on 2026-11-12 by 0032: subordinate pages are indexed, except
+Superseded on 2026-11-12 by 0033: subordinate pages are indexed, except
 the two whose corrections make them copies of their reference station's.
 
 ## 0014: Each harmonic station's type of tide, from its own constants (2026-11-04)
@@ -1161,7 +1161,7 @@ highs and lows at the fixture's 18 stations and on three ordinary days at
 three more, so
 the site and the app no longer differ here.
 
-## 0032: Index the subordinate station pages, except the twins (2026-11-12)
+## 0033: Index the subordinate station pages, except the twins (2026-11-12)
 
 Supersedes 0013's noindex on subordinate station pages. (0026 and 0027 are
 reserved for other branches.) 0013 held the 2,024 subordinate pages back on

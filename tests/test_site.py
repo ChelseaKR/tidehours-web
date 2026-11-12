@@ -496,7 +496,7 @@ def test_tidy_name() -> None:
 ROBOTS = '<meta name="robots" content="noindex,follow">'
 ROWS = re.compile(r'<tr class="ev-[^"]+">.*?</tr>')
 # The subordinate stations whose NOAA corrections leave every time and every
-# high-tide height as their reference station's (DECISIONS 0032), from the
+# high-tide height as their reference station's (DECISIONS 0033), from the
 # data retrieved 2026-10-24: Cabrillo Beach (0 min, 0 min, x1.00, x1.00 from
 # Los Angeles) and Great Diamond Island (0 min, 0 min, x1.00, x1.03 from
 # Portland, ME). Windham Bay (0 min, 0 min, -1.1 ft, -0.1 ft from Juneau) has
@@ -509,7 +509,7 @@ def _rows(root: Path, sid: str) -> list[str]:
 
 
 def test_subordinate_pages_are_indexed_with_their_own_answers(built: Path) -> None:
-    """DECISIONS 0032 (superseding 0013's noindex): a subordinate station's
+    """DECISIONS 0033 (superseding 0013's noindex): a subordinate station's
     page is indexed, in the sitemap and lastmod.json, and its answer lines,
     the highs and lows, differ from its reference station's page."""
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
@@ -544,7 +544,7 @@ def test_subordinate_pages_are_indexed_with_their_own_answers(built: Path) -> No
 
 
 def test_a_twin_stays_noindex_with_its_reference_as_canonical(built: Path) -> None:
-    """Negative control for DECISIONS 0032: Cabrillo Beach's corrections are
+    """Negative control for DECISIONS 0033: Cabrillo Beach's corrections are
     0 min and x1.00, so its answer lines are Los Angeles's, byte for byte;
     its page carries noindex, a canonical to Los Angeles, and is out of the
     sitemap and lastmod.json."""
@@ -573,7 +573,7 @@ def test_a_twin_stays_noindex_with_its_reference_as_canonical(built: Path) -> No
 def test_sitemap_counts_every_station_but_the_twins(built: Path) -> None:
     """The sitemap lists every station page in the build but the twins, and
     over the whole catalog that is 3,254 of 3,256 (1,232 harmonic and 2,022
-    subordinate), with the 2 twins left out (DECISIONS 0032)."""
+    subordinate), with the 2 twins left out (DECISIONS 0033)."""
     cat = load()
     assert sum(site.indexable(s) for s in cat.stations) == 3254 == len(cat.stations) - len(TWINS)
     assert sum(s.is_subordinate and site.indexable(s) for s in cat.stations) == 2022

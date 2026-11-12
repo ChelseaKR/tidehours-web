@@ -56,7 +56,7 @@ def indexable(station: Station) -> bool:
     Harmonic stations are indexed, and so are subordinate stations: each
     shows its own times and heights (its reference's moved and scaled by
     NOAA's published corrections), its own name, coordinates, corrections and
-    nearby list (docs/DECISIONS.md 0032, superseding 0013's noindex). The
+    nearby list (docs/DECISIONS.md 0033, superseding 0013's noindex). The
     exception is a twin, whose corrections leave every time and every high
     tide as its reference's: it is served, linked and followed, but carries
     ``noindex`` with a canonical link to the reference station's page, and is
@@ -600,7 +600,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         st, region = region_of[s.id]
         ref = cat.station(s.reference_id) if s.reference_id else None
         season = kt_by_id.get(s.id)
-        # A twin's canonical is its reference station's page (DECISIONS 0032).
+        # A twin's canonical is its reference station's page (DECISIONS 0033).
         twin: dict[str, Any] = {"canonical_path": f"stations/{s.twin_of}/"} if s.twin_of else {}
         page(
             f"stations/{s.id}/",
@@ -729,6 +729,6 @@ def page_manifest(pages: list[Page]) -> str:
     byte-identical, so the next build compares its manifest with the live one
     and announces only the pages whose HTML changed (docs/DECISIONS.md 0011),
     and keeps an unchanged page's sitemap lastmod (0028). Noindex pages are
-    left out, as they are from the sitemap (0013, 0022, 0032)."""
+    left out, as they are from the sitemap (0013, 0022, 0033)."""
     entries = {"/" + p.path: {"fingerprint": fingerprint(p)} for p in pages if p.path != "404" and p.index}
     return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

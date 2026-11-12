@@ -1,6 +1,8 @@
 """One station's tides for one local day, ready for a page: highs and lows,
-the curve and an SVG of it. Nothing here invents a value: a day with no
-high or low says so, and a missing curve draws nothing."""
+the curve and an SVG of it, and the day's sunrise, sunset and moon phase
+(sky.py). Nothing here invents a value: a day with no high or low says so,
+a day the sun does not rise or set says so, and a missing curve draws
+nothing."""
 
 from __future__ import annotations
 
@@ -11,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 from .catalog import Station
 from .engine import HarmonicPredictor, Predictor, TideEvent
+from .sky import MoonDay, SunDay, moon_day, sun_day
 
 MINUS = "−"
 
@@ -58,12 +61,51 @@ class Event:
     raw_height: float
 
 
+def sun_text(sun: SunDay) -> str:
+    """ "Sunrise 6:40 AM, sunset 5:07 PM", in the order they happen. A day
+    without one says so in words; it never gets a stand-in time."""
+    if not sun.events:
+        if sun.up_all_day:
+            return "The sun does not set on this day (midnight sun)."
+        return "The sun does not rise on this day (polar night)."
+    parts = [f"{'sunrise' if e.kind == 'rise' else 'sunset'} {clock(e.time)}" for e in sun.events]
+    text = ", ".join(parts)
+    text = text[0].upper() + text[1:] + "."
+    if sun.rise is None:
+        text += " No sunrise on this day."
+    if sun.set is None:
+        text += " No sunset on this day."
+    return text
+
+
+def moon_text(moon: MoonDay) -> str:
+    """ "Moon: waning crescent, 12% lit at noon", with the time of a new
+    moon, quarter or full moon that falls on the day."""
+    lit = f"{moon.percent}% lit at noon"
+    if moon.primary is None:
+        return f"Moon: {moon.phase.lower()}, {lit}."
+    name, when = moon.primary
+    if name == moon.phase:
+        return f"Moon: {name.lower()} at {clock(when)}, {lit}."
+    return f"Moon: {moon.phase.lower()}, {lit}; {name.lower()} at {clock(when)}."
+
+
 @dataclass(frozen=True)
 class Day:
     date: dt.date
     events: list[Event]
     svg: str | None  # None when there is no curve to draw
     approximate: bool
+    sun: SunDay
+    moon: MoonDay
+
+    @property
+    def sun_text(self) -> str:
+        return sun_text(self.sun)
+
+    @property
+    def moon_text(self) -> str:
+        return moon_text(self.moon)
 
     @property
     def long_date(self) -> str:
@@ -105,6 +147,7 @@ def _svg(
     d: dt.date,
     approximate: bool,
     title_id: str,
+    dark: list[tuple[float, float]] | None = None,
 ) -> str | None:
     if len(curve) < 2:
         return None
@@ -124,6 +167,12 @@ def _svg(
     parts: list[str] = []
     y_labels: list[str] = []
     x_labels: list[str] = []
+    # Night: the spans with the sun below the horizon, shaded behind
+    # everything else. The sun line above the chart carries the times.
+    for a, b in dark or []:
+        parts.append(
+            f'<rect class="night" x="{x(a):.1f}" y="{PAD_T}" width="{x(b) - x(a):.1f}" height="{H - PAD_T - PAD_B}"/>'
+        )
     # Axis labels are HTML beside the SVG, not SVG text and not on top of it:
     # axe cannot measure the contrast of text inside or over a drawing.
 
@@ -167,8 +216,9 @@ def station_day(station: Station, predictor: Predictor, d: dt.date, curve_step: 
     events = predictor.events(start, end)
     curve = predictor.curve(start, end, curve_step)
     approximate = not isinstance(predictor, HarmonicPredictor)
-    svg = _svg(curve, events, start, end, zone, d, approximate, f"chart-title-{d.isoformat()}")
-    return Day(d, [_event(e, zone) for e in events], svg, approximate)
+    sun = sun_day(station.lat, station.lon, station.tz, d)
+    svg = _svg(curve, events, start, end, zone, d, approximate, f"chart-title-{d.isoformat()}", sun.dark)
+    return Day(d, [_event(e, zone) for e in events], svg, approximate, sun, moon_day(station.tz, d))
 
 
 def local_today(station: Station, now: dt.datetime) -> dt.date:

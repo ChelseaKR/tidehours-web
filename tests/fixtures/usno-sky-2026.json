@@ -1,0 +1,4284 @@
+{
+ "retrieved": "2026-11-05",
+ "source": "U.S. Naval Observatory, Astronomical Applications API, api/rstt/oneday (dst=false)",
+ "stations": {
+  "1612340": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "10:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:35"
+      },
+      {
+       "phen": "Set",
+       "time": "17:55"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:52"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "04:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:48"
+      },
+      {
+       "phen": "Set",
+       "time": "17:48"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:05"
+      },
+      {
+       "phen": "Set",
+       "time": "17:55"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "06:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:41"
+      },
+      {
+       "phen": "Set",
+       "time": "18:41"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "14:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:50"
+      },
+      {
+       "phen": "Set",
+       "time": "19:16"
+      }
+     ],
+     "tz": -10.0
+    }
+   },
+   "label": "Honolulu, HI",
+   "lat": 21.30333,
+   "lon": -157.86453
+  },
+  "1630000": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "06:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "59%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:15"
+      },
+      {
+       "phen": "Set",
+       "time": "17:54"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "06:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "18%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:17"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "17:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:18"
+      },
+      {
+       "phen": "Set",
+       "time": "17:52"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 25,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "00:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:25"
+      },
+      {
+       "phen": "Set",
+       "time": "17:51"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 24,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "87%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:59"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 16,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "02:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "33%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:30"
+      },
+      {
+       "phen": "Set",
+       "time": "18:32"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 19,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "10:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "96%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:55"
+      },
+      {
+       "phen": "Set",
+       "time": "18:51"
+      }
+     ],
+     "tz": 10.0
+    }
+   },
+   "label": "Apra Harbor, Guam",
+   "lat": 13.44339,
+   "lon": 144.65636
+  },
+  "1770000": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "09:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:48"
+      },
+      {
+       "phen": "Set",
+       "time": "18:25"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "20:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "11%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:46"
+      },
+      {
+       "phen": "Set",
+       "time": "18:27"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "20:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:45"
+      },
+      {
+       "phen": "Set",
+       "time": "18:28"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "03:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:44"
+      },
+      {
+       "phen": "Set",
+       "time": "18:35"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "14:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:52"
+      },
+      {
+       "phen": "Set",
+       "time": "18:50"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "05:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "42%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:26"
+      },
+      {
+       "phen": "Set",
+       "time": "18:38"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "13:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:46"
+      },
+      {
+       "phen": "Set",
+       "time": "18:03"
+      }
+     ],
+     "tz": -11.0
+    }
+   },
+   "label": "Pago Pago Harbor, Tutuila Island",
+   "lat": -14.28,
+   "lon": -170.69
+  },
+  "1890000": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "08:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "60%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:54"
+      },
+      {
+       "phen": "Set",
+       "time": "18:20"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "08:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "18%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:56"
+      },
+      {
+       "phen": "Set",
+       "time": "18:18"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "19:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "18:17"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 25,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "02:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:06"
+      },
+      {
+       "phen": "Set",
+       "time": "18:14"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 24,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "13:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "87%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:22"
+      },
+      {
+       "phen": "Set",
+       "time": "18:20"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 16,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "04:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "32%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:03"
+      },
+      {
+       "phen": "Set",
+       "time": "19:03"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 19,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "12:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "96%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:16"
+      },
+      {
+       "phen": "Set",
+       "time": "19:34"
+      }
+     ],
+     "tz": 12.0
+    }
+   },
+   "label": "Wake Island (U.S.)",
+   "lat": 19.29056,
+   "lon": 166.6175
+  },
+  "8410140": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:06"
+      },
+      {
+       "phen": "Set",
+       "time": "16:16"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:12"
+      },
+      {
+       "phen": "Set",
+       "time": "16:11"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:17"
+      },
+      {
+       "phen": "Set",
+       "time": "16:06"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "15:52"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:03"
+      },
+      {
+       "phen": "Set",
+       "time": "15:49"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:43"
+      },
+      {
+       "phen": "Set",
+       "time": "18:32"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "04:42"
+      },
+      {
+       "phen": "Set",
+       "time": "20:18"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Eastport, ME",
+   "lat": 44.90461,
+   "lon": -66.98289
+  },
+  "8443970": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:18"
+      },
+      {
+       "phen": "Set",
+       "time": "16:37"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:23"
+      },
+      {
+       "phen": "Set",
+       "time": "16:33"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:28"
+      },
+      {
+       "phen": "Set",
+       "time": "16:28"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:46"
+      },
+      {
+       "phen": "Set",
+       "time": "16:16"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:10"
+      },
+      {
+       "phen": "Set",
+       "time": "16:15"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "18:49"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:07"
+      },
+      {
+       "phen": "Set",
+       "time": "20:25"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Boston, MA",
+   "lat": 42.35389,
+   "lon": -71.05028
+  },
+  "8518750": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:26"
+      },
+      {
+       "phen": "Set",
+       "time": "16:52"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:31"
+      },
+      {
+       "phen": "Set",
+       "time": "16:48"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:36"
+      },
+      {
+       "phen": "Set",
+       "time": "16:43"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:53"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:17"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:10"
+      },
+      {
+       "phen": "Set",
+       "time": "19:02"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:25"
+      },
+      {
+       "phen": "Set",
+       "time": "20:31"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "New York (The Battery), NY",
+   "lat": 40.70055,
+   "lon": -74.01417
+  },
+  "8665530": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:38"
+      },
+      {
+       "phen": "Set",
+       "time": "17:29"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:41"
+      },
+      {
+       "phen": "Set",
+       "time": "17:25"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:45"
+      },
+      {
+       "phen": "Set",
+       "time": "17:22"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "17:15"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:18"
+      },
+      {
+       "phen": "Set",
+       "time": "17:18"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:31"
+      },
+      {
+       "phen": "Set",
+       "time": "19:27"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:12"
+      },
+      {
+       "phen": "Set",
+       "time": "20:31"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Charleston (Customhouse Wharf), SC",
+   "lat": 32.78083,
+   "lon": -79.92361
+  },
+  "8724580": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:34"
+      },
+      {
+       "phen": "Set",
+       "time": "17:47"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "17:45"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:43"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:49"
+      },
+      {
+       "phen": "Set",
+       "time": "17:38"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:07"
+      },
+      {
+       "phen": "Set",
+       "time": "17:44"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:37"
+      },
+      {
+       "phen": "Set",
+       "time": "19:36"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "20:19"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Key West, FL",
+   "lat": 24.5557,
+   "lon": -81.8079
+  },
+  "8729840": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "14:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "51%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:03"
+      },
+      {
+       "phen": "Set",
+       "time": "17:01"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:07"
+      },
+      {
+       "phen": "Set",
+       "time": "16:58"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:10"
+      },
+      {
+       "phen": "Set",
+       "time": "16:55"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "08:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:49"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "19:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:42"
+      },
+      {
+       "phen": "Set",
+       "time": "16:53"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "11:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "18:56"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "19:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:47"
+      },
+      {
+       "phen": "Set",
+       "time": "19:54"
+      }
+     ],
+     "tz": -5.0
+    }
+   },
+   "label": "Pensacola, FL",
+   "lat": 30.4044,
+   "lon": -87.2112
+  },
+  "8771450": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "14:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "51%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:32"
+      },
+      {
+       "phen": "Set",
+       "time": "17:33"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:35"
+      },
+      {
+       "phen": "Set",
+       "time": "17:30"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:38"
+      },
+      {
+       "phen": "Set",
+       "time": "17:27"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "08:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:50"
+      },
+      {
+       "phen": "Set",
+       "time": "17:21"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "19:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:09"
+      },
+      {
+       "phen": "Set",
+       "time": "17:25"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "11:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:30"
+      },
+      {
+       "phen": "Set",
+       "time": "19:27"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "19:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:20"
+      },
+      {
+       "phen": "Set",
+       "time": "20:22"
+      }
+     ],
+     "tz": -5.0
+    }
+   },
+   "label": "Galveston, Galveston Channel, TX",
+   "lat": 29.31,
+   "lon": -94.7933
+  },
+  "9414290": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "12:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:35"
+      },
+      {
+       "phen": "Set",
+       "time": "17:11"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:40"
+      },
+      {
+       "phen": "Set",
+       "time": "17:07"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:44"
+      },
+      {
+       "phen": "Set",
+       "time": "17:03"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "06:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "16:53"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "17:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:54"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "09:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "40%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:23"
+      },
+      {
+       "phen": "Set",
+       "time": "19:16"
+      }
+     ],
+     "tz": -7.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "17:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:48"
+      },
+      {
+       "phen": "Set",
+       "time": "20:35"
+      }
+     ],
+     "tz": -7.0
+    }
+   },
+   "label": "San Francisco (Golden Gate), CA",
+   "lat": 37.80631,
+   "lon": -122.46589
+  },
+  "9447130": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "12:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:54"
+      },
+      {
+       "phen": "Set",
+       "time": "16:52"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "16:46"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:06"
+      },
+      {
+       "phen": "Set",
+       "time": "16:40"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "06:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:28"
+      },
+      {
+       "phen": "Set",
+       "time": "16:24"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "17:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:55"
+      },
+      {
+       "phen": "Set",
+       "time": "16:20"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "09:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "40%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:24"
+      },
+      {
+       "phen": "Set",
+       "time": "19:13"
+      }
+     ],
+     "tz": -7.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "17:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:12"
+      },
+      {
+       "phen": "Set",
+       "time": "21:11"
+      }
+     ],
+     "tz": -7.0
+    }
+   },
+   "label": "Seattle (Madison St.), Elliott Bay, WA",
+   "lat": 47.60264,
+   "lon": -122.33931
+  },
+  "9451600": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:13"
+      },
+      {
+       "phen": "Set",
+       "time": "16:16"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:07"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:31"
+      },
+      {
+       "phen": "Set",
+       "time": "15:59"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:02"
+      },
+      {
+       "phen": "Set",
+       "time": "15:33"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:39"
+      },
+      {
+       "phen": "Set",
+       "time": "15:21"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "07:20"
+      },
+      {
+       "phen": "Set",
+       "time": "19:03"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "04:06"
+      },
+      {
+       "phen": "Set",
+       "time": "22:00"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Sitka, AK",
+   "lat": 57.05106,
+   "lon": -135.34412
+  },
+  "9455920": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:28"
+      },
+      {
+       "phen": "Set",
+       "time": "16:57"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:39"
+      },
+      {
+       "phen": "Set",
+       "time": "16:46"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:50"
+      },
+      {
+       "phen": "Set",
+       "time": "16:36"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:30"
+      },
+      {
+       "phen": "Set",
+       "time": "16:02"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:14"
+      },
+      {
+       "phen": "Set",
+       "time": "15:41"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:20"
+      },
+      {
+       "phen": "Set",
+       "time": "19:59"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Rise",
+       "time": "04:20"
+      },
+      {
+       "phen": "Set",
+       "time": "23:43"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Anchorage, Knik Arm, AK",
+   "lat": 61.2375,
+   "lon": -149.89039
+  },
+  "9461380": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "10:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:42"
+      },
+      {
+       "phen": "Set",
+       "time": "18:18"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:49"
+      },
+      {
+       "phen": "Set",
+       "time": "18:11"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:56"
+      },
+      {
+       "phen": "Set",
+       "time": "18:04"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "04:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:22"
+      },
+      {
+       "phen": "Set",
+       "time": "17:45"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:52"
+      },
+      {
+       "phen": "Set",
+       "time": "17:38"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "07:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:03"
+      },
+      {
+       "phen": "Set",
+       "time": "20:50"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "15:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:27"
+      },
+      {
+       "phen": "Set",
+       "time": "23:10"
+      }
+     ],
+     "tz": -9.0
+    }
+   },
+   "label": "Sweeper Cove, Kuluk Bay, Adak Island, AK",
+   "lat": 51.86064,
+   "lon": -176.63758
+  },
+  "9468756": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:48"
+      },
+      {
+       "phen": "Set",
+       "time": "17:41"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:02"
+      },
+      {
+       "phen": "Set",
+       "time": "17:28"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:15"
+      },
+      {
+       "phen": "Set",
+       "time": "17:15"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:04"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "12:03"
+      },
+      {
+       "phen": "Set",
+       "time": "15:57"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:24"
+      },
+      {
+       "phen": "Set",
+       "time": "21:00"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:47"
+      },
+      {
+       "phen": "Rise",
+       "time": "04:20"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Nome, AK",
+   "lat": 64.49461,
+   "lon": -165.43964
+  },
+  "9491094": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:05"
+      },
+      {
+       "phen": "Set",
+       "time": "17:13"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:57"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:39"
+      },
+      {
+       "phen": "Set",
+       "time": "16:41"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:47"
+      },
+      {
+       "phen": "Set",
+       "time": "15:39"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:20"
+      },
+      {
+       "phen": "Set",
+       "time": "20:52"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Red Dog Dock, AK",
+   "lat": 67.57581,
+   "lon": -164.06439
+  },
+  "9497645": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:31"
+      },
+      {
+       "phen": "Set",
+       "time": "15:43"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:53"
+      },
+      {
+       "phen": "Set",
+       "time": "15:21"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:16"
+      },
+      {
+       "phen": "Set",
+       "time": "14:58"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-16": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "44%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:04"
+      },
+      {
+       "phen": "Set",
+       "time": "14:13"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-17": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "54%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:12"
+      },
+      {
+       "phen": "Set",
+       "time": "14:05"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-18": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "64%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:21"
+      },
+      {
+       "phen": "Set",
+       "time": "13:57"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-19": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "73%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:30"
+      },
+      {
+       "phen": "Set",
+       "time": "13:48"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-20": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "82%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:41"
+      },
+      {
+       "phen": "Set",
+       "time": "13:38"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-21": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "90%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:54"
+      },
+      {
+       "phen": "Set",
+       "time": "13:26"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-22": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "96%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "12:11"
+      },
+      {
+       "phen": "Set",
+       "time": "13:09"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-23": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-17": {
+     "closestphase": {
+      "day": 15,
+      "month": 1,
+      "phase": "First Quarter",
+      "time": "11:34",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "72%",
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-18": {
+     "closestphase": {
+      "day": 15,
+      "month": 1,
+      "phase": "First Quarter",
+      "time": "11:34",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "81%",
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-19": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "90%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "12:32"
+      },
+      {
+       "phen": "Set",
+       "time": "13:39"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-20": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "96%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "12:17"
+      },
+      {
+       "phen": "Set",
+       "time": "13:54"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-21": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "12:05"
+      },
+      {
+       "phen": "Set",
+       "time": "14:07"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-22": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:55"
+      },
+      {
+       "phen": "Set",
+       "time": "14:17"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-23": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "97%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:46"
+      },
+      {
+       "phen": "Set",
+       "time": "14:26"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-24": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "92%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:38"
+      },
+      {
+       "phen": "Set",
+       "time": "14:35"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-25": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "85%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "11:31"
+      },
+      {
+       "phen": "Set",
+       "time": "14:43"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:21"
+      },
+      {
+       "phen": "Set",
+       "time": "19:48"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-09": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "15%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:21"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-10": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "24%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:29"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:12"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-11": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "35%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:38"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:02"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-12": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "46%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:50"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:50"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-13": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "57%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:03"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:37"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-14": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "68%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:22"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:18"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-15": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "78%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-16": {
+     "closestphase": {
+      "day": 20,
+      "month": 5,
+      "phase": "Full Moon",
+      "time": "02:59",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "86%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-28": {
+     "closestphase": {
+      "day": 26,
+      "month": 7,
+      "phase": "Last Quarter",
+      "time": "08:55",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "28%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-29": {
+     "closestphase": {
+      "day": 26,
+      "month": 7,
+      "phase": "Last Quarter",
+      "time": "08:55",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "18%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:10"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-30": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "10%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:39"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-31": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "4%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:55"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-08-01": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:55"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:07"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-08-02": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:45"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:17"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-08-03": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "3%",
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:35"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:26"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Prudhoe Bay, AK",
+   "lat": 70.41139,
+   "lon": -148.53167
+  },
+  "9751639": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:19"
+      },
+      {
+       "phen": "Set",
+       "time": "17:47"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:21"
+      },
+      {
+       "phen": "Set",
+       "time": "17:45"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:23"
+      },
+      {
+       "phen": "Set",
+       "time": "17:44"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "10:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:31"
+      },
+      {
+       "phen": "Set",
+       "time": "17:42"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "21:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "91%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:47"
+      },
+      {
+       "phen": "Set",
+       "time": "17:49"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:29"
+      },
+      {
+       "phen": "Set",
+       "time": "18:29"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:45"
+      },
+      {
+       "phen": "Set",
+       "time": "18:58"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Charlotte Amalie, St. Thomas Island, VI",
+   "lat": 18.33058,
+   "lon": -64.92581
+  },
+  "9759110": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:27"
+      },
+      {
+       "phen": "Set",
+       "time": "17:56"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:29"
+      },
+      {
+       "phen": "Set",
+       "time": "17:54"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:31"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "10:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:51"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "21:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "91%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:55"
+      },
+      {
+       "phen": "Set",
+       "time": "17:58"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "18:38"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:54"
+      },
+      {
+       "phen": "Set",
+       "time": "19:06"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Magueyes Island, PR",
+   "lat": 17.97011,
+   "lon": -67.04639
+  },
+  "TWC2309": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "10:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:21"
+      },
+      {
+       "phen": "Set",
+       "time": "18:52"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:29"
+      },
+      {
+       "phen": "Set",
+       "time": "18:45"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "09:36"
+      },
+      {
+       "phen": "Set",
+       "time": "18:38"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "04:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:03"
+      },
+      {
+       "phen": "Set",
+       "time": "18:18"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "10:34"
+      },
+      {
+       "phen": "Set",
+       "time": "18:11"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "06:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "08:40"
+      },
+      {
+       "phen": "Set",
+       "time": "20:27"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "14:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "sundata": [
+      {
+       "phen": "Rise",
+       "time": "05:59"
+      },
+      {
+       "phen": "Set",
+       "time": "22:52"
+      }
+     ],
+     "tz": -10.0
+    }
+   },
+   "label": "Alcan Harbor, Shemya Island",
+   "lat": 52.7167,
+   "lon": 174.0667
+  }
+ }
+}

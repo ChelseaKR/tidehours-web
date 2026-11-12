@@ -463,3 +463,82 @@ built as a stub (`site.MOVED_REGIONS`, `moved.html.jinja`): a meta refresh,
 the sitemap and lastmod.json. A stub is built only when its VI page is. `tests/test_site.py` checks that no
 station NOAA codes VI, no pinned station, and no station inside the islands'
 bounding box is listed under PR.
+
+## 0019: Sunrise, sunset and the moon's phase on station pages, computed (2026-11-05)
+
+Each station page's two days (today and tomorrow, as now; DECISIONS 0001's
+free-web line is unchanged) carry one line: sunrise and sunset in the
+station's own time zone, and the moon's phase with the share of it lit, for
+example "Sunrise 6:40 AM, sunset 5:07 PM. Moon: waning crescent, 12% lit at
+noon." The day's tide curve shades the hours the sun is down (`aria-hidden`,
+like the rest of the drawing; the line carries the facts).
+
+**Computed, not fetched (0002).** `src/tidehours/sky.py` has no data file and
+makes no request. Sunrise and sunset use NOAA's Solar Calculator equations
+(NOAA GML, after Meeus) at the station's latitude and longitude, with the
+sun's center at -0.833 degrees, the U.S. Naval Observatory's definition. The
+altitude is sampled every minute from the station's local midnight to the
+next, in its IANA zone, so a daylight saving day has 23 or 25 hours, and
+each crossing is interpolated between two samples. The moon uses the main
+terms of Meeus chapter 47 and the phase angle of chapter 48. The share lit is
+at local noon. The phase name follows USNO's convention: new or full moon
+when the share rounds to 0% or 100%, a quarter at 50%, otherwise waxing or
+waning, crescent or gibbous. A primary phase whose instant falls on the day
+is named with its local time ("full moon at 6:53 AM"). A subordinate station
+uses its own position, not its reference station's.
+
+**Absence is words.** A day the sun does not rise says "The sun does not
+rise on this day (polar night)." A day it does not set says "The sun does
+not set on this day (midnight sun)." A day with only one of them names the
+missing one ("No sunrise on this day."). No page ever shows a stand-in time.
+At Prudhoe Bay (9497645) the sun stays down from November 23 to January 18
+and up from May 15 to July 28 in the fixture years.
+
+**Checked.** `tests/fixtures/usno-sky-2026.json` holds USNO's
+`api/rstt/oneday` answers for 186 station-days: 22 stations covering every
+time zone in the catalog (Guam, Pago Pago, Wake, Adak, a western Aleutian
+station across the date line, Puerto Rico, the Virgin Islands, Hawaii, the
+Arctic), on 7 dates (both ends of US daylight saving time, a new moon, a
+full moon, both solstices), plus 32 days at Prudhoe Bay on both edges of
+polar night and the midnight sun. Fetched once by hand with
+`scripts/fetch_golden.py --sky` (aa.usno.navy.mil has no robots.txt, 404 on
+2026-11-05; requests a second apart with a User-Agent that names the site).
+Measured on 2026-11-05: every sunrise and sunset is within 2 minutes of
+USNO's (all within 1 minute except one grazing day at Prudhoe Bay,
+2027-07-29, when the sun dips under the horizon for 15 minutes: 2 minutes);
+the days with no sunrise or sunset are exactly USNO's; the phase name and
+the share lit match USNO's on all 186; and the 55 primary phases on those
+days are within 2 minutes. `tests/test_sky.py` holds those tolerances.
+`scripts/check_site.py` recomputes each station page's line for both of its
+days and fails the build if it is missing, different, or shows "00:00";
+negative controls in `tests/test_sky.py` remove the line, replace polar
+night with a "00:00" sunrise, move a sunrise and change the moon, and assert
+the check fails each time. USNO is a test oracle only: its values are not
+shown on the site or redistributed.
+
+**Not checked against "12:00 AM".** A real sunset can fall at 12:00 AM at an
+Arctic station, so the gate does not ban that text; it compares every line
+with the computed one instead, which catches a stand-in time.
+
+**Time zones.** Times use `Station.tz`, so they follow whatever zone the
+catalog gives a station. On `main` the ten western Aleutian stations without
+a state (TWC2297 to TWC2321) carry `Pacific/Honolulu`; the
+`fix/reference-state` branch (DECISIONS 0018) moves them to `America/Adak`.
+The two zones agree in winter (UTC-10) and differ by an hour from March to
+November, so until 0018 merges those stations' summer sunrise and sunset are
+in Hawaii time, like their tide times. No change here is needed when it
+merges: the line follows the zone.
+
+**Reuse.** `sky.sun_times(lat, lon, tz, date)` returns the day's sunrise and
+the sunset after it as POSIX seconds, or None, the same contract as
+`lowtides.sun_times` on the `feat/low-tides` branch (DECISIONS 0021 there),
+which carries its own copy of the solar equations because this module was
+not on `main` yet. Once both merge, low-tides should call this one and drop
+its copy, so the site has one sun.
+
+**Differences from the app.** The app (ChelseaKR/tide-hours) does not show the
+sun or moon yet. When its 7-day view adds them, it should port this method
+and the same fixture, or record a difference here.
+
+**Not done.** Moonrise and moonset, twilight, and the sun's times for more
+than the two days on the page.

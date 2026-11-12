@@ -13,6 +13,7 @@
   --high: #0b6e99;
   --low: #8a4b08;
   --grid: #e3eaed;
+  --night: #e4eaf1;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -30,6 +31,7 @@
     --high: #7cc6e6;
     --low: #f0b46a;
     --grid: #22323a;
+    --night: #081014;
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -84,6 +86,8 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; }
 .tide-chart .curve { fill: none; stroke: var(--curve); stroke-width: 2.5; }
 .tide-chart .grid { stroke: var(--grid); stroke-width: 1; }
 .tide-chart .tick { stroke: var(--grid); stroke-width: 1; }
+.tide-chart .night { fill: var(--night); }
+.sky { margin: 0.4rem 0 0; }
 .chart-box { display: grid; grid-template-columns: 2.6rem 1fr; }
 .chart-box .tide-chart { grid-column: 2; }
 .ax-y { grid-column: 1; grid-row: 1; position: relative; }

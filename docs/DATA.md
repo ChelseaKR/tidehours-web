@@ -9,6 +9,9 @@ data change is always reviewed with this file.
 - `src/tidehours/data/regions.json`: NOAA's region name for 3,461 tide prediction stations, from `mdapi/prod/webapi/tidepredstations.json`, field `region`. Retrieved 2026-10-31. 32 catalog stations are not in that list and are shown as "without a region". sha256 `31c8443054aedbc7c2ff560da71fe6639fe0ef0a3ea70668d8a9ec77dbaf11c4`
 - `src/tidehours/data/datums.json`: MHHW above MLLW for the 31 king-tide stations, from `mdapi/prod/webapi/stations/{id}/datums.json`. Retrieved 2026-10-31. sha256 `de62c86f7454b45370b85a2c317adad5ee4cb67507247d214c7beef3d4d351c0`
 
+Sunrise, sunset and the moon's phase need no data file: `src/tidehours/sky.py`
+computes them from published equations (DECISIONS 0019).
+
 All of it is U.S. Government work in the public domain
 (https://tidesandcurrents.noaa.gov/disclaimers.html). The site credits NOAA
 on every page and says it is not a NOAA product.
@@ -30,3 +33,9 @@ on every page and says it is not a NOAA product.
   chelseakr.com king-tides page (ChelseaKR/personal-site
   `src/content/kingTides.data.json` at `6ae96ab`), built from NOAA's
   published high/low predictions and datums.
+- `tests/fixtures/usno-sky-2026.json`: the U.S. Naval Observatory's sunrise,
+  sunset, moon phase, share lit and nearest primary phase (`api/rstt/oneday`)
+  for 186 station-days: 22 stations on 7 dates plus 32 days at Prudhoe Bay
+  around polar night and the midnight sun. Retrieved 2026-11-05.
+  `scripts/fetch_golden.py --sky`. U.S. Government work; used as a test
+  oracle only, not shown on the site.

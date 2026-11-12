@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Station pages show sunrise, sunset and the moon's phase for both days on
+  the page, in the station's own time zone, and shade the night on the tide
+  curve. All of it is computed at build time (NOAA Solar Calculator
+  equations, Meeus for the moon) and checked against the U.S. Naval
+  Observatory: sun times within 2 minutes on 186 station-days. Days without
+  a sunrise or sunset, as in Prudhoe Bay's polar night and midnight sun, say
+  so in words, never with a stand-in time (DECISIONS 0019).
 - The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
   Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
   in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are

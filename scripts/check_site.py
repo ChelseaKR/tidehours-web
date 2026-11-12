@@ -11,6 +11,9 @@ pages were built (0015). Amazon affiliate links appear only when a tag is
 configured, only on the English king-tide page, after its method section,
 tagged, with rel="sponsored nofollow noopener" and Amazon's disclosure right
 before them; with no tag, "amazon" appears nowhere in the build (0016).
+Every station page has a sun and moon line for each of its two days, and it
+is the one sky.py computes for that station and date: a day without a
+sunrise or sunset says so in words, and no line shows "00:00" (0019).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG]
 """
@@ -28,6 +31,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from tidehours import affiliate, kingtides, ktformat, site
 from tidehours.catalog import Catalog, Station, load
+from tidehours.days import moon_text, sun_text
+from tidehours.sky import moon_day, sun_day
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
 LOC = re.compile(r"<loc>https://tidehours\.com/([^<]*)</loc>")
@@ -43,6 +48,8 @@ TITLE = re.compile(r"<title>([^<]*)</title>")
 AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 REL_ATTR = re.compile(r'\brel="([^"]*)"')
 JSON_LD = re.compile(r'<script type="application/ld\+json">.*?</script>', re.S)
+SKY = re.compile(r'<p class="sky" data-sky="([^"]*)">(.*?)</p>', re.S)
+TAG = re.compile(r"<[^>]+>")
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -147,6 +154,32 @@ def check_king_tides(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
+def check_sky(root: Path, cat: Catalog) -> list[str]:
+    """Each station page's two days each carry the sun and moon line that
+    sky.py computes for the station's position, zone and date, in that
+    order, and nothing else in a sky line: no placeholder time."""
+    problems: list[str] = []
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if not f.exists():
+            continue
+        text = f.read_text(encoding="utf-8")
+        dated = STATION_DATE.findall(text)
+        if len(dated) != 1:
+            problems.append(f"stations/{s.id}: no station date")
+            continue
+        first = dt.date.fromisoformat(dated[0])
+        days = [first, first + dt.timedelta(days=1)]
+        shown = [(d, " ".join(htmllib.unescape(TAG.sub(" ", inner)).split())) for d, inner in SKY.findall(text)]
+        want = [
+            (d.isoformat(), f"{sun_text(sun_day(s.lat, s.lon, s.tz, d))} {moon_text(moon_day(s.tz, d))}") for d in days
+        ]
+        if shown != want:
+            problems.append(f"stations/{s.id}: sun and moon {shown or 'missing'}, expected {want}")
+        problems += [f"stations/{s.id}: {d}: a sky line shows 00:00" for d, line in shown if "00:00" in line]
+    return problems
+
+
 def check_affiliate(root: Path, html: list[Path], tag: str) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
     king-tide page links to Amazon: at most MAX_LINKS links, each a plain
@@ -221,6 +254,7 @@ def main(root: Path, amazon_tag: str = "") -> int:
     problems += check_tide_types(root, cat)
     problems += check_king_tides(root, cat)
     problems += check_affiliate(root, html, amazon_tag)
+    problems += check_sky(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

@@ -1,0 +1,6 @@
+# False positives in pushed history (feat/sky WIP commit 55671db, 2026-11-12).
+# Both are a plain-text label naming the U.S. Naval Observatory's
+# Astronomical Applications rise/set service and its path, not a key. The current tree words it
+# differently; the pushed commit is not rewritten.
+55671db98ed7fdc5a2f5cbcc0740c27eb6566f81:scripts/fetch_golden.py:generic-api-key:153
+55671db98ed7fdc5a2f5cbcc0740c27eb6566f81:tests/fixtures/usno-sky-2026.json:generic-api-key:3

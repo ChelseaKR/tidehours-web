@@ -1,7 +1,7 @@
 {% extends "base.html.jinja" %}
 {% set today = days[0] %}
-{% block title %}{{ station_title(station.display_name) }}{% endblock %}
-{% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% if king_link and king_link.own %} King tides {{ fmt_range(king_link.up.first, king_link.up.last, "en", kc) }}.{% endif %}{% endblock %}
+{% block title %}{{ station_title(place) }}{% endblock %}
+{% block description %}{{ station_description(place, days, ("King tides " ~ fmt_range(king_link.up.first, king_link.up.last, "en", kc) ~ ".") if king_link and king_link.own else "") }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
   "@context": "https://schema.org",
@@ -24,9 +24,23 @@
     {% if region %}<li><a href="/{{ region.path }}">{{ region.name }}</a></li>{% endif %}
   </ol>
 </nav>
-<h1>{{ station.display_name }} tide times</h1>
-<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW).</p>
+<h1>{{ place }} tides today</h1>
 <p class="stale" id="stale" role="status" hidden></p>
+{#- The answer first (docs/DECISIONS.md 0032): each day's highs, then its
+    lows, by date. The script below adds "Today" or "Tomorrow" from the
+    station's own clock and hides a day that has passed. -#}
+<div class="answer">
+{% for kind in ("High", "Low") %}
+  <h2 id="q-{{ kind|lower }}">When is {{ kind|lower }} tide at {{ place }} today?</h2>
+  <ul class="answer-days">
+  {% for day in days %}
+    {% set these = day.events|selectattr("kind", "equalto", kind)|list %}
+    <li data-date="{{ day.date.isoformat() }}"><span class="day-label"></span>{{ day.date.strftime("%A") }}, {{ day.date|short_date }}: {% if these %}{% for e in these %}<strong><time datetime="{{ e.iso }}">{{ e.time }}</time></strong> ({{ e.height_ft }}){{ ", " if not loop.last }}{% endfor %}{% else %}no {{ kind|lower }} tide predicted{% endif %}</li>
+  {% endfor %}
+  </ul>
+{% endfor %}
+</div>
+<p class="lead">Predicted for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW). The tide chart and table for each day are below.</p>
 {% if station.filed_by == "reference" %}
 <p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, the state of the reference station NOAA predicts it from.</p>
 {% elif station.filed_by in ("territory", "name") %}
@@ -90,6 +104,18 @@
 </section>
 {% endfor %}
 
+{% if nearby %}
+<section aria-labelledby="near">
+  <h2 id="near">Nearby</h2>
+  <p>Tide times at other NOAA stations within {{ nearby_miles }} miles, nearest first:</p>
+  <ul class="near">
+  {% for s, km in nearby %}
+    <li><a href="/stations/{{ s.id }}/">{{ s.display_name }}</a> <span class="dist">{{ "%.0f"|format(km * 0.621371) if km * 0.621371 >= 1 else "under 1" }} mi</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 <section class="upsell" aria-labelledby="week">
   <h2 id="week">The rest of the week</h2>
   <p>The 7-day table, favorites, widgets and offline use are in the Tide Hours iPhone app.
@@ -133,15 +159,6 @@
   </ul>
 </section>
 {% endif %}
-
-<section aria-labelledby="near">
-  <h2 id="near">Nearby stations</h2>
-  <ul class="near">
-  {% for s, km in nearby %}
-    <li><a href="/stations/{{ s.id }}/">{{ s.display_name }}</a> <span class="dist">{{ "%.0f"|format(km * 0.621371) }} mi</span></li>
-  {% endfor %}
-  </ul>
-</section>
 
 <section class="about-numbers" aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>
@@ -210,6 +227,14 @@ var tidehoursDays = (function () {
     var day = result.days[i];
     if (day.label) s.querySelector(".day-label").textContent = day.label + ", ";
     if (day.hide) s.hidden = true;
+  });
+  var byDate = {};
+  result.days.forEach(function (d) { byDate[d.date] = d; });
+  Array.prototype.forEach.call(document.querySelectorAll(".answer li[data-date]"), function (li) {
+    var day = byDate[li.getAttribute("data-date")];
+    if (!day) return;
+    if (day.label) li.querySelector(".day-label").textContent = day.label + ", ";
+    if (day.hide) li.hidden = true;
   });
   if (result.message) {
     var box = document.getElementById("stale");

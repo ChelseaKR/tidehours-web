@@ -1,13 +1,18 @@
 {% extends "base.html.jinja" %}
-{% block title %}{{ region.name }}{% if state.code != "other" %}, {{ state.name }}{% endif %} tide times | Tide Hours{% endblock %}
-{% block description %}Today's tide times at {{ region.stations|length }} NOAA tide station{{ "s" if region.stations|length != 1 }} in {{ region.name }}{% if state.code != "other" %}, {{ state.name }}{% endif %}.{% endblock %}
+{% block title %}{{ region_title(region, state) }}{% endblock %}
+{% block description %}Today's tide times at {{ region.stations|length }} NOAA tide station{{ "s" if region.stations|length != 1 }} in {{ region_place(region, state) }}.{% endblock %}
 {% block jsonld %}
 {% with crumbs = [["Home", ""], [state.name, state.path]] %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}
 {% block content %}
 <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/{{ state.path }}">{{ state.name }}</a></li></ol></nav>
-<h1>{{ region.name }} tide times</h1>
-<p class="lead">{{ region.stations|length }} NOAA tide prediction station{{ "s" if region.stations|length != 1 }} in NOAA's {{ region.name }} region{% if state.code != "other" %}, {{ state.name }}{% endif %}.</p>
+<h1>{{ region.name }} tides today</h1>
+<p class="lead">Pick a place for today's and tomorrow's high and low tide times and a tide chart: {{ region.stations|length }} NOAA tide prediction station{{ "s" if region.stations|length != 1 }} in {{ region_place(region, state) }}.</p>
+<ul class="stations">
+{% for s in region.stations %}
+  <li><a href="/stations/{{ s.id }}/">{{ s.name }}</a>{% if s.is_subordinate %} <span class="tag">from a reference station</span>{% endif %}</li>
+{% endfor %}
+</ul>
 {% if region_king %}
 <section class="callout kt-link" aria-labelledby="king" data-kt-region="{% for u in region_king %}{{ u.season.id }}{{ " " if not loop.last }}{% endfor %}">
   <h2 id="king">King tides {{ fmt_months(king_months, "en", kc) }}</h2>
@@ -19,9 +24,4 @@
   </ul>
 </section>
 {% endif %}
-<ul class="stations">
-{% for s in region.stations %}
-  <li><a href="/stations/{{ s.id }}/">{{ s.name }}</a>{% if s.is_subordinate %} <span class="tag">from a reference station</span>{% endif %}</li>
-{% endfor %}
-</ul>
 {% endblock %}

@@ -1,6 +1,6 @@
 """A station page's link to its printable tide calendar in the Tide Hours shop
 on Etsy (docs/DECISIONS.md 0035, built as 0030 builds the booklet links): the
-committed list is the calendars the owner listed (three on 2026-11-11, nine from 2026-11-12); an empty list leaves
+committed list is the calendars the owner listed (three on 2026-11-11, twelve from 2026-11-12); an empty list leaves
 no trace; one listed calendar puts one plain link on that station's page and
 nowhere else; a bad entry is refused; the link leaves when the calendar's
 year is over; the privacy page names the Etsy links by what the build shows;
@@ -50,6 +50,9 @@ COMMITTED = {
     "8677344": ("4616031807", "2027 Tide Calendar: St. Simons Island"),
     "8570283": ("4616045426", "2027 Tide Calendar: Ocean City"),
     "9441102": ("4616046346", "2027 Tide Calendar: Westport"),
+    "8410140": ("4616051522", "2027 Tide Calendar: Eastport"),
+    "8447241": ("4616040791", "2027 Tide Calendar: Brewster Flats"),
+    "8721164": ("4616053676", "2027 Tide Calendar: New Smyrna Beach"),
 }
 ETSY_A = re.compile(r'<a\b[^>]*href="(https?://[^"]*etsy\.[^"]*)"[^>]*>', re.I)
 BLOCK = re.compile(r'<p class="calendar"[^>]*>.*?</p>', re.S)
@@ -162,7 +165,7 @@ def everything(tmp_path_factory: pytest.TempPathFactory, listed: Path, booklet_l
 def committed(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """The committed list, in the states of its stations, with the
     print shop on."""
-    return build(tmp_path_factory.mktemp("committed"), None, "--print-shop-url", SHOP, states="ME,CA,OR,MA,GA,MD,WA")
+    return build(tmp_path_factory.mktemp("committed"), None, "--print-shop-url", SHOP, states="ME,CA,OR,MA,GA,MD,WA,FL")
 
 
 @pytest.fixture(scope="module")
@@ -434,7 +437,7 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
 
 def test_the_committed_calendars_leave_on_january_1_2028(tmp_path: Path, check_site: Any) -> None:
     after = build(
-        tmp_path / "2028", None, "--print-shop-url", SHOP, now="2028-01-01T11:20:00Z", states="ME,CA,OR,MA,GA,MD,WA"
+        tmp_path / "2028", None, "--print-shop-url", SHOP, now="2028-01-01T11:20:00Z", states="ME,CA,OR,MA,GA,MD,WA,FL"
     )
     for sid in COMMITTED:
         assert 'data-station-date="2028-01-01"' in read(after, f"stations/{sid}")

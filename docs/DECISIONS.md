@@ -1292,3 +1292,7 @@ to `copy/calendars.json` at the owner's request: La Jolla (9410230), Monterey
 (9413450), Hull (8444351), St. Simons Island (8677344), Ocean City (8570283)
 and Westport (9441102), with the listing ids the owner gave. Nothing else changes;
 the sentence, the checks and the 2028 removal apply to all nine.
+
+Update, 2026-11-12 (night): three more, Eastport (8410140), Brewster Flats
+(Sesuit Harbor, 8447241) and New Smyrna Beach (8721164), bring the list to
+twelve, with the listing ids the owner gave.

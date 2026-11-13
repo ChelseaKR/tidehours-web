@@ -20,8 +20,15 @@ station whose printed booklet is listed (src/tidehours/copy/booklets.json)
 and whose year is not over links to it once, on its own page, with exactly
 https://www.amazon.com/dp/ASIN; that sentence is the one exception to the
 Amazon rules above, and with no booklet listed they are unchanged (0030).
+In the same way, a station whose printable calendar is listed
+(src/tidehours/copy/calendars.json) and whose year is not over links to it
+once, on its own page, with exactly https://www.etsy.com/listing/ID, after
+the booklet sentence when there is one; that sentence is the one exception
+to the Etsy rules above, and the privacy page names the Etsy links by what
+the build shows (0035).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
+                                       [--calendars FILE]
 """
 
 from __future__ import annotations
@@ -35,7 +42,7 @@ import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, booklets, kingtides, ktformat, printshop, site
+from tidehours import affiliate, booklets, calendars, kingtides, ktformat, printshop, site
 from tidehours.catalog import Catalog, Station, load
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
@@ -55,6 +62,7 @@ AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', 
 REL_ATTR = re.compile(r'\brel="([^"]*)"')
 JSON_LD = re.compile(r'<script type="application/ld\+json">.*?</script>', re.S)
 BOOKLET_P = re.compile(r'<p class="booklet"[^>]*>.*?</p>', re.S)
+CALENDAR_P = re.compile(r'<p class="calendar"[^>]*>.*?</p>', re.S)
 ANY_A = re.compile(r"<a\b[^>]*>", re.I)
 HREF_ATTR = re.compile(r'\bhref="([^"]*)"')
 
@@ -327,12 +335,83 @@ def _check_affiliate_page(rel: str, text: str, links: list[re.Match[str]], tag: 
 ETSY_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*etsy\.com[^"]*)"[^>]*>', re.I)
 
 
-def check_print_shop(root: Path, html: list[Path], url: str) -> list[str]:
+def calendar_pages(
+    root: Path, listed: dict[str, calendars.Calendar]
+) -> tuple[dict[str, calendars.Calendar], list[str]]:
+    """The station pages of this build that must link to a calendar, as page
+    path -> calendar: each listed station that has a page, unless the page's
+    own date is past the calendar's year (docs/DECISIONS.md 0035)."""
+    want: dict[str, calendars.Calendar] = {}
+    problems: list[str] = []
+    for station_id, calendar in listed.items():
+        rel = f"stations/{station_id}/index.html"
+        if not (root / rel).is_file():
+            continue
+        dates = STATION_DATE.findall((root / rel).read_text(encoding="utf-8"))
+        if len(dates) != 1:
+            problems.append(f"{rel}: no date to tell whether its calendar's year is over")
+        elif calendars.shown(calendar, dt.date.fromisoformat(dates[0])):
+            want[rel] = calendar
+    return want, problems
+
+
+def _check_calendar(rel: str, text: str, want: calendars.Calendar | None) -> tuple[str, list[str]]:
+    """One page's calendar sentence. Returns the page without the sentence,
+    for the Etsy rules that apply to everything else, and the problems: a
+    sentence on a page that is due none; or, on a page that is due one, none
+    or more than one, more than one link in it, an address that is not
+    exactly the listing's, a rel other than noopener, a click event, a place
+    before the tide tables or after the page's closing notes, or a place
+    before the booklet sentence."""
+    blocks = list(CALENDAR_P.finditer(text))
+    if want is None:
+        return text, ([f"{rel}: a calendar link on a page that is due none"] if blocks else [])
+    if len(blocks) != 1:
+        return CALENDAR_P.sub("", text), [f"{rel}: {len(blocks)} calendar links, exactly 1 expected"]
+    problems: list[str] = []
+    found = blocks[0]
+    anchors = ANY_A.findall(found.group(0))
+    if len(anchors) != 1 or found.group(0).count("http") != 1:
+        problems.append(f"{rel}: the calendar sentence has {len(anchors)} links, exactly 1 expected")
+    for a in anchors:
+        href_attr = HREF_ATTR.search(a)
+        href = htmllib.unescape(href_attr.group(1)) if href_attr else ""
+        if href != want.url:
+            problems.append(f"{rel}: {href} is not the calendar's address, {want.url}")
+        rel_attr = REL_ATTR.search(a)
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if tokens != set(calendars.REL.split()):
+            problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
+        if "data-ga" in a:
+            problems.append(f"{rel}: the calendar link carries a click event")
+    last_day = text.rfind('<section class="day"')
+    if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
+        problems.append(f"{rel}: the calendar link is not between the tide tables and the closing notes")
+    booklet = BOOKLET_P.search(text)
+    if booklet and booklet.start() > found.start():
+        problems.append(f"{rel}: the calendar link comes before the booklet link")
+    return text[: found.start()] + text[found.end() :], problems
+
+
+def check_print_shop(
+    root: Path, html: list[Path], url: str, calendar_links: dict[str, calendars.Calendar] | None = None
+) -> list[str]:
     """With no shop address, "etsy" appears nowhere. With one, the About page
     and the English king-tide page each link to it exactly once, with that
     exact address and rel="noopener"; the privacy and terms pages may name
     Etsy without linking; no other page mentions it. Never in JSON-LD, the
-    sitemap, robots.txt, lastmod.json or llms.txt (docs/DECISIONS.md 0029)."""
+    sitemap, robots.txt, lastmod.json or llms.txt (docs/DECISIONS.md 0029).
+
+    The one exception (docs/DECISIONS.md 0035): `calendar_links`, from
+    calendar_pages, names the station pages that are due a calendar
+    sentence. That sentence is checked on its own (_check_calendar) and
+    taken out of the page before the rules above run on the rest, so they
+    hold for everything else, shop address or none. While any page is due
+    one, the privacy and terms pages may name Etsy in words, never with a
+    link. The privacy page says exactly what calendars.notice says for this
+    build, and nothing about Etsy when the build has no Etsy link."""
+    want = calendar_links or {}
+    named = {p + "index.html" for p in printshop.MENTION_PAGES} if want else set()
     problems: list[str] = []
     for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
@@ -341,15 +420,38 @@ def check_print_shop(root: Path, html: list[Path], url: str) -> list[str]:
     link_pages = {p + "index.html" for p in printshop.PAGES}
     for f in html:
         rel = f.relative_to(root).as_posix()
-        text = f.read_text(encoding="utf-8")
+        text, found = _check_calendar(rel, f.read_text(encoding="utf-8"), want.get(rel))
+        problems += found
         if "etsy" not in text.lower():
             if url and rel in link_pages:
                 problems.append(f"{rel}: no shop link with a shop address set")
         elif not url:
-            problems.append(f"{rel}: mentions etsy with no shop address set")
+            in_words_only = rel in named and not ETSY_A.search(text) and "etsy.com" not in text.lower()
+            if not in_words_only:
+                problems.append(f"{rel}: mentions etsy with no shop address set")
         else:
             problems += _check_print_shop_page(rel, text, url, rel in link_pages)
+    problems += _check_shop_notice(root, url, bool(want))
     return problems
+
+
+SHOP_NOTICE = re.compile(r'<h2 id="shop">(.*?)</h2>\s*<p>(.*?)</p>', re.S)
+
+
+def _check_shop_notice(root: Path, url: str, any_calendar: bool) -> list[str]:
+    """The privacy page's section on the Etsy links is exactly the one
+    calendars.notice gives for this build: none with no Etsy link, the print
+    shop's own sentence with only the shop link, and the sentence that names
+    the station pages while a calendar link shows (docs/DECISIONS.md 0035)."""
+    f = root / "privacy" / "index.html"
+    if not f.is_file():
+        return []
+    expect = calendars.notice(any_calendar, printshop.block(url))
+    found = [(htmllib.unescape(h), htmllib.unescape(p)) for h, p in SHOP_NOTICE.findall(f.read_text(encoding="utf-8"))]
+    want = [(expect["heading"], expect["body"])] if expect else []
+    if found != want:
+        return [f"privacy/index.html: the shop section is {found or 'missing'}, expected {want or 'none'}"]
+    return []
 
 
 def _check_print_shop_page(rel: str, text: str, url: str, link_page: bool) -> list[str]:
@@ -377,7 +479,13 @@ def _check_print_shop_page(rel: str, text: str, url: str, link_page: bool) -> li
     return problems
 
 
-def main(root: Path, amazon_tag: str = "", print_shop_url: str = "", booklets_file: Path | None = None) -> int:
+def main(
+    root: Path,
+    amazon_tag: str = "",
+    print_shop_url: str = "",
+    booklets_file: Path | None = None,
+    calendars_file: Path | None = None,
+) -> int:
     problems: list[str] = []
     cat = load()
     html = sorted(root.rglob("*.html"))
@@ -395,7 +503,9 @@ def main(root: Path, amazon_tag: str = "", print_shop_url: str = "", booklets_fi
     booklet_links, undated = booklet_pages(root, booklets.load(booklets_file))
     problems += undated
     problems += check_affiliate(root, html, amazon_tag, booklet_links)
-    problems += check_print_shop(root, html, print_shop_url)
+    calendar_links, undated = calendar_pages(root, calendars.load(calendars_file))
+    problems += undated
+    problems += check_print_shop(root, html, print_shop_url, calendar_links)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))
@@ -409,5 +519,8 @@ if __name__ == "__main__":
     ap.add_argument("--amazon-tag", default="")
     ap.add_argument("--print-shop-url", default="")
     ap.add_argument("--booklets", type=Path, help="the booklet list the site was built with, if not the committed one")
+    ap.add_argument(
+        "--calendars", type=Path, help="the calendar list the site was built with, if not the committed one"
+    )
     args = ap.parse_args()
-    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets))
+    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets, args.calendars))

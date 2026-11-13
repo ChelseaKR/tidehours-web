@@ -1209,3 +1209,142 @@ yet on page 1 or 2, so this is for the click once they are.
 Other station names are not split into "town, then station". The catalog
 has no town field, and guessing one from the name would be wrong for names
 like "Sesuit Harbor, East Dennis".
+
+## 0035: A station page links to its own printable calendar on Etsy (owner, 2026-11-12)
+
+(0032 to 0034 are reserved for other branches.) The Tide Hours shop on
+Etsy (0029) now sells printable 2027 tide calendars, one town each,
+computed by this site's engine: Bar Harbor (station 8413320), Half Moon Bay
+(9414131) and Garibaldi (9437540). On 2026-11-12 the owner gave the three
+listing ids from her live listings, approved the wording below, and asked
+for each station's page to link to its own calendar, as 0030 does for the
+printed booklets. The listings were not fetched for this change.
+
+**The list.** `src/tidehours/copy/calendars.json` maps a station id to its
+calendar's Etsy listing id, year and title, as `booklets.json` does (0030).
+It ships with the three entries the owner gave. There is no repository
+variable: an entry is added by a pull request when a listing is live, and
+the same list is what `check_site.py` reads. `--calendars FILE` on the
+build and on `check_site.py` names another list; it is for tests. An empty
+list leaves the build byte for byte as it is without this change, apart
+from the print shop's sentence below.
+
+**What the list refuses.** A listing id that is not digits only (six to
+fifteen, no leading zero), matched in full, so a slug
+(`4614956632/2027-tide-calendar-bar-harbor`), a whole address, a query
+string or a trailing space stops the build. A year that is not a whole
+number from 2000 to 2099. A title that is not "YEAR Tide Calendar: Place"
+with the entry's own year, or that carries one of the words 0030 refuses.
+Any other key. One listing under two stations. A station id the catalog
+does not have.
+
+**The link.** Exactly `https://www.etsy.com/listing/ID`, with nothing after
+the id: no slug (Etsy's own links add one, and it changes when a listing is
+renamed), no query string, no tracking parameter, no click event,
+`rel="noopener"` as in 0029. The shop is Tide Hours' own, so this is not an
+affiliate link.
+
+**Where.** Only on that station's own page, one sentence with one link, in
+the place 0030 gives the booklet sentence (after the tide tables and the
+paragraph about the app, before the type of tide, the nearby stations and
+the closing notes), and after the booklet sentence when a station has both:
+"A printable 2027 tide calendar for this station is in the Tide Hours shop
+on Etsy: 2027 Tide Calendar: Bar Harbor." with the title as the link. No
+price, no image, no claim. Not on state, region, home or king-tide pages,
+and not in the page's title, description or JSON-LD, the sitemap,
+robots.txt or llms.txt. The site has no Spanish station pages, so there is
+no Spanish sentence, as in 0030; the Spanish king-tide page still has no
+Etsy link (0029).
+
+**When it leaves.** As 0030: the link shows while the first day on the page,
+the station's own date when the site was built, is in the calendar's year
+or earlier. The 2027 calendars leave the three pages with the build of
+January 1, 2028, with nobody editing a file.
+
+**The print shop's sentence.** With the print shop on (0029), the About and
+English king-tide pages now say: "Tide Hours also sells a made-to-order
+print of the tide at one place on one day, and printable 2027 tide
+calendars for a few towns, all drawn from the same predictions as this
+site. They are in the Tide Hours shop on Etsy." (owner's wording,
+2026-11-12). The year is in the copy file, not computed; it needs an edit
+when the calendars change year.
+
+**Privacy and terms.** The privacy page's section on the Etsy links
+(`/privacy/#shop`) says what the build shows, and `calendars.notice` picks
+it, as `booklets.notice` does for 0030's section:
+
+- No Etsy link: no section, as before.
+- The print shop only (no calendar link shows, for example in 2028): 0029's
+  sentence, unchanged, under "Shop link".
+- The print shop and a calendar link, as the site is published: "The About
+  and king tides pages, and the station pages of towns with a printable
+  calendar, link to the Tide Hours shop on Etsy. This site sends nothing to
+  Etsy. The link takes you to Etsy, where Etsy's own privacy policy
+  applies." (owner's wording, 2026-11-12), under "Shop links".
+- A calendar link with the print shop off: "The station pages of towns
+  with a printable calendar link to that calendar in the Tide Hours shop
+  on Etsy." and the same two sentences after it. This one is a build
+  decision: it says nothing about the About and king-tide pages, which then
+  have no link.
+
+The terms page names Etsy among the trademarks, once, while any Etsy link
+shows. The "no ads" sentence is unchanged, as in 0029 and 0030.
+
+**What changed in 0029's check.** As 0030 did for 0016's: `check_site.py`
+reads the list, works out from each listed station page's own date which
+pages are due the sentence, checks that sentence by itself, takes it out of
+the page, and runs 0029's Etsy rules, unchanged, on everything that is
+left. The build fails if a due page has no sentence or two; if the sentence
+has more than one link, an address that is not exactly the listing's, a rel
+other than `noopener` or a click event; if it sits before the tide tables,
+after the closing notes or before the booklet sentence; if a sentence is on
+any page that is not due one, which covers a calendar whose year is over;
+or if Etsy is linked or named anywhere else (with no shop address, the
+privacy and terms pages may name Etsy in words while a calendar link shows,
+never with a link). New: the privacy page's section must be exactly the one
+`calendars.notice` gives for the build, so a section that names pages with
+no link, or leaves out pages with one, fails.
+
+**Accessibility sample.** `scripts/site_sample.py` adds the station pages
+of the booklet and calendar lists to the pages `make site-checks` audits,
+so the sentence is checked by axe and pa11y.
+
+**Analytics.** As 0030: the link has no event of its own. Whether GA4's
+Enhanced measurement records outbound clicks is a setting in the property,
+with the owner.
+
+**What it changes elsewhere.** The three station pages and the privacy page
+change (the terms page already names Etsy while the print shop is on), and
+with them their sitemap `lastmod`, so IndexNow announces them (0011, 0028).
+So do the About and king-tide pages, for the print shop's sentence. Views
+that arrive from these links count toward the listings' Etsy views.
+
+**Tests.** `tests/test_station_calendars.py`: the committed list is the
+owner's three; bad entries are refused (a letter, a slug, a URL, a query
+string, a bad title, a claim word, a duplicate listing, an unknown
+station); the empty list leaves no trace; one calendar changes that page,
+privacy, terms and their fingerprints and nothing else; the three committed
+calendars show on their three pages only, with the exact sentence and
+address, and leave on January 1, 2028; the privacy section in each of the
+four cases; the print shop's sentence; the booklet sentence first when both
+show; and a negative control for each rule above, each asserting the
+sabotage changed the build. `tests/test_site.py` builds California with an
+empty calendar list, so its tests stay about the site without one.
+
+**Reversible.** Yes: empty the list and the next build has no calendar
+link. To remove the code, drop `calendars.py`, the two copy files, the
+template and its include, the privacy notice's calendar cases, the terms
+condition, the sample line and the check, and put back 0029's sentence in
+`copy/print_shop.json`.
+
+**For the app:** nothing changes.
+
+Update, 2026-11-12 (evening): six more calendars went on sale and are added
+to `copy/calendars.json` at the owner's request: La Jolla (9410230), Monterey
+(9413450), Hull (8444351), St. Simons Island (8677344), Ocean City (8570283)
+and Westport (9441102), with the listing ids the owner gave. Nothing else changes;
+the sentence, the checks and the 2028 removal apply to all nine.
+
+Update, 2026-11-12 (night): three more, Eastport (8410140), Brewster Flats
+(Sesuit Harbor, 8447241) and New Smyrna Beach (8721164), bring the list to
+twelve, with the listing ids the owner gave.

@@ -5,7 +5,7 @@
               [--app-store-url https://apps.apple.com/...]
               [--amazon-tag tidehours-20]
               [--print-shop-url https://www.etsy.com/shop/...]
-              [--booklets booklets.json]
+              [--booklets booklets.json] [--calendars calendars.json]
 
 `--now` pins the clock (tests and reproducible builds); without it the
 build uses the current time. `--amazon-tag` turns on the Amazon links on
@@ -15,6 +15,8 @@ shop on Etsy on the About page and the English king-tide page
 (docs/DECISIONS.md 0029); empty, the default, leaves it off. `--booklets`
 names a list of printed booklets to use in place of the committed one,
 src/tidehours/copy/booklets.json (docs/DECISIONS.md 0030); it is for tests.
+`--calendars` does the same for the printable calendars on Etsy,
+src/tidehours/copy/calendars.json (docs/DECISIONS.md 0035).
 Each station's "today" is its own local date at that instant. Nothing is fetched: the NOAA data is committed in
 src/tidehours/data/ (scripts/refresh_data.py refreshes it).
 """
@@ -27,7 +29,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import affiliate, booklets, catalog, printshop, site
+from . import affiliate, booklets, calendars, catalog, printshop, site
 
 
 def parse_now(text: str | None) -> dt.datetime:
@@ -50,6 +52,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--amazon-tag", default="")
     ap.add_argument("--print-shop-url", default="")
     ap.add_argument("--booklets", type=Path, help="a booklet list to use in place of copy/booklets.json (tests)")
+    ap.add_argument("--calendars", type=Path, help="a calendar list to use in place of copy/calendars.json (tests)")
     ap.add_argument(
         "--previous",
         type=Path,
@@ -68,13 +71,24 @@ def main(argv: list[str] | None = None) -> int:
         booklets.load(args.booklets)
     except (OSError, ValueError) as err:
         raise SystemExit(f"booklets: {err}") from err
+    try:
+        calendars.load(args.calendars)
+    except (OSError, ValueError) as err:
+        raise SystemExit(f"calendars: {err}") from err
     started = time.monotonic()
     cat = catalog.load()
     states = None
     if args.states:
         states = {s.strip().upper() if s.strip() != "other" else "other" for s in args.states.split(",")}
     cfg = site.Config(
-        args.base_url, args.ga4_id, args.app_store_url, states, args.amazon_tag, args.print_shop_url, args.booklets
+        args.base_url,
+        args.ga4_id,
+        args.app_store_url,
+        states,
+        args.amazon_tag,
+        args.print_shop_url,
+        args.booklets,
+        args.calendars,
     )
     n = site.write(cat, cfg, parse_now(args.now), args.out, args.previous)
     print(f"tidehours: {n} pages in {time.monotonic() - started:.1f}s -> {args.out}")

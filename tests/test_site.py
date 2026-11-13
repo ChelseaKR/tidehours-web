@@ -100,7 +100,12 @@ def test_indexes_sitemap_robots(built: Path) -> None:
         .getroot()
         .iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
     ]
-    noindex = [f for f in pages(built) if 'name="robots" content="noindex' in f.read_text(encoding="utf-8")]
+    # 404.html is noindex too, and is never in the sitemap (its own test, below).
+    noindex = [
+        f
+        for f in pages(built)
+        if f.name != "404.html" and 'name="robots" content="noindex' in f.read_text(encoding="utf-8")
+    ]
     stub = '<meta http-equiv="refresh"'
     thin = {"/" + r.path for st in site.group(load().stations) for r in st.regions if not site.region_indexable(r)}
     for f in noindex:
@@ -111,6 +116,22 @@ def test_indexes_sitemap_robots(built: Path) -> None:
     assert "https://tidehours.com/es/king-tides/" in urls
     assert "Sitemap: https://tidehours.com/sitemap.xml" in (built / "robots.txt").read_text(encoding="utf-8")
     assert (built / "style.css").exists()
+
+
+def test_not_found_page_is_noindex_without_a_canonical(built: Path) -> None:
+    """CloudFront serves 404.html for every missing address, and S3 serves it
+    at /404.html with a 200: it asks not to be indexed and names no canonical
+    URL or og:url (it used to name https://tidehours.com/404, itself a
+    redirect to a 404). Every other page keeps its own canonical."""
+    nf = (built / "404.html").read_text(encoding="utf-8")
+    assert '<meta name="robots" content="noindex,follow">' in nf
+    assert 'rel="canonical"' not in nf and 'property="og:url"' not in nf
+    assert "https://tidehours.com/404" not in nf
+    home = (built / "index.html").read_text(encoding="utf-8")
+    assert '<link rel="canonical" href="https://tidehours.com/">' in home and "noindex" not in home
+    assert all(
+        f.read_text(encoding="utf-8").count('rel="canonical"') == 1 for f in pages(built) if f.name != "404.html"
+    )
 
 
 def test_king_tide_pages(built: Path) -> None:

@@ -8,15 +8,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Tide Hours{% endblock %}</title>
 <meta name="description" content="{% block description %}{% endblock %}">
-<link rel="canonical" href="{{ base_url }}{{ canonical }}">
-{% if noindex is defined and noindex %}<meta name="robots" content="noindex,follow">
+{% set is_404 = not_found is defined and not_found %}
+{% if not is_404 %}<link rel="canonical" href="{{ base_url }}{{ canonical }}">
+{% endif %}
+{% if is_404 or (noindex is defined and noindex) %}<meta name="robots" content="noindex,follow">
 {% endif %}
 {% block alternates %}{% endblock %}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tide Hours">
 <meta property="og:title" content="{{ self.title() }}">
 <meta property="og:description" content="{{ self.description() }}">
-<meta property="og:url" content="{{ base_url }}{{ canonical }}">
+{% if not is_404 %}<meta property="og:url" content="{{ base_url }}{{ canonical }}">
+{% endif %}
 <meta name="theme-color" content="#0b4f6c">
 <link rel="stylesheet" href="/style.css">
 {% block jsonld %}{% endblock %}

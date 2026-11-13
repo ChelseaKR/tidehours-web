@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 
 from tidehours import catalog as catalog_mod
-from tidehours import cli, site, subordinate, tidetype
+from tidehours import cli, site, sky, subordinate, tidetype
 from tidehours.catalog import Station, load, tidy_name
 from tidehours.days import Day, Event, feet, meters, no_negative_zero, station_day
 
@@ -1020,9 +1020,14 @@ def test_description_tiers_and_absence() -> None:
     def ev(kind: str, time: str, ft: str) -> Event:
         return Event(kind, time, "", ft, "", 0.0)
 
-    one = Day(dt.date(2026, 11, 1), [ev("High", "5:40 AM", "5.6 ft"), ev("Low", "11:58 AM", "0.8 ft")], None, False)
-    two = Day(dt.date(2026, 11, 2), [ev("High", "6:20 AM", "5.5 ft")], None, False)
-    empty = Day(dt.date(2026, 11, 2), [], None, False)
+    def day(d: dt.date, events: list[Event]) -> Day:
+        # The sky fields do not enter the description; any valid values do.
+        sun = sky.SunDay(d, [], False, [], [], False)
+        return Day(d, events, None, False, sun, sky.MoonDay(d, "New moon", 0.0, None), sky.MoonTimes(d, [], False))
+
+    one = day(dt.date(2026, 11, 1), [ev("High", "5:40 AM", "5.6 ft"), ev("Low", "11:58 AM", "0.8 ft")])
+    two = day(dt.date(2026, 11, 2), [ev("High", "6:20 AM", "5.5 ft")])
+    empty = day(dt.date(2026, 11, 2), [])
     assert site.day_answer(one) == "high 5:40 AM (5.6 ft); low 11:58 AM (0.8 ft)"
     assert site.day_answer(two) == "high 6:20 AM (5.5 ft); no low tide"  # absence says so
     assert site.day_answer(empty) == "no high or low tide predicted"

@@ -1286,3 +1286,9 @@ condition, the sample line and the check, and put back 0029's sentence in
 `copy/print_shop.json`.
 
 **For the app:** nothing changes.
+
+Update, 2026-11-12 (evening): six more calendars went on sale and are added
+to `copy/calendars.json` at the owner's request: La Jolla (9410230), Monterey
+(9413450), Hull (8444351), St. Simons Island (8677344), Ocean City (8570283)
+and Westport (9441102), with the listing ids the owner gave. Nothing else changes;
+the sentence, the checks and the 2028 removal apply to all nine.

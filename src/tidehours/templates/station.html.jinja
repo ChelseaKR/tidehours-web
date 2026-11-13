@@ -100,6 +100,9 @@
 {% if booklet %}
 {% include "_booklet.html.jinja" %}
 {% endif %}
+{% if calendar %}
+{% include "_calendar.html.jinja" %}
+{% endif %}
 
 {% if tide_type %}
 <section class="tide-type" aria-labelledby="type" data-tide-type="{{ tide_type.kind.key }}">

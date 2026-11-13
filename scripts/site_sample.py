@@ -5,8 +5,10 @@ check and pa11y-ci, one path per line.
 
 Every page that is not a station or region page (home, about, privacy, both
 king-tide pages, 404, every state page), every 25th region page, every
-split-region page, and the station pages of the golden-test fixtures (a
-harmonic and a subordinate station in every state).
+split-region page, the station pages of the golden-test fixtures (a
+harmonic and a subordinate station in every state), and the station pages
+of the committed booklet and calendar lists, which carry a link no other
+station page has (DECISIONS 0030 and 0035).
 
 A moved region page that redirects (a meta refresh to its new page,
 DECISIONS 0017 and 0018) is left out: it is noindex, has nothing of its own
@@ -21,6 +23,8 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+
+from tidehours import booklets, calendars
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "tests" / "fixtures"
@@ -37,6 +41,7 @@ def sample(site: Path) -> list[str]:
     for name in ("golden-app.json", "golden-sample.json"):
         d = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
         ids += list(d["harmonic"]) + list(d["subordinate"])
+    ids += [i for i in [*booklets.load(), *calendars.load()] if (site / "stations" / i / "index.html").is_file()]
     pages = ["./", "about/", "privacy/", "king-tides/", "es/king-tides/", "404.html"]
     states = sorted(p.parent.relative_to(site).as_posix() + "/" for p in site.glob("states/*/index.html"))
     region_files = sorted(site.glob("states/*/*/index.html"))

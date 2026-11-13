@@ -2,6 +2,15 @@
 
 ## 0.1.0 (unreleased)
 
+- The station pages of Bar Harbor (8413320), Half Moon Bay (9414131) and
+  Garibaldi (9437540) link to that town's printable 2027 tide calendar in
+  the Tide Hours shop on Etsy: one sentence, one plain link,
+  `https://www.etsy.com/listing/ID`, until the calendar's year is over.
+  `src/tidehours/copy/calendars.json` lists them (station id, listing id,
+  year, title). The print shop's sentence on the About and king-tide pages
+  names the calendars, and the privacy page names the Etsy links the build
+  has. `check_site.py` allows that one link on those pages and checks the
+  privacy section (DECISIONS 0035).
 - Station pages carry a schema.org `Place` (the catalog's coordinates) and
   a `Dataset` for the two days shown, with NOAA CO-OPS credited as the
   source; the king-tide pages carry a `Dataset` for the season. Every page in the sitemap carries a

@@ -11,6 +11,11 @@
   names the calendars, and the privacy page names the Etsy links the build
   has. `check_site.py` allows that one link on those pages and checks the
   privacy section (DECISIONS 0035).
+- Station pages carry a schema.org `Place` (the catalog's coordinates) and
+  a `Dataset` for the two days shown, with NOAA CO-OPS credited as the
+  source; the king-tide pages carry a `Dataset` for the season. Every page in the sitemap carries a
+  `dateModified` equal to its sitemap lastmod. The About page links
+  `/llms.txt` (DECISIONS 0034).
 - Subordinate station pages are indexed and in the sitemap: 2,022 of the
   2,024, which takes the sitemap from 1,577 to 3,599 URLs. Each page now
   says which reference station NOAA predicts it from, how far away, and

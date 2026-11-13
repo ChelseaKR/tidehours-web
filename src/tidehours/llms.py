@@ -65,6 +65,7 @@ def render(cat: Catalog, base: str, *, app_store_url: str = "") -> str:
         "## Pages",
         "",
         f"- [Home]({base}/): every state and territory, and the king tides coming up",
+        f"- [States and territories]({base}/#states): the index of state and territory pages, with station counts",
         f"- Station pages: {base}/stations/<NOAA station id>/, today's and tomorrow's highs and lows at one station",
         f"- State pages: {base}/states/<two-letter code>/, with region pages under /states/<code>/<region>/",
         f"- [King tides]({base}/king-tides/): the coming king tides on the West Coast",

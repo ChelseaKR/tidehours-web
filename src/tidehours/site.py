@@ -23,7 +23,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, booklets, calendars, indexnow, kingtides, ktformat, llms, printshop, subordinate
+from . import affiliate, booklets, calendars, indexnow, kingtides, ktformat, llms, printshop, schema, subordinate
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -409,6 +409,7 @@ def env() -> Environment:
         calendar_path=kingtides.calendar_path,
         zone_label=zone_label,
         zone_unknown=ZONE_UNKNOWN,
+        jsonld_dumps=schema.dumps,
     )
     return e
 
@@ -666,6 +667,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
+        "date_modified": schema.DATE_MODIFIED,
     }
     gear = affiliate.block(cfg.amazon_tag)
     region_of: dict[str, tuple[State, Region | None]] = {}
@@ -681,7 +683,12 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     pages: list[Page] = []
 
     def page(path: str, template: str, index: bool = True, **ctx: Any) -> None:
-        html = e.get_template(template).render(**common, path=path, noindex=not index, **ctx)
+        # A page in the sitemap carries the sitemap's lastmod as its
+        # dateModified; so does every station page, whose tides change each
+        # day (docs/DECISIONS.md 0034). Other noindex pages carry none.
+        ctx.setdefault("schema_nodes", [])
+        dated = index or path.startswith("stations/")
+        html = e.get_template(template).render(**common, path=path, noindex=not index, dated=dated, **ctx)
         pages.append(Page(path, html, index))
 
     derived = derived_from(cat, by_id)
@@ -706,6 +713,13 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             lang=lang,
             c=kt["copy"][lang],
             affiliate=gear if lang == "en" else None,
+            schema_nodes=schema.king_tide_nodes(
+                base,
+                "king-tides/" if lang == "en" else "es/king-tides/",
+                kt["copy"][lang],
+                kt["window_start"],
+                kt["window_end"],
+            ),
             **kt,
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
@@ -764,6 +778,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             king_calendar=king_calendar(season, links.get(s.id)),
             kc=kt["copy"]["en"],
             booklet=booklets.block(booklet_of.get(s.id)),
+            schema_nodes=schema.station_nodes(
+                s,
+                state_code=st.code,
+                state_name=st.name,
+                base_url=base,
+                path=f"stations/{s.id}/",
+                first=days[0].date.isoformat(),
+                last=days[1].date.isoformat(),
+                built=common["built"],
+            ),
             calendar=calendars.block(calendar_of.get(s.id)),
             **twin,
         )
@@ -799,18 +823,28 @@ def previous_lastmods(previous: Path | None, base: str, built: str) -> dict[str,
         return {}
 
 
+def lastmod(p: Page, built: str, previous: dict[str, tuple[str, str]]) -> str:
+    """The date a page last changed: the previous build's when its record
+    says the HTML is unchanged, else the build date (docs/DECISIONS.md 0028).
+    The sitemap's lastmod and the page's own dateModified (0034)."""
+    have = previous.get(p.path)
+    return have[1] if have and have[0] == fingerprint(p) else built
+
+
+def dated_html(p: Page, built: str, previous: dict[str, tuple[str, str]]) -> str:
+    """The page as written: schema.DATE_MODIFIED replaced by its lastmod. The
+    fingerprint is the page's HTML before this, so a page that did not change
+    keeps its fingerprint and its date (0034)."""
+    return p.html.replace(schema.DATE_MODIFIED, lastmod(p, built, previous))
+
+
 def sitemap(pages: list[Page], base: str, built: str, previous: dict[str, tuple[str, str]] | None = None) -> str:
     """Each indexable page with its lastmod: the date its HTML last changed
     when the previous build's record says it is unchanged, else the build
     date."""
     prev = previous or {}
-
-    def lastmod(p: Page) -> str:
-        have = prev.get(p.path)
-        return have[1] if have and have[0] == fingerprint(p) else built
-
     rows = [
-        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{lastmod(p)}</lastmod></url>"
+        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{lastmod(p, built, prev)}</lastmod></url>"
         for p in pages
         if p.path != "404" and p.index
     ]
@@ -826,13 +860,14 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     e = env()
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     built = now.astimezone(dt.UTC).date().isoformat()
+    prev = previous_lastmods(previous, base, built)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
     for p in pages:
         target = out / p.path / "index.html"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(p.html, encoding="utf-8")
+        target.write_text(dated_html(p, built, prev), encoding="utf-8")
     copy = json.loads((Path(__file__).parent / "copy" / "king_tides.json").read_text(encoding="utf-8"))
     common = {
         "ui": {lang: copy[lang]["chrome"] for lang in ("en", "es")},
@@ -847,9 +882,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
         "station_count": len(cat.stations),
     }
     (out / "404.html").write_text(e.get_template("404.html.jinja").render(**common, path="404"), encoding="utf-8")
-    (out / "sitemap.xml").write_text(
-        sitemap(pages, base, built, previous_lastmods(previous, base, built)), encoding="utf-8"
-    )
+    (out / "sitemap.xml").write_text(sitemap(pages, base, built, prev), encoding="utf-8")
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
     # /llms.txt (llms.py); deploy.sh uploads non-HTML files with the type the
     # extension gives, text/plain for .txt, as it does for robots.txt.

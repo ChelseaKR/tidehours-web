@@ -1302,6 +1302,64 @@ canonical, with its rows equal to Los Angeles's, and that a 1% change to
 its high-tide ratio ends the twin; the sitemap holds every station page but
 the twins (3,254 over the catalog).
 
+## 0034: Structured data restates the page; dateModified is the sitemap lastmod (2026-11-12)
+
+(0032 and 0033 are reserved for other branches.) Machine-readable facts for
+search engines and AI answer engines, held to what the page already shows.
+
+**Emitted** (`src/tidehours/schema.py`, `templates/_jsonld.html.jinja`):
+
+- **Station pages:** a `Place` (the page's station name, `geo` with the
+  catalog's latitude and longitude, `containedInPlace` the state the site
+  lists it under) and a `Dataset` for the two days on the page:
+  `temporalCoverage` those two dates, `isBasedOn` NOAA's prediction page
+  for the station, `creditText` "Source: NOAA CO-OPS station <id>,
+  predictions computed by Tide Hours on <build date>", and a description
+  that says MLLW, local time, predictions not observations, not for
+  navigation and not a NOAA product. The existing `WebPage` and
+  `BreadcrumbList` nodes are unchanged. A station without a usable position
+  gets no `Place` and no `spatialCoverage`. A station NOAA lists without a
+  state, or filed under its reference station's state (0018), claims no
+  `containedInPlace`, because the listing says nothing about where it is.
+- **King-tide pages (English and Spanish):** a `Dataset` for the season's
+  window (`temporalCoverage`), Washington, Oregon and California, named and
+  described by the page's own heading and lead, based on NOAA CO-OPS data.
+- **Every page in the sitemap, and every station page:** `<meta
+  name="dateModified">`, and the same date on each JSON-LD `dateModified`.
+  It is the page's sitemap `lastmod` (0028), never the clock: the page is
+  rendered with a placeholder, its fingerprint for `lastmod.json` is taken
+  then, and `site.write` puts the decided date in. So an unchanged page
+  keeps its date and its fingerprint. A noindex page that is not a station
+  page has no lastmod, so it carries no date. The first deploy with this
+  change alters every page's HTML once, so every page gets that day's date
+  and IndexNow announces every page once.
+- **`/llms.txt`** (#20) now links the state and territory index, and the
+  About page links `/llms.txt`; no other page does.
+
+**NOAA is the creator of the source data, not of the predictions.** Tide
+Hours computes them and is not a NOAA product, so each `Dataset`'s
+`creator` is Tide Hours. On a station page, `isBasedOn` is a NOAA CO-OPS
+`Dataset` whose creator is NOAA CO-OPS and whose `license` is NOAA's
+public-domain statement (disclaimers.html).
+
+**Never emitted:** `Event`, `Product`, `Offer`, reviews or ratings (nothing
+here is sold, scheduled or rated); a `SearchAction` (the site has no
+search); a `license` on Tide Hours' own predictions (an owner decision);
+an `FAQPage` (the king-tide pages do have "What is a king tide?", but with
+the affiliate and print-shop switches on, the English page is within about a
+kilobyte of check_site's 120,000-byte limit, and the question and answer
+would repeat 760 bytes the page already shows; no other page has a question
+with its answer under it); `datePublished` (no record of when each page
+first went live exists, and a guessed date would be a value standing in for
+"unknown"); a `BreadcrumbList` for a one-item trail (state pages, as #13
+decided).
+
+**Validated** by `tests/test_jsonld.py`, stdlib only: every block parses
+with `json`, and every type and property is in a table checked against
+schema.org's vocabulary file (release 30.1): the type exists and each
+property's `domainIncludes` covers it or a supertype. Forbidden types fail
+the test. JSON-LD is written compactly (`schema.dumps`) to save page bytes.
+
 **For the app:** nothing changes.
 
 ## 0035: A station page links to its own printable calendar on Etsy (owner, 2026-11-12)

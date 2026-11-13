@@ -53,3 +53,33 @@ on every page and says it is not a NOAA product.
   requests (DECISIONS 0019). U.S. Government work; used as a test oracle
   only, not shown on the site.
   sha256 `d5f3a9347d750e2ff6b5033a157e31fa1c5be6b3a507355da03825d19b825cbb`
+- `tests/fixtures/extra-tides/`: NOAA's highs and lows exactly as its API
+  sent them, byte for byte (`api/prod/datagetter`, product=predictions,
+  interval=hilo, datum MLLW, GMT, feet, format=json), for stations and days
+  where the engine printed highs and lows NOAA does not list (DECISIONS
+  0036). One request each, two seconds apart, no retries. Retrieved
+  2026-11-12. The file name is the station and the first and last day asked
+  for.
+  - `9444900-2027-01-01-2027-12-31.json`, Port Townsend, WA, 1,387 tides:
+    sha256 `a7184cdf2d7ecdb1ef6e048c55a79a186b96e97242f6abf4f91be78df0c6d5a5`
+  - `9449880-2027-01-01-2027-12-31.json`, Friday Harbor, WA, 1,271 tides:
+    sha256 `b3a19248cddcec6ac09bf6941f652b1c17fd5d9a875bd9c3a54bd1d2e4eb7633`
+  - `8448157-2027-05-04-2027-06-01.json`, Vineyard Haven, MA, 128 tides:
+    sha256 `0b77e37ddfdb2e99ec619dea21aed5c574ecf6c68bc6428853294a0ccebe6325`
+  - `8453433-2027-07-11-2027-07-19.json`, Rumford, RI, 34 tides:
+    sha256 `e55bd7b02c0e638d404662455a3612c90e5e9e32712d40e1ae9f477b7203f08d`
+  - `9751540-2026-01-07-2026-01-09.json`, Redhook Bay, VI (subordinate), 8
+    tides: sha256 `76070b9e0ea03905969e7f45b61f31bb0f09332c7b52bc198071580ed6bd4ce4`
+  - `9412110-2027-03-14-2027-03-16.json`, Port San Luis, CA, 9 tides:
+    sha256 `0019b1a76bfd3bba9df8422787b12a515cbdc74716f7134639246764eb3f66bf`
+  - `8414612-2027-08-12-2027-08-15.json`, Bangor, ME, 15 tides:
+    sha256 `06ec2ce4c9787f784873d35c9afea608fee322c74e8cd275682625513cb0c4aa`
+  - `8726243-2026-01-17-2026-01-19.json`, Anna Maria Key, FL (subordinate),
+    8 tides: sha256 `4a148f9bfe3552aba54915a2febda14d1be4a1d6bd02eb257f3a69844b7d5749`
+
+  NOAA's answer for the same station and days is not always the same. A
+  request for a year at Vineyard Haven, Edgartown, Rumford, Providence,
+  Worlds Fair Marina, Harlem River and Port St. Joe comes back with every
+  time on a 6-minute mark and a few different tides; a request for a month
+  or less comes back to the minute, as every file here is. `tests/test_golden.py`
+  checks each file's SHA-256.

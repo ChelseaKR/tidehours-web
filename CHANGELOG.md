@@ -2,6 +2,15 @@
 
 ## 0.1.0 (unreleased)
 
+- Fewer highs and lows that NOAA does not list. NOAA lists a high and a
+  low less than two hours apart only when its own heights for them differ by
+  0.100 ft or more; the engine removed such a pair only under 0.06 ft. It
+  now also removes a pair less than 115 minutes and less than 0.095 ft
+  apart, unless one of its neighbors is that close too. At Port Townsend,
+  WA in 2027 the engine printed 12 tides NOAA does not list and now prints
+  none, with all 1,387 of NOAA's matched. Measured against 110,591 NOAA
+  tides at 178 stations: 610 fewer extra tides, and no NOAA tide newly left
+  out. Some remain, listed with their causes (DECISIONS 0036).
 - Station pages show sunrise, sunset, civil dawn and dusk, the moon's phase,
   moonrise and moonset for both days on the page, in the station's own time
   zone, and shade the night on the tide curve. All of it is computed at

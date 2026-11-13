@@ -19,7 +19,9 @@ from tidehours.catalog import DATA_DIR, Catalog, Station, load, tidy_name
 NOW = "2026-11-01T11:20:00Z"
 STATION = Station("0", "x", "ME", 43.0, -70.0, "America/New_York", None, "MAINE, outer coast")
 # The indexed station titles still over 60 characters with the shortest tier.
-LONG_INDEXED_TITLES = {"8447180", "8534319", "8668918", "9448614"}
+# Every indexed title fits in 60 characters under the 0032 tiers (four did
+# not under 0020's: 8447180, 8534319, 8668918, 9448614).
+LONG_INDEXED_TITLES: set[str] = set()
 
 
 @pytest.fixture(scope="module")
@@ -95,10 +97,10 @@ def test_without_the_fixes_the_duplicates_and_misspellings_return(monkeypatch: p
     monkeypatch.setattr(names, "NAME_FIXES", {})
     bare = load()
     assert duplicate_titles(bare) == [
-        "Anchor Point, AK tide times today | Tide Hours",
-        "Freeport Harbor, TX tide times today | Tide Hours",
-        "Little Torch Key, Pine Channel Bridge, south side, FL tide times",
-        "Tinicum National Wildlife Refuge, PA tide times today",
+        "Anchor Point, AK tides today: high and low tide chart",
+        "Freeport Harbor, TX tides today: high and low tide chart",
+        "Little Torch Key, Pine Channel Bridge, south side, FL tides",
+        "Tinicum National Wildlife Refuge, PA tides today",
     ]
     assert bare.station("8638445").name == "Lanexa, Chicahomny River"  # type: ignore[union-attr]
     assert bare.station("1611400").name == "Nawiliwili"  # type: ignore[union-attr]
@@ -116,21 +118,25 @@ def test_saint_is_written_st(cat: Catalog) -> None:
 
 
 def test_title_tiers() -> None:
-    assert site.station_title("Monterey, CA") == "Monterey, CA tide times today | Tide Hours"
-    name30 = "x" * 30  # 30 + 30 = 60: the brand still fits
-    assert site.station_title(name30) == name30 + " tide times today | Tide Hours"
-    assert site.station_title(name30 + "y") == name30 + "y tide times today"
-    name43 = "x" * 43  # 43 + 17 = 60
-    assert site.station_title(name43) == name43 + " tide times today"
-    assert site.station_title(name43 + "y") == name43 + "y tide times"
-    assert site.station_title("x" * 70) == "x" * 70 + " tide times"
+    # The place first, then the words people search with (DECISIONS 0032).
+    assert site.station_title("Monterey, CA") == "Monterey, CA tides today: high and low tide chart"
+    name23 = "x" * 23  # 23 + 37 = 60: "tide chart" still fits
+    assert site.station_title(name23) == name23 + " tides today: high and low tide chart"
+    assert site.station_title(name23 + "y") == name23 + "y tides today: high and low"
+    name34 = "x" * 34  # 34 + 26 = 60
+    assert site.station_title(name34) == name34 + " tides today: high and low"
+    assert site.station_title(name34 + "y") == name34 + "y tides today"
+    name48 = "x" * 48  # 48 + 12 = 60
+    assert site.station_title(name48) == name48 + " tides today"
+    assert site.station_title(name48 + "y") == name48 + "y tides"
+    assert site.station_title("x" * 70) == "x" * 70 + " tides"
 
 
 def test_titles_fit(cat: Catalog) -> None:
     long = {s.id for s in cat.stations if not s.is_subordinate and len(site.station_title(s.display_name)) > 60}
     assert long == LONG_INDEXED_TITLES
     for sid in long:
-        assert site.station_title(cat.station(sid).display_name).endswith(" tide times")  # type: ignore[union-attr]
+        assert site.station_title(cat.station(sid).display_name).endswith(" tides")  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize(
@@ -176,8 +182,7 @@ def region_titles(states: list[site.State]) -> dict[str, list[str]]:
     # writes the title.
     out: dict[str, list[str]] = {}
     for st in states:
-        place = "" if st.code == "other" else f", {st.name}"
-        out[st.code] = [r.name for r in st.regions] + [f"{r.name}{place} tide times | Tide Hours" for r in st.regions]
+        out[st.code] = [r.name for r in st.regions] + [site.region_title(r, st) for r in st.regions]
     return out
 
 
@@ -208,7 +213,7 @@ def test_split_regions_are_told_apart_north_and_south(cat: Catalog) -> None:
             south, north = north, south
         assert max(s.lat for s in paths[south].stations) < min(s.lat for s in paths[north].stations)
     title = region_titles([states["ME"]])["ME"]
-    assert "Outer Coast (north), Maine tide times | Tide Hours" in title
+    assert "Outer Coast (north), Maine tides today: tide times" in title
 
 
 def test_without_tell_apart_the_region_pairs_share_labels(cat: Catalog, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -216,7 +221,7 @@ def test_without_tell_apart_the_region_pairs_share_labels(cat: Catalog, monkeypa
     # region pages with the same label and title.
     monkeypatch.setattr(site, "tell_apart", lambda code, regions: None)
     shared = {
-        code: sorted({t for t, n in Counter(shown).items() if n > 1 and "|" not in t})
+        code: sorted({t for t, n in Counter(shown).items() if n > 1 and " tides" not in t})
         for code, shown in region_titles(site.group(cat.stations)).items()
     }
     assert {c: v for c, v in shared.items() if v} == {
@@ -251,16 +256,19 @@ def test_st_john_station_names(cat: Catalog) -> None:
 
 def test_station_page_title_and_labels(built: Path) -> None:
     nawiliwili = (built / "stations/1611400/index.html").read_text(encoding="utf-8")
-    assert "<title>Nāwiliwili, HI tide times today | Tide Hours</title>" in nawiliwili
-    assert '<meta property="og:title" content="Nāwiliwili, HI tide times today | Tide Hours">' in nawiliwili
-    assert "<h1>Nāwiliwili, HI tide times</h1>" in nawiliwili
+    assert "<title>Kauaʻi (Nāwiliwili, HI) tides today: high and low tide chart</title>" in nawiliwili
+    assert (
+        '<meta property="og:title" content="Kauaʻi (Nāwiliwili, HI) tides today: high and low tide chart">'
+        in nawiliwili
+    )
+    assert "<h1>Kauaʻi (Nāwiliwili, HI) tides today</h1>" in nawiliwili
     hawaii = (built / "states/hi/index.html").read_text(encoding="utf-8")
     assert '<a href="/states/hi/hawaiin-islands/">Hawaiian Islands</a>' in hawaii and "Hawaiin Islands" not in hawaii
     region = (built / "states/hi/hawaiin-islands/index.html").read_text(encoding="utf-8")
-    assert "<title>Hawaiian Islands, Hawaii tide times | Tide Hours</title>" in region
+    assert "<title>Hawaiian Islands, Hawaii tides today: tide times</title>" in region
     for f in built.glob("stations/*/index.html"):
         title = re.search(r"<title>([^<]*)</title>", f.read_text(encoding="utf-8"))
-        assert title and (len(title.group(1)) <= 60 or title.group(1).endswith(" tide times")), f
+        assert title and (len(title.group(1)) <= 60 or title.group(1).endswith(" tides")), f
 
 
 @pytest.fixture(scope="module")

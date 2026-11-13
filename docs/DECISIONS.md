@@ -1158,6 +1158,58 @@ highs and lows at the fixture's 18 stations and on three ordinary days at
 three more, so
 the site and the app no longer differ here.
 
+## 0032: Station, state and region pages answer first (2026-11-12)
+
+Search Console, 28 days to 2026-11-11 (876 impressions, 2 clicks): 557
+impressions went to station pages, at a weighted position of 58. Of the 280
+station impressions that came with a query, people typed the town, beach or
+water body with "tides" (129), "tide chart" (47), "high tide" (32), "tide
+schedule" (15), "tide table" (9), "tide times" (8) and "low tide" (7). They
+named the place as NOAA's station name starts ("nantasket beach ma", "hull
+tide chart", "duxbury tides", "high tide in ocean city md"). Pages are not
+yet on page 1 or 2, so this is for the click once they are.
+
+- **Station titles** (amends 0020's tiers; the 60-character fit stays): the
+  longest of "{name} tides today: high and low tide chart", "{name} tides
+  today: high and low", "{name} tides today" and "{name} tides" that fits
+  (`site.station_title`). The name stays first because NOAA's names already
+  start with the town or beach. The brand is left to `og:site_name`. Every
+  indexed title now fits in 60 characters (four did not), and no two
+  stations share one.
+- **Station H1 and first screen:** the H1 is "{name} tides today". Then
+  two plain questions, "When is high tide at {name} today?" and the same for
+  low tide. Each lists today's and tomorrow's times in local time with
+  heights, by date. The page's script adds "Today" or "Tomorrow" and hides a
+  day that has passed, as it does for the day tables (0002). A day without a
+  high or a low says so.
+- **Meta description:** generated per station from the same numbers, in
+  155 characters at most (`site.station_description`). Both days when they
+  fit, else today's with a pointer to tomorrow, else today's alone. Dates,
+  not "today", so it is true whenever it is read. The king-tide sentence is
+  added only when it fits.
+- **Nearby:** other stations in the same state within 25 miles, nearest
+  first, at most 6, with distances (`site.neighbors`). A station with none
+  shows no list. Before, every page listed the 6 nearest stations at any
+  distance, across state lines.
+- **State and region pages:** the title is "{state} tides today: tide times
+  at {n} stations" and "{region}, {state} tides today: tide times", each
+  fit to 60 characters. One line of lead, then the list. The king-tide
+  callout moves below the list.
+
+- **Searched names** (`copy/place_names.json`, `site.place_name`): five
+  stations are searched by a name their page did not carry. Their title, H1
+  and questions lead with that name, then the station: "Maui (Kahului,
+  HI)", "Oʻahu (Honolulu, HI)", "Kauaʻi (Nāwiliwili, HI)", "St. Simons
+  Island (St. Simons Light, GA)" and "OCMD, Ocean City (Fishing Pier), MD".
+  Each entry names the Search Console query it comes from and what ties
+  the name to the station (NOAA's region, or the station's own name). Like
+  names.py, each entry is pinned to the station's current display name and
+  stops applying when NOAA renames the station.
+
+Other station names are not split into "town, then station". The catalog
+has no town field, and guessing one from the name would be wrong for names
+like "Sesuit Harbor, East Dennis".
+
 ## 0035: A station page links to its own printable calendar on Etsy (owner, 2026-11-12)
 
 (0032 to 0034 are reserved for other branches.) The Tide Hours shop on

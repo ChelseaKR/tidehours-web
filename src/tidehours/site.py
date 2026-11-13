@@ -83,17 +83,105 @@ def slug(text: str) -> str:
 
 
 # A station page's <title> (and og:title): the longest of these that fits in
-# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020).
+# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020). The words
+# follow what people search for: the place, then "tides", "today", "high and
+# low" and "tide chart" (0032).
 TITLE_MAX = 60
-TITLE_TIERS = ("{} tide times today | Tide Hours", "{} tide times today", "{} tide times")
+TITLE_TIERS = (
+    "{} tides today: high and low tide chart",
+    "{} tides today: high and low",
+    "{} tides today",
+    "{} tides",
+)
 
 
-def station_title(name: str) -> str:
-    for tier in TITLE_TIERS:
-        title = tier.format(name)
+def fit(tiers: tuple[str, ...], *args: object) -> str:
+    """The first of `tiers`, formatted, that fits in TITLE_MAX characters,
+    else the last."""
+    for tier in tiers:
+        title = tier.format(*args)
         if len(title) <= TITLE_MAX:
             return title
     return title
+
+
+def station_title(name: str) -> str:
+    return fit(TITLE_TIERS, name)
+
+
+PLACE_NAMES_FILE = Path(__file__).parent / "copy" / "place_names.json"
+
+
+def place_names(path: Path = PLACE_NAMES_FILE) -> dict[str, dict[str, str]]:
+    """Station id -> its entry in copy/place_names.json (0032)."""
+    data: dict[str, dict[str, str]] = json.loads(path.read_text(encoding="utf-8"))["stations"]
+    return data
+
+
+def place_name(station: Station, names: dict[str, dict[str, str]]) -> str:
+    """The name a station page leads with: the searched-for place name from
+    copy/place_names.json while the station's display name is still the one
+    the entry is pinned to, else the display name."""
+    entry = names.get(station.id)
+    if entry is not None and entry["station"] == station.display_name:
+        return entry["name"]
+    return station.display_name
+
+
+STATE_TITLE_TIERS = ("{} tides today: tide times at {} stations", "{} tides today: {} stations", "{} tides")
+REGION_TITLE_TIERS = ("{} tides today: tide times", "{} tides today", "{} tides")
+
+
+def state_title(state: State) -> str:
+    if state.code == OTHER:
+        return f"{state.name}: {state.count} tide stations"
+    return fit(STATE_TITLE_TIERS, state.name, state.count)
+
+
+def region_place(region: Region, state: State) -> str:
+    """A region's name with its state after it, unless the label already
+    names the state ("Alabama", "Christina River, Delaware", "Florida Keys"),
+    so no page says "Alabama, Alabama" (0032)."""
+    if state.code == OTHER or re.search(rf"\b{re.escape(state.name)}\b", region.name, re.I):
+        return region.name
+    return f"{region.name}, {state.name}"
+
+
+def region_title(region: Region, state: State) -> str:
+    return fit(REGION_TITLE_TIERS, region_place(region, state))
+
+
+# A station page's meta description: the day's highs and lows, today's and
+# tomorrow's when they fit in DESCRIPTION_MAX characters (0032). Dates, not
+# "today": the description is true whenever it is read.
+DESCRIPTION_MAX = 155
+
+
+def day_answer(day: Day) -> str:
+    """ "high 5:40 AM (5.6 ft), 6:12 PM (4.9 ft); low 11:58 AM (0.8 ft)"; a
+    kind the day has none of says so."""
+    if not day.events:
+        return "no high or low tide predicted"
+    parts = []
+    for kind in ("High", "Low"):
+        times = [f"{e.time} ({e.height_ft})" for e in day.events if e.kind == kind]
+        parts.append(f"{kind.lower()} {', '.join(times)}" if times else f"no {kind.lower()} tide")
+    return "; ".join(parts)
+
+
+def station_description(name: str, days: list[Day], extra: str = "") -> str:
+    first, second = days[0], days[1]
+    today = f"{name} tides {short_date(first.date)}: {day_answer(first)}."
+    tiers = (
+        f"{today} {short_date(second.date)}: {day_answer(second)}.",
+        f"{today} {short_date(second.date)} too, with a tide chart.",
+        today,
+        f"{name} high and low tides, {short_date(first.date)} and {short_date(second.date)}.",
+    )
+    text = next((t for t in tiers if len(t) <= DESCRIPTION_MAX), tiers[-1])
+    if extra and len(f"{text} {extra}") <= DESCRIPTION_MAX:
+        text = f"{text} {extra}"
+    return text
 
 
 # NOAA's region names with typos or case slips, written right
@@ -240,11 +328,22 @@ class Nearby:
         self.pool = pool
         self.lat = np.radians(np.array([s.lat for s in pool]))
         self.lon = np.radians(np.array([s.lon for s in pool]))
+        self.ids = np.array([s.id for s in pool])
 
-    def __call__(self, station: Station, n: int = 6) -> list[tuple[Station, float]]:
+    def _km(self, station: Station) -> Any:
         la1, lo1 = math.radians(station.lat), math.radians(station.lon)
         h = np.sin((self.lat - la1) / 2) ** 2 + math.cos(la1) * np.cos(self.lat) * np.sin((self.lon - lo1) / 2) ** 2
-        km = 6371.0 * 2 * np.arcsin(np.sqrt(np.minimum(1.0, h)))
+        return 6371.0 * 2 * np.arcsin(np.sqrt(np.minimum(1.0, h)))
+
+    def within(self, station: Station, radius_km: float) -> list[tuple[Station, float]]:
+        """Every other station within radius_km, nearest first."""
+        km = self._km(station)
+        close = np.flatnonzero(km <= radius_km)
+        order = close[np.lexsort((self.ids[close], km[close]))]
+        return [(self.pool[i], float(km[i])) for i in order if self.pool[i].id != station.id]
+
+    def __call__(self, station: Station, n: int = 6) -> list[tuple[Station, float]]:
+        km = self._km(station)
         order = np.lexsort((np.array([s.id for s in self.pool]), km))
         out: list[tuple[Station, float]] = []
         for i in order:
@@ -253,6 +352,18 @@ class Nearby:
             if len(out) == n:
                 break
         return out
+
+
+# A station page lists other stations in its own state within NEARBY_MILES,
+# nearest first, at most NEARBY_MAX; a station with none lists nothing
+# (0032).
+NEARBY_MILES = 25
+NEARBY_KM = NEARBY_MILES / 0.621371
+NEARBY_MAX = 6
+
+
+def neighbors(near: Nearby, station: Station) -> list[tuple[Station, float]]:
+    return [(s, km) for s, km in near.within(station, NEARBY_KM) if s.state == station.state][:NEARBY_MAX]
 
 
 def offset_phrase(minutes: float) -> str:
@@ -280,6 +391,10 @@ def env() -> Environment:
     e.globals.update(
         minutes=offset_phrase,
         station_title=station_title,
+        state_title=state_title,
+        region_title=region_title,
+        region_place=region_place,
+        station_description=station_description,
         fill=ktformat.fill,
         fmt_date=ktformat.fmt_date,
         fmt_long_date=ktformat.fmt_long_date,
@@ -558,6 +673,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             region_of[s.id] = (st, None)
 
     near = Nearby(stations)
+    searched = place_names()
     pages: list[Page] = []
 
     def page(path: str, template: str, index: bool = True, **ctx: Any) -> None:
@@ -624,12 +740,14 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             "station.html.jinja",
             index=indexable(s),
             station=s,
+            place=place_name(s, searched),
             state=st,
             region=region,
             days=days,
             reference=ref,
             reference_listed=ref is not None and ref.id in by_id,
-            nearby=near(s),
+            nearby=neighbors(near, s),
+            nearby_miles=NEARBY_MILES,
             derived=derived.get(s.id, []),
             tide_type=cat.tide_type(s.id),
             king_season=season,

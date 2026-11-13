@@ -29,12 +29,18 @@ NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
 @pytest.fixture(scope="module")
 def built(tmp_path_factory: pytest.TempPathFactory) -> Path:
     out = tmp_path_factory.mktemp("site")
-    # An empty booklet list, so these tests stay about the site without one
-    # when a California booklet is listed (docs/DECISIONS.md 0030;
-    # tests/test_station_booklets.py covers a listed one).
-    no_booklets = tmp_path_factory.mktemp("lists") / "booklets.json"
+    # Empty booklet and calendar lists, so these tests stay about the site
+    # without them now that a California calendar is listed and when a
+    # California booklet is (docs/DECISIONS.md 0030 and 0035;
+    # tests/test_station_booklets.py and tests/test_station_calendars.py
+    # cover listed ones).
+    lists = tmp_path_factory.mktemp("lists")
+    no_booklets = lists / "booklets.json"
     no_booklets.write_text('{"booklets": {}}', encoding="utf-8")
-    assert cli.main(["--out", str(out), "--now", NOW, "--states", "CA,HI,other", "--booklets", str(no_booklets)]) == 0
+    no_calendars = lists / "calendars.json"
+    no_calendars.write_text('{"calendars": {}}', encoding="utf-8")
+    args = ["--states", "CA,HI,other", "--booklets", str(no_booklets), "--calendars", str(no_calendars)]
+    assert cli.main(["--out", str(out), "--now", NOW, *args]) == 0
     return out
 
 
@@ -852,12 +858,12 @@ def test_sitemap_lastmod_carries_over_for_unchanged_pages(tmp_path: Path, built:
     assert "<lastmod>2026-10-20<" in old and "2026-11-01" not in old  # the sabotage applied
 
     out = tmp_path / "next"
-    assert (
-        cli.main(
-            ["--out", str(out), "--now", "2026-11-02T11:20:00Z", "--states", "CA,HI,other", "--previous", str(prev)]
-        )
-        == 0
-    )
+    # The same empty lists as `built`, so only the day differs.
+    (tmp_path / "booklets.json").write_text('{"booklets": {}}', encoding="utf-8")
+    (tmp_path / "calendars.json").write_text('{"calendars": {}}', encoding="utf-8")
+    lists = ["--booklets", str(tmp_path / "booklets.json"), "--calendars", str(tmp_path / "calendars.json")]
+    args = ["--now", "2026-11-02T11:20:00Z", "--states", "CA,HI,other", "--previous", str(prev), *lists]
+    assert cli.main(["--out", str(out), *args]) == 0
     mods = _lastmods(out)
     # Unchanged since the previous build: the king-tide calendars, privacy, terms.
     for path in ("king-tides/california/", "privacy/", "terms/"):

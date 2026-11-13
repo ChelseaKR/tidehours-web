@@ -1,0 +1,10 @@
+# gitleaks findings that are not secrets (`make secrets` scans every commit
+# of every branch, so a false positive on any pushed branch blocks every PR).
+# Each line is one finding's fingerprint; nothing else is skipped.
+#
+# feat/sky, commit 55671db ("wip: sun and moon"): the generic-api-key rule
+# reads the label "U.S. Naval Observatory, Astronomical Applications API,
+# api/rstt/oneday (dst=false)" as a key. It is a source name; the USNO API
+# takes no key. Checked 2026-11-12.
+55671db98ed7fdc5a2f5cbcc0740c27eb6566f81:scripts/fetch_golden.py:generic-api-key:153
+55671db98ed7fdc5a2f5cbcc0740c27eb6566f81:tests/fixtures/usno-sky-2026.json:generic-api-key:3

@@ -11,6 +11,14 @@
   names the calendars, and the privacy page names the Etsy links the build
   has. `check_site.py` allows that one link on those pages and checks the
   privacy section (DECISIONS 0035).
+- Subordinate station pages are indexed and in the sitemap: 2,022 of the
+  2,024, which takes the sitemap from 1,577 to 3,599 URLs. Each page now
+  says which reference station NOAA predicts it from, how far away, and
+  NOAA's published time and height corrections. The 2 whose corrections
+  leave every time and high tide as the reference's (Cabrillo Beach and
+  Great Diamond Island) stay noindex with a canonical link to the reference
+  station's page. `check_site.py` checks the noindex and the canonical of
+  every station page (DECISIONS 0033, superseding 0013's noindex).
 - A high or low in the first 30 minutes of a GMT year (7:00 to 7:30 PM
   Eastern, 4:00 to 4:30 PM Pacific on New Year's Eve) now matches NOAA's
   published one. NOAA finds it with the old year's lunar-node constants; the

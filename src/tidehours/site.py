@@ -23,7 +23,7 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, booklets, calendars, indexnow, kingtides, ktformat, llms, printshop
+from . import affiliate, booklets, calendars, indexnow, kingtides, ktformat, llms, printshop, subordinate
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -53,12 +53,15 @@ OTHER_NAME = "Stations without a state"
 def indexable(station: Station) -> bool:
     """Whether a station's page asks search engines to index it.
 
-    Harmonic stations are indexed. A subordinate station's highs and lows are
-    its reference station's, moved by fixed minutes and scaled, so its page is
-    a near-copy of another page on this site; it is served, linked and
-    followed, but carries ``noindex`` and is left out of the sitemap (and so of
-    IndexNow) until the site has earned some trust (docs/DECISIONS.md 0013)."""
-    return not station.is_subordinate
+    Harmonic stations are indexed, and so are subordinate stations: each
+    shows its own times and heights (its reference's moved and scaled by
+    NOAA's published corrections), its own name, coordinates, corrections and
+    nearby list (docs/DECISIONS.md 0033, superseding 0013's noindex). The
+    exception is a twin, whose corrections leave every time and every high
+    tide as its reference's: it is served, linked and followed, but carries
+    ``noindex`` with a canonical link to the reference station's page, and is
+    left out of the sitemap (and so of IndexNow)."""
+    return station.twin_of is None
 
 
 # A region page lists its stations, and its state page lists the same
@@ -390,6 +393,7 @@ def env() -> Environment:
     e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
     e.globals.update(
         minutes=offset_phrase,
+        height_phrase=subordinate.height_phrase,
         station_title=station_title,
         state_title=state_title,
         region_title=region_title,
@@ -735,6 +739,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         st, region = region_of[s.id]
         ref = cat.station(s.reference_id) if s.reference_id else None
         season = kt_by_id.get(s.id)
+        # A twin's canonical is its reference station's page (DECISIONS 0033).
+        twin: dict[str, Any] = {"canonical_path": f"stations/{s.twin_of}/"} if s.twin_of else {}
         page(
             f"stations/{s.id}/",
             "station.html.jinja",
@@ -746,6 +752,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             days=days,
             reference=ref,
             reference_listed=ref is not None and ref.id in by_id,
+            reference_km=distance_km(s, ref) if ref is not None else None,
+            offsets=cat.offsets(s.id) if s.is_subordinate else None,
             nearby=neighbors(near, s),
             nearby_miles=NEARBY_MILES,
             derived=derived.get(s.id, []),
@@ -757,6 +765,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             kc=kt["copy"]["en"],
             booklet=booklets.block(booklet_of.get(s.id)),
             calendar=calendars.block(calendar_of.get(s.id)),
+            **twin,
         )
     return pages
 
@@ -862,6 +871,6 @@ def page_manifest(pages: list[Page]) -> str:
     byte-identical, so the next build compares its manifest with the live one
     and announces only the pages whose HTML changed (docs/DECISIONS.md 0011),
     and keeps an unchanged page's sitemap lastmod (0028). Noindex pages are
-    left out, as they are from the sitemap (0013)."""
+    left out, as they are from the sitemap (0013, 0022, 0033)."""
     entries = {"/" + p.path: {"fingerprint": fingerprint(p)} for p in pages if p.path != "404" and p.index}
     return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

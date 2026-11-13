@@ -2,9 +2,10 @@
 every page carries the disclaimers and the NOAA credit, nothing absent
 renders as a value, every internal link and sitemap entry resolves, no page
 is unreasonably large, and the sitemap lists exactly the pages that may be
-indexed: subordinate station pages carry noindex and are left out
-(docs/DECISIONS.md 0013), and so do region pages of fewer than three
-stations (0022). A station page shows a type of tide exactly when
+indexed: a subordinate station whose corrections leave its times and high
+tides as its reference's (a twin) carries noindex and a canonical link to
+the reference's page and is left out (docs/DECISIONS.md 0033, superseding
+0013), and so do region pages of fewer than three stations (0022). A station page shows a type of tide exactly when
 its own constants give one, and it is the computed one (0014). The
 king-tide pages' summary of the runs coming up, their titles, and the
 king-tide links on station pages match the computed season for the day the
@@ -51,6 +52,7 @@ SCRIPT = re.compile(r"<script.*?</script>", re.S)
 BAD = ("None", "NaN", "nan ft", "undefined", "{{", "{place}", "{id}", "{date}")
 MAX_PAGE_BYTES = 120_000
 NOINDEX = '<meta name="robots" content="noindex,follow">'
+CANONICAL = re.compile(r'<link rel="canonical" href="https://[^/"]+/([^"]*)">')
 TIDE_TYPE = re.compile(r'data-tide-type="([^"]*)"')
 STATION_DATE = re.compile(r'data-station-date="(\d{4}-\d{2}-\d{2})"')
 KT_NEXT = re.compile(r'data-kt-next="([^"]*)"')
@@ -89,16 +91,26 @@ def check_page(root: Path, f: Path) -> list[str]:
 
 
 def check_indexing(root: Path, html: list[Path], stations: list[Station]) -> list[str]:
-    """Subordinate station pages carry noindex and harmonic ones do not;
-    region pages of fewer than site.REGION_MIN_STATIONS stations carry
-    noindex and the rest do not; the sitemap and lastmod.json list exactly
-    the pages without noindex."""
+    """A twin station's page (site.indexable) carries noindex and a
+    canonical link to its reference station's page, and every other station
+    page carries neither; region pages of fewer than
+    site.REGION_MIN_STATIONS stations carry noindex and the rest do not; the
+    sitemap and lastmod.json list exactly the pages without noindex."""
     problems: list[str] = []
     for s in stations:
         f = root / "stations" / s.id / "index.html"
-        if f.exists() and (NOINDEX in f.read_text(encoding="utf-8")) != s.is_subordinate:
-            kind, want = ("subordinate", "noindex") if s.is_subordinate else ("harmonic", "no noindex")
-            problems.append(f"stations/{s.id}: a {kind} station needs {want}")
+        if not f.exists():
+            continue
+        text = f.read_text(encoding="utf-8")
+        twin = not site.indexable(s)
+        if (NOINDEX in text) != twin:
+            kind = "twin" if twin else "subordinate" if s.is_subordinate else "harmonic"
+            problems.append(f"stations/{s.id}: a {kind} station needs {'noindex' if twin else 'no noindex'}")
+        canonical = CANONICAL.search(text)
+        want_path = f"stations/{s.twin_of}/" if twin else f"stations/{s.id}/"
+        if canonical is None or canonical.group(1) != want_path:
+            got = canonical.group(1) if canonical else "none"
+            problems.append(f"stations/{s.id}: canonical {got}, expected {want_path}")
     for st in site.group(stations):
         for r in st.regions:
             f = root / r.path / "index.html"

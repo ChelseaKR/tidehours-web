@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 
 from tidehours import catalog as catalog_mod
-from tidehours import cli, site, tidetype
+from tidehours import cli, site, subordinate, tidetype
 from tidehours.catalog import Station, load, tidy_name
 from tidehours.days import Day, Event, feet, meters, no_negative_zero, station_day
 
@@ -521,27 +521,103 @@ def test_tidy_name() -> None:
     assert tidy_name("Seaside Heights, N.J.") == "Seaside Heights, N.J."
 
 
-def test_subordinate_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> None:
-    """DECISIONS 0013: a subordinate station's page is served and linked but
-    asks not to be indexed, and is in neither the sitemap nor lastmod.json
-    (so IndexNow never announces it); a harmonic station's page is indexed."""
-    robots = '<meta name="robots" content="noindex,follow">'
+ROBOTS = '<meta name="robots" content="noindex,follow">'
+ROWS = re.compile(r'<tr class="ev-[^"]+">.*?</tr>')
+# The subordinate stations whose NOAA corrections leave every time and every
+# high-tide height as their reference station's (DECISIONS 0033), from the
+# data retrieved 2026-10-24: Cabrillo Beach (0 min, 0 min, x1.00, x1.00 from
+# Los Angeles) and Great Diamond Island (0 min, 0 min, x1.00, x1.03 from
+# Portland, ME). Windham Bay (0 min, 0 min, -1.1 ft, -0.1 ft from Juneau) has
+# its own heights, so it is not one.
+TWINS = {"9410650": "9410660", "8417988": "8418150"}
+
+
+def _rows(root: Path, sid: str) -> list[str]:
+    return ROWS.findall((root / "stations" / sid / "index.html").read_text(encoding="utf-8"))
+
+
+def test_subordinate_pages_are_indexed_with_their_own_answers(built: Path) -> None:
+    """DECISIONS 0033 (superseding 0013's noindex): a subordinate station's
+    page is indexed, in the sitemap and lastmod.json, and its answer lines,
+    the highs and lows, differ from its reference station's page."""
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
     manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
-    sub = (built / "stations/9413878/index.html").read_text(encoding="utf-8")
-    assert robots in sub
-    assert "/stations/9413878/<" not in sitemap and "/stations/9413878/" not in manifest
+    sub = (built / "stations/9413878/index.html").read_text(encoding="utf-8")  # Ano Nuevo Island
+    assert "noindex" not in sub and 'rel="canonical" href="https://tidehours.com/stations/9413878/"' in sub
+    assert "https://tidehours.com/stations/9413878/</loc>" in sitemap and "/stations/9413878/" in manifest
+    rows, ref_rows = _rows(built, "9413878"), _rows(built, "9414290")
+    assert len(rows) >= 6 and len(ref_rows) >= 6 and not set(rows) & set(ref_rows)
+    # Its own line with NOAA's published corrections, its own coordinates.
+    text = " ".join(re.sub(r"<[^>]+>", " ", sub).split())
+    assert (
+        "Ano Nuevo Island, CA is a NOAA subordinate station of San Francisco (Golden Gate), CA (station 9414290)"
+        in text
+    )
+    assert "high tide 1 h 24 min earlier, low tide 1 h 4 min earlier; heights 0.7 ft lower at high tide" in text
+    assert "Station 9413878 · 37.1083, -122.3380" in sub
     sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
-    assert "noindex" not in sf
-    assert "https://tidehours.com/stations/9414290/</loc>" in sitemap and "/stations/9414290/" in manifest
-    # The reference page links each station predicted from it, with its time corrections.
+    assert "noindex" not in sf and 'class="subordinate"' not in sf
+    # The reference page still lists each station predicted from it.
     assert "Stations predicted from this one" in sf and 'href="/stations/9413878/"' in sf
     assert re.search(r"high tide (at the same time|\d+ (h|min)[^,]* (later|earlier))", sf)
+    # Every built subordinate page but a twin is indexed and differs from its reference.
     cat = load()
     for f in built.glob("stations/*/index.html"):
         s = cat.station(f.parent.name)
         assert s is not None
-        assert (robots in f.read_text(encoding="utf-8")) == s.is_subordinate == (not site.indexable(s)), s.id
+        html = f.read_text(encoding="utf-8")
+        assert (ROBOTS in html) == (s.id in TWINS) == (not site.indexable(s)), s.id
+        if s.is_subordinate and s.id not in TWINS and (built / "stations" / str(s.reference_id)).exists():
+            assert _rows(built, s.id) != _rows(built, str(s.reference_id)), s.id
+
+
+def test_a_twin_stays_noindex_with_its_reference_as_canonical(built: Path) -> None:
+    """Negative control for DECISIONS 0033: Cabrillo Beach's corrections are
+    0 min and x1.00, so its answer lines are Los Angeles's, byte for byte;
+    its page carries noindex, a canonical to Los Angeles, and is out of the
+    sitemap and lastmod.json."""
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+    twin = (built / "stations/9410650/index.html").read_text(encoding="utf-8")
+    assert _rows(built, "9410650") == _rows(built, "9410660") != []  # a true copy of the answer
+    assert ROBOTS in twin and '<link rel="canonical" href="https://tidehours.com/stations/9410660/">' in twin
+    assert '<meta property="og:url" content="https://tidehours.com/stations/9410660/">' in twin
+    assert "/stations/9410650/<" not in sitemap and "/stations/9410650/" not in manifest
+    assert "asks search engines to show that station's page instead" in twin
+    la = (built / "stations/9410660/index.html").read_text(encoding="utf-8")
+    assert "noindex" not in la and 'href="/stations/9410650/"' in la  # still linked from its reference
+    cat = load()
+    assert {s.id: s.twin_of for s in cat.stations if s.twin_of} == TWINS
+    windham = cat.station("9451962")  # 0 min times, but its own heights
+    assert windham is not None and windham.twin_of is None and site.indexable(windham)
+    # The rule is what holds it back: with Cabrillo Beach's high tides scaled
+    # by 1.01 it is no longer a twin.
+    o = cat.offsets("9410650")
+    assert subordinate.is_twin(o) and not subordinate.is_twin(dataclasses.replace(o, high_height=1.01))
+    assert not subordinate.is_twin(dataclasses.replace(o, low_time_minutes=1.0))
+    assert subordinate.is_twin(dataclasses.replace(o, adjustment="F", high_height=0.0, low_height=0.4))
+
+
+def test_sitemap_counts_every_station_but_the_twins(built: Path) -> None:
+    """The sitemap lists every station page in the build but the twins, and
+    over the whole catalog that is 3,254 of 3,256 (1,232 harmonic and 2,022
+    subordinate), with the 2 twins left out (DECISIONS 0033)."""
+    cat = load()
+    assert sum(site.indexable(s) for s in cat.stations) == 3254 == len(cat.stations) - len(TWINS)
+    assert sum(s.is_subordinate and site.indexable(s) for s in cat.stations) == 2022
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    locs = set(re.findall(r"<loc>https://tidehours\.com/stations/([^/<]+)/</loc>", sitemap))
+    built_ids = {f.parent.name for f in built.glob("stations/*/index.html")}
+    assert locs == built_ids - set(TWINS) and "9410650" in built_ids
+    assert sum(cat.station(i).is_subordinate for i in locs) > 100  # type: ignore[union-attr]
+
+
+def test_height_phrase() -> None:
+    assert subordinate.height_phrase("R", 0.96) == "multiplied by 0.96"
+    assert subordinate.height_phrase("R", 1.0) == "unchanged"
+    assert subordinate.height_phrase("F", -0.7) == "0.7 ft lower"
+    assert subordinate.height_phrase("F", 0.3) == "0.3 ft higher"
+    assert subordinate.height_phrase("F", 0.0) == "unchanged"
 
 
 def test_thin_region_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> None:
@@ -570,7 +646,7 @@ def test_thin_region_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> No
                 for s in r.stations:
                     assert f'href="/stations/{s.id}/"' in state_page, (r.path, s.id)
                     station = (built / "stations" / s.id / "index.html").read_text(encoding="utf-8")
-                    assert (robots in station) == s.is_subordinate, s.id
+                    assert (robots in station) == (not site.indexable(s)), s.id
     # The rule never holds back a harmonic station's own page; 34 sit in thin regions.
     full = [r for st in site.group(load().stations) for r in st.regions if not site.region_indexable(r)]
     assert any(not s.is_subordinate and site.indexable(s) for r in full for s in r.stations)
@@ -621,7 +697,8 @@ def _check_site() -> object:
 
 def test_check_site_catches_an_indexing_mistake(tmp_path: Path, built: Path) -> None:
     """Negative control: the gate's noindex, sitemap and lastmod.json checks
-    pass on the build and fail once a subordinate page loses its noindex."""
+    pass on the build and fail once a twin's page loses its noindex or its
+    canonical, and once an indexed subordinate page gains a noindex."""
     check: Any = _check_site()
     site_dir = tmp_path / "site"
     shutil.copytree(built, site_dir)
@@ -632,12 +709,21 @@ def test_check_site_catches_an_indexing_mistake(tmp_path: Path, built: Path) -> 
         return found
 
     assert problems() == []
-    page = site_dir / "stations/9413878/index.html"
+    page = site_dir / "stations/9410650/index.html"  # Cabrillo Beach, a twin
     html = page.read_text(encoding="utf-8")
-    page.write_text(html.replace('<meta name="robots" content="noindex,follow">', ""), encoding="utf-8")
+    html = html.replace(ROBOTS, "").replace(
+        '<link rel="canonical" href="https://tidehours.com/stations/9410660/">',
+        '<link rel="canonical" href="https://tidehours.com/stations/9410650/">',
+    )
+    page.write_text(html, encoding="utf-8")
     assert "noindex" not in page.read_text(encoding="utf-8")  # the sabotage applied
+    sub = site_dir / "stations/9413878/index.html"
+    sub.write_text(sub.read_text(encoding="utf-8").replace("<head>", "<head>" + ROBOTS, 1), encoding="utf-8")
+    assert ROBOTS in sub.read_text(encoding="utf-8")  # applied
     found = problems()
-    assert "stations/9413878: a subordinate station needs noindex" in found
+    assert "stations/9410650: a twin station needs noindex" in found
+    assert "stations/9410650: canonical stations/9410650/, expected stations/9410660/" in found
+    assert "stations/9413878: a subordinate station needs no noindex" in found
     assert any(p.startswith("sitemap lists") for p in found)
     assert any(p.startswith("lastmod.json lists") for p in found)
 

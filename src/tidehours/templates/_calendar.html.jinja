@@ -1,0 +1,9 @@
+{#
+  The link to this station's printable tide calendar in the Tide Hours shop
+  on Etsy (docs/DECISIONS.md 0035). station.html.jinja includes this only on
+  the page of a station whose calendar is listed and whose year is not over,
+  after the booklet sentence (0030) when both show. One sentence, one plain
+  link: no slug, no query string, no price, no claim, no image and no click
+  event.
+#}
+<p class="calendar" data-calendar="{{ calendar.listing }}">{{ calendar.before }} <a href="{{ calendar.url }}" rel="{{ calendar.rel }}">{{ calendar.title }}</a>{{ calendar.after }}</p>

@@ -36,7 +36,7 @@ constants for the highs and lows of the first 30 minutes of the next
 ## Commands
 
     make verify        # the gate: format, lint, types, tests (incl. NOAA accuracy), full build + checks, audit, secrets, hygiene
-    make site-checks   # axe-core and pa11y-ci on a sample of 127 pages (needs Node 22 and Chrome)
+    make site-checks   # axe-core and pa11y-ci on a sample of 138 pages (needs Node 22 and Chrome)
     make site          # build with today's numbers into ./site
     uv run python scripts/refresh_data.py --app-checkout ~/portfolio/tide-app   # refresh NOAA data (network)
     uv run python scripts/fetch_golden.py [--month | --add | --year-boundary]    # refresh the NOAA fixtures (network)
@@ -46,7 +46,9 @@ Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 `--amazon-tag` (empty: no Amazon links; DECISIONS 0016), `--print-shop-url`
 (empty: no link to the print shop; DECISIONS 0029), `--booklets FILE` (a
 list of printed booklets in place of `src/tidehours/copy/booklets.json`,
-for tests; DECISIONS 0030).
+for tests; DECISIONS 0030), `--calendars FILE` (a list of printable
+calendars in place of `src/tidehours/copy/calendars.json`, for tests;
+DECISIONS 0035).
 
 ## CI
 
@@ -81,3 +83,10 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    its station id, ASIN, year and cover title to
    `src/tidehours/copy/booklets.json` in a pull request. That station's page
    then links to it until the booklet's year is over.
+7. Printable calendars (DECISIONS 0035): when a calendar is live in the
+   Etsy shop, add its station id, Etsy listing id (the digits after
+   `/listing/`), year and title to `src/tidehours/copy/calendars.json` in a
+   pull request. That station's page then links to it until the calendar's
+   year is over. The print shop's sentence on the About and king-tide pages
+   names "printable 2027 tide calendars" in `copy/print_shop.json`; change
+   it when the year changes.

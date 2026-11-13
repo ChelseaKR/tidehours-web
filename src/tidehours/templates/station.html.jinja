@@ -93,10 +93,11 @@
   {% else %}
   <p class="none">No high or low tide is predicted at this station on this day.</p>
   {% endif %}
+  <p class="sky" data-sky="{{ day.date.isoformat() }}"><span class="sun">{{ day.sun_text }} {{ day.civil_text }}</span> <span class="moon">{{ day.moon_text }} {{ day.moonrise_text }}</span></p>
   {% if day.svg %}
   <figure class="chart">
     {{ day.svg|safe }}
-    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}: {{ day.summary() }}.</figcaption>
+    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}{% if day.sun.dark %}, shaded where the sun is down{% endif %}: {{ day.summary() }}.</figcaption>
   </figure>
   {% else %}
   <p class="none">No tide curve can be drawn for this day.</p>
@@ -165,7 +166,7 @@
 
 <section class="about-numbers" aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>
-  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
+  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Sunrise, sunset, twilight and the moon are computed for the station's position with NOAA's Solar Calculator equations and Jean Meeus's <cite>Astronomical Algorithms</cite>; hills and buildings can hide the real sunrise. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
   <p class="meta">Station {{ station.id }} · {{ "%.4f"|format(station.lat) }}, {{ "%.4f"|format(station.lon) }} · NOAA data retrieved {{ retrieved }} · page built {{ built }} (UTC)</p>
 </section>
 {% endblock %}

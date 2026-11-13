@@ -9,6 +9,9 @@ data change is always reviewed with this file.
 - `src/tidehours/data/regions.json`: NOAA's region name for 3,461 tide prediction stations, from `mdapi/prod/webapi/tidepredstations.json`, field `region`. Retrieved 2026-10-31. 32 catalog stations are not in that list and are shown as "without a region". sha256 `31c8443054aedbc7c2ff560da71fe6639fe0ef0a3ea70668d8a9ec77dbaf11c4`
 - `src/tidehours/data/datums.json`: MHHW above MLLW for the 31 king-tide stations, from `mdapi/prod/webapi/stations/{id}/datums.json`. Retrieved 2026-10-31. sha256 `de62c86f7454b45370b85a2c317adad5ee4cb67507247d214c7beef3d4d351c0`
 
+Sunrise, sunset and the moon's phase need no data file: `src/tidehours/sky.py`
+computes them from published equations (DECISIONS 0019).
+
 All of it is U.S. Government work in the public domain
 (https://tidesandcurrents.noaa.gov/disclaimers.html). The site credits NOAA
 on every page and says it is not a NOAA product.
@@ -42,3 +45,11 @@ on every page and says it is not a NOAA product.
   and lows asked for from January 1 on. `scripts/fetch_golden.py
   --year-boundary`, 20 requests. Retrieved 2026-11-10 (DECISIONS 0031).
   sha256 `aaaeac5bfda88237e6e2547fda681b6430c41b1bd9b7645fd0bb54bead9ad7a8`
+- `tests/fixtures/usno-sky-2026.json`: the U.S. Naval Observatory's sunrise,
+  sunset, civil twilight, moonrise, moonset, moon phase, share lit and
+  nearest primary phase (`api/rstt/oneday`) for 186 station-days: 22
+  stations on 7 dates plus 32 days at Prudhoe Bay around polar night and the
+  midnight sun. Retrieved 2026-11-12 with `scripts/fetch_sky.py`, 186
+  requests (DECISIONS 0019). U.S. Government work; used as a test oracle
+  only, not shown on the site.
+  sha256 `d5f3a9347d750e2ff6b5033a157e31fa1c5be6b3a507355da03825d19b825cbb`

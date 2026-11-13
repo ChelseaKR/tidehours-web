@@ -558,6 +558,100 @@ The data files are not edited. The same rules belong in the app's pipeline
 (ChelseaKR/tide-hours, `pipeline/build_bundle.py`); until then this is a
 difference between the site and the app.
 
+## 0019: Sunrise, sunset, twilight and the moon on station pages, computed (2026-11-05, finished 2026-11-12)
+
+Each station page's two days (today and tomorrow, as now; DECISIONS 0001's
+free-web line is unchanged) carry one line: sunrise and sunset, civil dawn
+and dusk, the moon's phase with the share of it lit, and moonrise and
+moonset, all in the station's own time zone. For example: "Sunrise 6:40 AM,
+sunset 5:07 PM. Civil dawn 6:12 AM, civil dusk 5:34 PM. Moon: waning
+crescent, 12% lit at noon. Moonrise 3:06 AM, moonset 3:06 PM." The day's
+tide curve shades the hours the sun is down (`aria-hidden`, like the rest of
+the drawing; the line carries the facts).
+
+**Computed, not fetched (0002).** `src/tidehours/sky.py` has no data file and
+makes no request. Sunrise and sunset use NOAA's Solar Calculator equations
+(NOAA GML, after Meeus) at the station's latitude and longitude, with the
+sun's center at -0.833 degrees, the U.S. Naval Observatory's definition;
+civil dawn and dusk are the sun's center at -6 degrees, also USNO's. The
+altitude is sampled every minute from the station's local midnight to the
+next, in its IANA zone, so a daylight saving day has 23 or 25 hours, and
+each crossing is interpolated between two samples. The moon uses the main
+terms of Meeus chapter 47 and the phase angle of chapter 48. The share lit is
+at local noon. The phase name follows USNO's convention: new or full moon
+when the share rounds to 0% or 100%, a quarter at 50%, otherwise waxing or
+waning, crescent or gibbous. A primary phase whose instant falls on the day
+is named with its local time ("full moon at 6:53 AM"). Moonrise and moonset
+turn the same series into right ascension and declination, take the
+station's local sidereal time (Meeus 12.4), and put the moon's center at a
+geocentric altitude of 0.7275 times its horizontal parallax less 0.5667
+degrees (Meeus 15): the upper limb on the horizon after refraction, as USNO
+defines them. A subordinate station uses its own position, not its
+reference station's.
+
+**Absence is words.** A day the sun does not rise says "The sun does not
+rise on this day (polar night)." A day it does not set says "The sun does
+not set on this day (midnight sun)." A day with only one of them names the
+missing one ("No sunrise on this day."). The same holds for civil twilight
+("It does not get darker than civil twilight on this day." or "No civil
+twilight on this day: the sun stays more than 6° below the horizon.") and
+for the moon, which skips a moonrise or a moonset about once a month
+everywhere ("No moonrise on this day.", "The moon is up all day.", "The
+moon does not rise on this day."). No page ever shows a stand-in time. At
+Prudhoe Bay (9497645) the sun stays down from November 23 to January 18 and
+up from May 15 to July 28 in the fixture years.
+
+**Checked.** `tests/fixtures/usno-sky-2026.json` holds USNO's
+`api/rstt/oneday` answers for 186 station-days: 22 stations covering every
+time zone in the catalog and latitudes from Pago Pago (14°S) to Prudhoe Bay
+(70°N), 7 of them in Alaska (Guam, Pago Pago, Wake, Adak, Shemya across the
+date line, Puerto Rico, the Virgin Islands, Hawaii, the Arctic), on 7 dates
+(both ends of US daylight saving time, a new moon, a full moon, both
+solstices), plus 32 days at Prudhoe Bay on both edges of polar night and the
+midnight sun. Fetched by hand with `scripts/fetch_sky.py` (aa.usno.navy.mil
+has no robots.txt, 404 on 2026-11-05 and 2026-11-12; requests a second
+apart, with `ID=` and a User-Agent that name the site). First fetched
+2026-11-05 with sunrise and sunset only; fetched again 2026-11-12 for
+twilight and the moon, when every earlier value came back the same except
+Shemya's two summer-time days, which moved with 0018's zone change.
+Measured on 2026-11-12: all 350 sunrises and sunsets are within 2 minutes
+of USNO's (348 within 1; the two are grazing days at Prudhoe Bay); all 334
+civil dawns and dusks and all 310 moonrises and moonsets are within 1
+minute; the days without one are exactly USNO's; and the phase name, the
+share lit and the 55 primary phases on those days match. `tests/test_sky.py`
+holds 2 minutes for every time. On a daylight saving day USNO's day (24
+hours at the noon offset) and the station's (23 or 25) differ by an hour,
+so the moon test compares where they overlap. `scripts/check_site.py`
+recomputes each station page's line for both of its days and fails the
+build if it is missing, different, or shows "00:00"; negative controls in
+`tests/test_sky.py` remove the line, replace polar night with a "00:00"
+sunrise, and move a sunrise, a civil dusk, a moonrise and the moon's phase,
+and assert the check fails each time. USNO is a test oracle only: its values
+are not shown on the site or redistributed.
+
+**Not checked against "12:00 AM".** A real sunset or moonrise can fall at
+12:00 AM, so the gate does not ban that text; it compares every line with
+the computed one instead, which catches a stand-in time.
+
+**Time zones.** Times use `Station.tz`, so they follow whatever zone the
+catalog gives a station, including 0018's `America/Adak` for the western
+Aleutians.
+
+**Reuse.** `sky.sun_times(lat, lon, tz, date)` returns the day's sunrise and
+the sunset after it as POSIX seconds, or None, the same contract as
+`lowtides.sun_times` on the `feat/low-tides` branch (DECISIONS 0021 there),
+which carries its own copy of the solar equations because this module was
+not on `main` yet. Once both merge, low-tides should call this one and drop
+its copy, so the site has one sun.
+
+**Differences from the app.** The app (ChelseaKR/tide-hours) does not show the
+sun or moon yet. When its 7-day view adds them, it should port this method
+and the same fixture, or record a difference here.
+
+**Not done.** Nautical and astronomical twilight, the moon's transit, a
+tide-movement line ("Rising until 12:30 PM"), and anything beyond the two
+days on the page.
+
 ## 0020: Correct NOAA's station names for display, and fit titles in 60 characters (owner, 2026-11-05)
 
 (0019 is reserved for another branch.) An audit of every station page

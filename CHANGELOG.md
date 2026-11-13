@@ -2,6 +2,15 @@
 
 ## 0.1.0 (unreleased)
 
+- Station pages show sunrise, sunset, civil dawn and dusk, the moon's phase,
+  moonrise and moonset for both days on the page, in the station's own time
+  zone, and shade the night on the tide curve. All of it is computed at
+  build time (NOAA Solar Calculator equations, Meeus for the moon) and
+  checked against the U.S. Naval Observatory on 186 station-days at 22
+  stations, 7 in Alaska: every time within 2 minutes, nearly all within 1.
+  Days without one, as in Prudhoe Bay's polar night and midnight sun or a
+  day the moon does not rise, say so in words, never with a stand-in time
+  (DECISIONS 0019).
 - The station pages of Bar Harbor (8413320), Half Moon Bay (9414131) and
   Garibaldi (9437540) link to that town's printable 2027 tide calendar in
   the Tide Hours shop on Etsy: one sentence, one plain link,

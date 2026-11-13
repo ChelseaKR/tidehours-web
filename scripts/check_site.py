@@ -27,6 +27,10 @@ once, on its own page, with exactly https://www.etsy.com/listing/ID, after
 the booklet sentence when there is one; that sentence is the one exception
 to the Etsy rules above, and the privacy page names the Etsy links by what
 the build shows (0035).
+Every station page has a sun and moon line for each of its two days, and it
+is the one sky.py computes for that station and date: a day without a
+sunrise, sunset, civil twilight, moonrise or moonset says so in words, and
+no line shows "00:00" (0019).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
                                        [--calendars FILE]
@@ -45,6 +49,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from tidehours import affiliate, booklets, calendars, kingtides, ktformat, printshop, site
 from tidehours.catalog import Catalog, Station, load
+from tidehours.days import sky_text
+from tidehours.sky import moon_day, moon_times, sun_day
 
 HREF = re.compile(r'(?:href|src)="(/[^"#?]*)')
 LOC = re.compile(r"<loc>https://tidehours\.com/([^<]*)</loc>")
@@ -63,6 +69,8 @@ TITLE = re.compile(r"<title>([^<]*)</title>")
 AMAZON_A = re.compile(r'<a\b[^>]*\bhref="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 REL_ATTR = re.compile(r'\brel="([^"]*)"')
 JSON_LD = re.compile(r'<script type="application/ld\+json">.*?</script>', re.S)
+SKY = re.compile(r'<p class="sky" data-sky="([^"]*)">(.*?)</p>', re.S)
+TAG = re.compile(r"<[^>]+>")
 BOOKLET_P = re.compile(r'<p class="booklet"[^>]*>.*?</p>', re.S)
 CALENDAR_P = re.compile(r'<p class="calendar"[^>]*>.*?</p>', re.S)
 ANY_A = re.compile(r"<a\b[^>]*>", re.I)
@@ -186,6 +194,36 @@ def check_king_tides(root: Path, cat: Catalog) -> list[str]:
         expect = [link.up.stamp()] if link else []
         if shown != expect:
             problems.append(f"stations/{s.id}: king-tide link {shown or 'none'}, expected {expect or 'none'}")
+    return problems
+
+
+def check_sky(root: Path, cat: Catalog) -> list[str]:
+    """Each station page's two days each carry the sun and moon line that
+    sky.py computes for the station's position, zone and date, in that
+    order, and nothing else in a sky line: no placeholder time."""
+    problems: list[str] = []
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if not f.exists():
+            continue
+        text = f.read_text(encoding="utf-8")
+        dated = STATION_DATE.findall(text)
+        if len(dated) != 1:
+            problems.append(f"stations/{s.id}: no station date")
+            continue
+        first = dt.date.fromisoformat(dated[0])
+        days = [first, first + dt.timedelta(days=1)]
+        shown = [(d, " ".join(htmllib.unescape(TAG.sub(" ", inner)).split())) for d, inner in SKY.findall(text)]
+        want = [
+            (
+                d.isoformat(),
+                sky_text(sun_day(s.lat, s.lon, s.tz, d), moon_day(s.tz, d), moon_times(s.lat, s.lon, s.tz, d)),
+            )
+            for d in days
+        ]
+        if shown != want:
+            problems.append(f"stations/{s.id}: sun and moon {shown or 'missing'}, expected {want}")
+        problems += [f"stations/{s.id}: {d}: a sky line shows 00:00" for d, line in shown if "00:00" in line]
     return problems
 
 
@@ -518,6 +556,7 @@ def main(
     calendar_links, undated = calendar_pages(root, calendars.load(calendars_file))
     problems += undated
     problems += check_print_shop(root, html, print_shop_url, calendar_links)
+    problems += check_sky(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

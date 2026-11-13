@@ -41,6 +41,26 @@ def test_drop_stands_removes_flattest_pair_only() -> None:
     assert drop_stands([]) == []
 
 
+def test_drop_stands_removes_a_near_stand_that_stands_alone() -> None:
+    """DECISIONS 0036: under 115 minutes and 0.095 ft, with no neighbor
+    within NOAA's two hours and 0.10 ft of it."""
+    alone = [ev(0, 0.0, "L"), ev(570, 7.65, "H"), ev(670, 7.56, "L"), ev(1000, 9.0, "H")]
+    assert [e.time for e in drop_stands(alone)] == [0, 1000 * 60]
+    wide = [ev(0, 0.0, "L"), ev(570, 7.65, "H"), ev(686, 7.56, "L"), ev(1000, 9.0, "H")]  # 116 minutes
+    assert drop_stands(wide) == wide
+    tall = [ev(0, 0.0, "L"), ev(570, 7.65, "H"), ev(670, 7.554, "L"), ev(1000, 9.0, "H")]  # 0.096 ft
+    assert drop_stands(tall) == tall
+    # Three tides in question: NOAA lists one of the two highs, and which
+    # one is not known, so nothing is removed, before or after the pair.
+    after = [ev(0, 0.0, "L"), ev(500, 1.275, "H"), ev(596, 1.19, "L"), ev(685, 1.268, "H"), ev(960, 0.3, "L")]
+    assert drop_stands(after) == after
+    before = [ev(0, 3.0, "H"), ev(300, 1.19, "L"), ev(389, 1.268, "H"), ev(485, 1.185, "L"), ev(800, 3.0, "H")]
+    assert drop_stands(before) == before
+    # A neighbor that is a real tide (0.24 ft away) does not protect it.
+    real = [ev(0, 1.0, "L"), ev(300, 10.69, "H"), ev(372, 10.45, "L"), ev(430, 10.52, "H"), ev(700, 2.5, "L")]
+    assert [e.time for e in drop_stands(real)] == [0, 300 * 60, 700 * 60]
+
+
 def test_empty_and_reversed_windows() -> None:
     cat = load()
     p = cat.harmonic("9414290")

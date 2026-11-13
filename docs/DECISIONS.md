@@ -1594,3 +1594,225 @@ the sentence, the checks and the 2028 removal apply to all nine.
 Update, 2026-11-12 (night): three more, Eastport (8410140), Brewster Flats
 (Sesuit Harbor, 8447241) and New Smyrna Beach (8721164), bring the list to
 twelve, with the listing ids the owner gave.
+
+## 0036: Near stands: fewer highs and lows NOAA does not list (2026-11-12)
+
+**What was wrong.** The site's standard is that it shows no tide NOAA does
+not list. The stand rule of 0004 removes a high and a low less than 120
+minutes and less than 0.06 ft apart. Checks for the print shop found tides
+it leaves in that NOAA leaves out: at Port Townsend, WA (9444900) in 2027
+all 1,387 of NOAA's tides matched and the engine printed 12 more, six
+pairs 90 to 114 minutes and 0.061 to 0.092 ft apart. The 0.06 ft came from
+one month at 14 small-range stations (0004), where no pair NOAA omitted
+was taller than 0.07 ft.
+
+**Measured (2026-11-12).** NOAA's lists for 178 stations, 110,591 tides
+(some days are in two lists): the golden fixtures, the lists saved by the
+print shop's checks (43 station-years of 2027 and 52 months and days),
+and 40 new requests to NOAA's predictions API, one at a time, two
+seconds apart, none repeated, at 33 stations: 2027 at 31 stations picked
+with the engine for near stands (Puget Sound and the San Juans, the Gulf
+of Mexico, the Caribbean, San Francisco Bay, Alaska, and the double tides
+of Maine, Cape Cod, Narragansett Bay and the East River), and nine shorter
+ones. NOAA's public pages do not state a rule for predictions; the one
+number found is in its hydrographic survey specifications (April 2017,
+4.3.2), for tabulating observed tides: successive tides are tabulated only
+when "greater than 2.0 hours apart in time and 0.030 meters different in
+elevation".
+
+What NOAA's own lists show:
+
+- **In NOAA's own heights the line is 0.100 ft.** NOAA lists 257 pairs of
+  a high and a low less than 120 minutes apart by its own printed times
+  (65 in its to-the-minute lists at harmonic stations, 84 in its
+  6-minute-grid lists, 108 at subordinate stations). The smallest
+  difference between the two printed heights is 0.100 ft, four times; none
+  is 0.099 ft or less. Subordinate stations follow the same line in their
+  own times and heights, not their reference station's.
+- **On the engine's heights the line is blurred by a few thousandths of a
+  foot.** In NOAA's to-the-minute lists at harmonic stations the engine
+  puts 1,077 pairs under 118 minutes apart. Under 0.09 ft, NOAA lists both
+  tides of one pair in 919 (in a flat run of five tides at Magueyes Island,
+  PR). From 0.09 to 0.0984 ft, of 2 in 25: both at Friday Harbor, WA,
+  0.0977 and 0.0978 ft here and 0.101 and 0.103 ft in NOAA's heights. From
+  0.0984 ft up, of 61 in 133; it omits both tides of two (Woods Hole, MA,
+  0.0991 ft here, and Bangor, below) and one tide of the other 70, each
+  time where that tide is also in a second, flatter pair.
+- **The two hours are blurred by a minute or two.** NOAA lists pairs the
+  engine puts 118.5 minutes apart (Point Au Fer, LA, subordinate, 0.071
+  ft), 119.3 (Friday Harbor, 2027-03-17, 0.062 ft), 119.4 and 120.0 (Vaca
+  Key, FL), and omits pairs the engine puts 119.3 (Port San Luis, CA,
+  2027-03-15, 0.064 ft), 120.3 (Christiansted, VI), 121.8 (Captiva, FL)
+  and 126.1 (Charlotte Amalie, VI) minutes apart. No line on the engine's
+  clock separates them.
+- **Three tides in question.** Where a high, a low and a high (or a low, a
+  high and a low) are each under two hours and 0.10 ft from the next, NOAA
+  lists one of the outer two. Which one was not found: it lists the later
+  one in most cases (Vineyard Haven, MA six times of six; Vaca Key 11
+  times) and the earlier one in others (Cape Cod Canal five times of seven,
+  Levelock, AK four of four), and neither "flattest pair first", "first
+  pair first" nor "shortest pair first" fits them all. A search for sign
+  changes on a coarser grid (steps of 6 to 120 minutes, offsets every 6
+  minutes) does not either.
+- **NOAA has two answers for some stations.** Asked for all of 2027 at
+  Vineyard Haven, Edgartown, Rumford, Providence, Worlds Fair Marina,
+  Harlem River and Port St. Joe, NOAA answers with every time on a
+  6-minute mark and a few tides its shorter answer does not have (two lows
+  in a row at Rumford on 2027-07-12). Asked for nine days at Rumford or a
+  month at Vineyard Haven and Edgartown, it answers to the minute, as it
+  does for a year at the other 66 stations asked for a year. The site
+  shows a week, and the print shop's order check asks for a day, so the
+  to-the-minute answer is the one this decision follows; both were counted.
+
+The cases that started this, each a pair the engine printed and NOAA
+omits (times GMT, as the engine has them):
+
+| Station | Day | The pair | Minutes apart | Feet apart | The 0.06 ft rule missed it on | Now |
+|---|---|---|---|---|---|---|
+| Port Townsend, WA 9444900 | 2027-01-18 | H 11:10 7.646, L 12:51 7.554 | 100.8 | 0.092 | height | removed |
+| Port Townsend | 2027-03-30 | L 14:22 6.473, H 16:16 6.554 | 113.6 | 0.081 | height | removed |
+| Port Townsend | 2027-04-28 | L 14:07 5.848, H 15:46 5.915 | 99.8 | 0.067 | height | removed |
+| Port Townsend | 2027-07-28 | H 22:44 6.867, L 00:20 6.799 | 95.5 | 0.068 | height | removed |
+| Port Townsend | 2027-10-08 | L 02:23 6.119, H 04:07 6.208 | 104.3 | 0.089 | height | removed |
+| Port Townsend | 2027-11-06 | L 02:02 5.807, H 03:33 5.868 | 90.2 | 0.061 | height | removed |
+| Rumford, RI 8453433 | 2027-07-17 | L 05:00 1.186, H 06:05 1.248 | 64.6 | 0.062 | height | removed |
+| Redhook Bay, VI 9751540 (subordinate) | 2026-01-08 | L 00:58 0.237, H 02:52 0.304 | 114.5 | 0.067 | height | removed |
+| Port San Luis, CA 9412110 | 2027-03-15 | H 00:44 2.743, L 02:43 2.679 | 119.3 | 0.064 | height | printed: inside the time margin |
+| Anna Maria Key, FL 8726243 (subordinate) | 2026-01-18 | H 18:42 1.116, L 20:29 1.018 | 106.4 | 0.098 | height | printed: inside the height margin |
+| Captiva, FL 8725383 | 2027-10-05 | H 23:01 1.888, L 01:03 1.857 | 121.8 | 0.032 | time | printed: over two hours on the engine's clock |
+| Christiansted, VI 9751364 | 2024-09-20 | L 21:25 0.642, H 23:25 0.655 | 120.3 | 0.014 | time | printed: over two hours on the engine's clock |
+| Bangor, ME 8414612 | 2027-08-13 | L 13:34 10.447, H 14:32 10.568 | 57.8 | 0.121 | height | printed: not explained |
+
+**The rule.** NOAA's own: a high and a low less than two hours apart are
+listed only when NOAA's heights for them differ by 0.100 ft or more. That
+is one rule, and it does not fit the engine as it stands, because the
+engine's times and heights are not NOAA's to the last digit: with 120
+minutes and 0.10 ft the engine removes tides NOAA lists (six at Friday
+Harbor alone). So the engine takes the part of it that removes no tide
+NOAA lists anywhere it was tested: after the stands of 0004, a **near
+stand** is removed, a high and a low less than 115 minutes and less than
+0.095 ft apart, unless the tide before the pair or the tide after it is
+itself within 120 minutes and 0.10 ft of its neighbor in the pair. The
+margins are five minutes under NOAA's two hours and 0.005 ft under its
+0.100 ft; the closest pairs NOAA lists are 118.5 minutes and 0.0977 ft
+apart here. Where a neighbor is that close, three tides are in question
+and all three stay, as before.
+
+**What changed.** `engine.py`: `drop_stands` runs 0004's rule unchanged
+and then `_drop_near_stands` (`NEAR_STAND_MINUTES`, `NEAR_STAND_FEET`,
+`NOAA_STAND_FEET`). `STAND_MARGIN`, the time read on each side of a window
+so that an answer does not depend on where the window starts, goes from
+three hours to six: the pair, the pair beside it, and the pair that could
+remove that one. Harmonic and subordinate stations both go through
+`drop_stands`, so both change; a subordinate pair is judged in its own
+times and heights, as NOAA's are. `raw_events`, the curve and the year
+boundary (0031) are untouched.
+
+**How much.** Against every list on hand, 316 lists at 178 stations,
+110,591 NOAA tides: the engine printed 1,194 tides NOAA does not list and
+now prints 584; NOAA's tides it does not print are the same 375 before and
+after (271 at Port of West Sacramento, below), and none is newly left
+out.
+
+| NOAA's lists | Lists | Stations | NOAA tides | Extra before | Extra now | NOAA tides not printed, before and now |
+|---|---|---|---|---|---|---|
+| To the minute, harmonic | 222 | 125 | 84,394 | 314 | 102 | 32 |
+| 6-minute grid (a year at seven stations) | 7 | 7 | 9,548 | 438 | 152 | 72 |
+| Subordinate | 86 | 48 | 15,238 | 156 | 50 | 0 |
+| Port of West Sacramento, CA | 1 | 1 | 1,411 | 286 | 280 | 271 |
+
+Over all of 2027 at all 3,256 stations the engine printed 4,377,685 highs
+and lows; 1,549 fewer now, at 146 stations (61 harmonic, 85 subordinate:
+50 in Alaska, 34 in Florida, 34 in Washington, 8 in California, 7 in
+Louisiana, 5 in Hawaii, 4 in Massachusetts, 2 in Rhode Island, 1 each in
+Maine and the Virgin Islands), and none added. Most: Vineyard Haven and
+Edgartown (104 each), Port St. Joe (58), Mangrove Point (46). In the nine
+days around the pinned build (2026-11-01) 38 tides at 18 stations go. The
+twelve stations with a printed calendar or booklet (0030, 0035) do not
+change in 2027: not one tide.
+
+**What is left**, in NOAA's to-the-minute and subordinate lists (152
+tides):
+
+- Pairs inside the margins: from 115 minutes up or from 0.095 ft up on the
+  engine's numbers, which NOAA omits (Port San Luis, Anna Maria Key, two
+  pairs at Friday Harbor).
+- Pairs the engine puts just over two hours apart, 120.3 to 126.1 minutes,
+  all very flat, which NOAA omits (Captiva, Christiansted, Charlotte Amalie,
+  Corpus Christi). 0004 recorded these.
+- Three tides in question, where the engine keeps all three, or keeps the
+  other one of the outer two (Vineyard Haven, Vaca Key, Woods Hole, Cape
+  Cod Canal, Galveston). Where it keeps the other one, a NOAA tide is not
+  printed: the 32 above, all there before this change.
+- Reference wiggles of 0.0024 ft or less that NOAA's subordinate lists do
+  not show (Skan Bay, AK 12 tides, Christmas Bay, TX 6): whether such a
+  wiggle exists at all turns on the fourth decimal of the reference curve.
+- Bangor, ME, 2027-08-13: a low and a high 57.8 minutes and 0.121 ft
+  apart, which NOAA omits, though it lists a pair 52.9 minutes and 0.102
+  ft apart there on 2027-09-11. Not explained.
+
+**Tests.** `tests/fixtures/extra-tides/`: eight of NOAA's answers, byte
+for byte, with their SHA-256 in docs/DATA.md and in the test. In
+`tests/test_golden.py`: Port Townsend's 2027 (1,387 tides), Rumford's nine
+days and Redhook Bay's three now pass the accuracy gate whole (3 minutes,
+0.05 ft, the same count); every tide still printed that NOAA does not list
+is named with its cause (22, from 68 before); the two NOAA tides not
+printed are the same two as before. Negative controls, each asserting
+first that the sabotage changed the output: 0.08 and 0.09 ft leave Port
+Townsend pairs; 0.10 ft removes the pair NOAA lists at Friday Harbor on
+2027-12-29; 0.125 ft removes ten of NOAA's tides at Vineyard Haven; 110
+minutes leaves pairs at Port Townsend and Redhook Bay; 120 minutes removes
+the pair NOAA lists at Friday Harbor on 2027-03-17; 150 minutes, one rule
+of 120 minutes and 0.095 or 0.10 ft, any height under two hours, 0.095 ft
+at any spacing, and no guard each remove tides NOAA lists. On the engine
+before this change 18 tests fail. One line of `KNOWN_DIVERGENCES` goes:
+the Redhook Bay pair of 2026-11-06 is no longer printed. No tolerance was
+loosened.
+
+**Not known.**
+
+- Whether NOAA's line is 0.100 ft or 0.030 m (0.0984 ft). No listed pair
+  is printed 0.099 ft apart; about three would be expected if the line
+  were 0.0984 ft.
+- Which of the two outer tides NOAA lists when three are in question, and
+  so how to remove the 32 NOAA tides the engine does not print.
+- Why NOAA omits the Bangor pair of 2027-08-13.
+- Why NOAA answers a year's request at seven stations on a 6-minute grid,
+  and what rule that answer follows: it lists two lows in a row, which
+  removing pairs cannot produce. Where the two answers differ, the engine
+  now agrees with the to-the-minute one more often than with the other.
+- Port of West Sacramento, CA (9416131): the engine's highs and lows are a
+  median 18 minutes from NOAA's and 271 of NOAA's 1,411 have no engine tide
+  within 45 minutes. This is not a stand; it was found here and not looked
+  into.
+- NOAA was asked about 2027 almost everywhere. Other years are only the
+  saved lists and the fixtures (a day to a month each, 1946 to 2035, most
+  of them November 2026), which agree.
+
+**For the app.** TideCore has `dropStands` from 0004 (tide-hours #2) and
+nothing for near stands, so the app shows the 1,549 tides in 2027 that the
+site no longer does. To stay in step, in `Prediction.swift`:
+
+1. After `dropStands` has removed every high/low pair less than 120
+   minutes and less than 0.06 ft apart, flattest first, repeat until none
+   is found: among adjacent pairs of a high and a low (either order) that
+   are less than 115 minutes apart (strictly) and less than 0.095 ft apart
+   (strictly), skip any pair where the event before it and the pair's
+   first event are of different kinds, less than 120 minutes apart and
+   less than 0.10 ft apart, or the pair's second event and the event after
+   it are; of the pairs not skipped, remove the one with the smallest
+   height difference, both events.
+2. Read six hours of events on each side of the window before removing
+   anything, not three (`STAND_MARGIN`), and for a subordinate station six
+   hours plus the larger time offset plus 30 minutes, as now.
+3. Apply it to subordinate stations after the offsets, to the sorted list,
+   exactly as `dropStands` is applied.
+4. Copy `tests/fixtures/extra-tides/` and assert the same lists: no extra
+   tide at Port Townsend in 2027, four at Friday Harbor, and the named
+   ones elsewhere.
+
+The app is not changed here. Until it is, this is a stated difference
+between the site and the app.
+
+**Reversible.** Yes: set `NEAR_STAND_MINUTES` to 0 and the engine is 0004's
+again (with the wider margin, which removes nothing by itself).

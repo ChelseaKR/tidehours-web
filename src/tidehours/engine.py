@@ -247,7 +247,7 @@ class TideEvent:
 
 
 # A stand: a low and a high (or a high and a low) less than two hours apart
-# that differ by less than 0.05 ft. NOAA's published high/low predictions
+# that differ by less than 0.06 ft. NOAA's published high/low predictions
 # leave these out; the app's engine (and `raw_events`) keeps them. Measured
 # 2026-10-31 on a month of NOAA predictions at 14 small-range Gulf and
 # Caribbean stations (docs/DECISIONS.md 0004): every pair NOAA omitted was
@@ -255,12 +255,31 @@ class TideEvent:
 # NOAA kept were 125 minutes apart (0.020 ft) and 153 minutes (0.010 ft).
 STAND_MINUTES = 120.0
 STAND_FEET = 0.06
-STAND_MARGIN = 3 * 3_600.0
+# NOAA's own line is higher. Measured 2026-11-12 on NOAA's lists at 178
+# stations, 33 of them asked for that day (docs/DECISIONS.md 0036): of the
+# 257 pairs less than two hours apart that NOAA lists, none differs by less
+# than 0.100 ft in NOAA's own heights. This engine's times and heights are
+# not NOAA's to the last digit, so a pair NOAA lists can sit under NOAA's
+# line here: the closest are 118.5 minutes apart (Point Au Fer, LA) and
+# 0.0977 ft apart (Friday Harbor, WA, where NOAA's own heights are 0.101 ft
+# apart). A near stand is a pair inside both margins: five minutes under
+# NOAA's two hours and 0.005 ft under its 0.100 ft.
+NOAA_STAND_FEET = 0.10
+NEAR_STAND_MINUTES = 115.0
+NEAR_STAND_FEET = 0.095
+# Each side of a window needs the pair, the pair beside it, and the pair
+# that could remove that one.
+STAND_MARGIN = 6 * 3_600.0
+
+
+def _is_stand(a: TideEvent, b: TideEvent, minutes: float, feet: float) -> bool:
+    return a.kind != b.kind and b.time - a.time < minutes * 60 and abs(b.height - a.height) < feet
 
 
 def drop_stands(events: Sequence[TideEvent]) -> list[TideEvent]:
     """Remove each adjacent high/low pair that is a stand (see above), the
-    flattest pair first, so a run of tiny wiggles collapses cleanly."""
+    flattest pair first, so a run of tiny wiggles collapses cleanly; then
+    the near stands that stand alone (`_drop_near_stands`)."""
     ev = list(events)
     while True:
         best: int | None = None
@@ -270,6 +289,28 @@ def drop_stands(events: Sequence[TideEvent]) -> list[TideEvent]:
             dh = abs(b.height - a.height)
             if a.kind != b.kind and b.time - a.time < STAND_MINUTES * 60 and dh < best_dh:
                 best, best_dh = i, dh
+        if best is None:
+            return _drop_near_stands(ev)
+        del ev[best : best + 2]
+
+
+def _drop_near_stands(ev: list[TideEvent]) -> list[TideEvent]:
+    """Remove each near stand whose neighbors are not themselves within
+    NOAA's two hours and 0.10 ft of it. Where they are, three tides are in
+    question, NOAA lists one of the outer two, and which one is not known
+    (DECISIONS 0036), so all three stay, as before."""
+    while True:
+        best: int | None = None
+        best_dh = NEAR_STAND_FEET
+        for i in range(len(ev) - 1):
+            a, b = ev[i], ev[i + 1]
+            if not _is_stand(a, b, NEAR_STAND_MINUTES, best_dh):
+                continue
+            if i > 0 and _is_stand(ev[i - 1], a, STAND_MINUTES, NOAA_STAND_FEET):
+                continue
+            if i + 2 < len(ev) and _is_stand(b, ev[i + 2], STAND_MINUTES, NOAA_STAND_FEET):
+                continue
+            best, best_dh = i, abs(b.height - a.height)
         if best is None:
             return ev
         del ev[best : best + 2]

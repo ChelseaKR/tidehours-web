@@ -1594,3 +1594,13 @@ the sentence, the checks and the 2028 removal apply to all nine.
 Update, 2026-11-12 (night): three more, Eastport (8410140), Brewster Flats
 (Sesuit Harbor, 8447241) and New Smyrna Beach (8721164), bring the list to
 twelve, with the listing ids the owner gave.
+
+Update, 2026-11-13: sixteen more calendars went on sale and are added at the
+owner's request, bringing the list to twenty-eight: Plymouth (8446493),
+Portsmouth (Fort Point, 8423898), Kennebunkport (8418911), Portland (8418150),
+Fort Bragg (Noyo Harbor, 9417426), Olympia (Olympia Shoal, 9446807),
+Newburyport (8440466), Duxbury (8446166), Provincetown (8446121),
+St. Augustine (St. Augustine Beach, 8720587), Hatteras Island (Cape Hatteras
+Fishing Pier, 8654400), Seward (9455090), Gloucester (8441841), La Push
+(9442396), Hood Canal (Union, 9445478) and Homer (9455558). Each link goes on
+the page of the station its calendar is computed from. Nothing else changes.

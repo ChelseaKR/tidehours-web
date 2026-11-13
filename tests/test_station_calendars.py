@@ -1,6 +1,6 @@
 """A station page's link to its printable tide calendar in the Tide Hours shop
 on Etsy (docs/DECISIONS.md 0035, built as 0030 builds the booklet links): the
-committed list is the calendars the owner listed (three on 2026-11-11, twelve from 2026-11-12); an empty list leaves
+committed list is the calendars the owner listed (three on 2026-11-11, twelve from 2026-11-12, twenty-eight from 2026-11-13); an empty list leaves
 no trace; one listed calendar puts one plain link on that station's page and
 nowhere else; a bad entry is refused; the link leaves when the calendar's
 year is over; the privacy page names the Etsy links by what the build shows;
@@ -39,7 +39,7 @@ SENTENCE = "A printable 2027 tide calendar for this station is in the Tide Hours
 SHOP = "https://www.etsy.com/shop/TideHours"
 TAG = "tidehours-20"
 ASIN = "B0TESTTEST"
-# The committed list, as the owner gave it on 2026-11-12.
+# The committed list, as the owner gave it on 2026-11-12 and 2026-11-13.
 COMMITTED = {
     "8413320": ("4614956632", "2027 Tide Calendar: Bar Harbor"),
     "9414131": ("4614960826", "2027 Tide Calendar: Half Moon Bay"),
@@ -53,6 +53,22 @@ COMMITTED = {
     "8410140": ("4616051522", "2027 Tide Calendar: Eastport"),
     "8447241": ("4616040791", "2027 Tide Calendar: Brewster Flats"),
     "8721164": ("4616053676", "2027 Tide Calendar: New Smyrna Beach"),
+    "8446493": ("4616148066", "2027 Tide Calendar: Plymouth"),
+    "8423898": ("4616137561", "2027 Tide Calendar: Portsmouth"),
+    "8418911": ("4616138071", "2027 Tide Calendar: Kennebunkport"),
+    "8418150": ("4616149760", "2027 Tide Calendar: Portland"),
+    "9417426": ("4616150142", "2027 Tide Calendar: Fort Bragg"),
+    "9446807": ("4616150530", "2027 Tide Calendar: Olympia"),
+    "8440466": ("4616156716", "2027 Tide Calendar: Newburyport"),
+    "8446166": ("4616154046", "2027 Tide Calendar: Duxbury"),
+    "8446121": ("4616143255", "2027 Tide Calendar: Provincetown"),
+    "8720587": ("4616143649", "2027 Tide Calendar: St. Augustine"),
+    "8654400": ("4616144049", "2027 Tide Calendar: Hatteras Island"),
+    "9455090": ("4616144439", "2027 Tide Calendar: Seward"),
+    "8441841": ("4616144799", "2027 Tide Calendar: Gloucester"),
+    "9442396": ("4616156330", "2027 Tide Calendar: La Push"),
+    "9445478": ("4616157186", "2027 Tide Calendar: Hood Canal"),
+    "9455558": ("4616157552", "2027 Tide Calendar: Homer"),
 }
 ETSY_A = re.compile(r'<a\b[^>]*href="(https?://[^"]*etsy\.[^"]*)"[^>]*>', re.I)
 BLOCK = re.compile(r'<p class="calendar"[^>]*>.*?</p>', re.S)
@@ -165,7 +181,9 @@ def everything(tmp_path_factory: pytest.TempPathFactory, listed: Path, booklet_l
 def committed(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """The committed list, in the states of its stations, with the
     print shop on."""
-    return build(tmp_path_factory.mktemp("committed"), None, "--print-shop-url", SHOP, states="ME,CA,OR,MA,GA,MD,WA,FL")
+    return build(
+        tmp_path_factory.mktemp("committed"), None, "--print-shop-url", SHOP, states="ME,CA,OR,MA,GA,MD,WA,FL,NH,NC,AK"
+    )
 
 
 @pytest.fixture(scope="module")
@@ -437,7 +455,12 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
 
 def test_the_committed_calendars_leave_on_january_1_2028(tmp_path: Path, check_site: Any) -> None:
     after = build(
-        tmp_path / "2028", None, "--print-shop-url", SHOP, now="2028-01-01T11:20:00Z", states="ME,CA,OR,MA,GA,MD,WA,FL"
+        tmp_path / "2028",
+        None,
+        "--print-shop-url",
+        SHOP,
+        now="2028-01-01T11:20:00Z",
+        states="ME,CA,OR,MA,GA,MD,WA,FL,NH,NC,AK",
     )
     for sid in COMMITTED:
         assert 'data-station-date="2028-01-01"' in read(after, f"stations/{sid}")

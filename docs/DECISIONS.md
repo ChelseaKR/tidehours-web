@@ -6,8 +6,8 @@ decision made while carrying them out, and can be changed.
 ## 0001: A website for Tide Hours at tidehours.com (owner, 2026-10-31)
 
 Tide Hours gets its own site at tidehours.com. The owner checked the
-trademark search and is buying the domain. This repository is private until
-the owner says otherwise.
+trademark search and is buying the domain. This repository was private until
+the owner made it public on 2026-11-12.
 
 The product split:
 

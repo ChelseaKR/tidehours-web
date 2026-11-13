@@ -2,7 +2,9 @@
 
 Follow /Users/chelsea/portfolio/AGENTS.md first. In this repository:
 
-- **Private.** Do not change the repository's visibility.
+- **Public** since 2026-11-12, by the owner's decision. Do not change the
+  repository's visibility. Never commit secrets, credentials or personal
+  data; public history is permanent.
 - **Work on branches** in a git worktree; `main` takes pull requests only.
   Never push to `main` directly (the initial scaffold was the one exception).
 - **The gate is `make verify`.** Run it before every push and never bypass

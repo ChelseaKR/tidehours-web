@@ -2,6 +2,18 @@
 
 ## 0.1.0 (unreleased)
 
+- The station pages of Bar Harbor, Eastport, Homer, Provincetown, La Jolla
+  and Monterey link to that town's printable 2027 year-of-tides poster in
+  the Tide Hours shop on Etsy, after the calendar sentence and by the same
+  rules; `src/tidehours/copy/posters.json` lists them. A new page,
+  `/tide-calendars/`, lists every calendar and poster the station pages
+  link to (28 towns, 34 listings), by state and town, each with a link to
+  its station page and to its listing. It is in the sitemap, and the footer
+  of every English page links to it. The page and the link exist only
+  while a station page shows a calendar or poster link. The privacy page
+  names the new page among the pages that link to Etsy. `check_site.py`
+  checks the poster sentence, the page and the footer link
+  (DECISIONS 0037).
 - Fewer highs and lows that NOAA does not list. NOAA lists a high and a
   low less than two hours apart only when its own heights for them differ by
   0.100 ft or more; the engine removed such a pair only under 0.06 ft. It

@@ -26,14 +26,20 @@ In the same way, a station whose printable calendar is listed
 once, on its own page, with exactly https://www.etsy.com/listing/ID, after
 the booklet sentence when there is one; that sentence is the one exception
 to the Etsy rules above, and the privacy page names the Etsy links by what
-the build shows (0035).
+the build shows (0035). A station whose printable poster is listed
+(src/tidehours/copy/posters.json) links to it in the same way, after the
+calendar sentence when there is one. While any station page shows a
+calendar or poster link, tide-calendars/ lists exactly those towns, by
+state and town, each with a link to its station page and the same plain
+link to each listing, and every English page's footer links to it once;
+otherwise there is no such page and no link to one (0037).
 Every station page has a sun and moon line for each of its two days, and it
 is the one sky.py computes for that station and date: a day without a
 sunrise, sunset, civil twilight, moonrise or moonset says so in words, and
 no line shows "00:00" (0019).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
-                                       [--calendars FILE]
+                                       [--calendars FILE] [--posters FILE]
 """
 
 from __future__ import annotations
@@ -45,9 +51,10 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, booklets, calendars, kingtides, ktformat, printshop, site
+from tidehours import affiliate, booklets, calendars, kingtides, ktformat, posters, printables, printshop, site
 from tidehours.catalog import Catalog, Station, load
 from tidehours.days import sky_text
 from tidehours.sky import moon_day, moon_times, sun_day
@@ -73,6 +80,11 @@ SKY = re.compile(r'<p class="sky" data-sky="([^"]*)">(.*?)</p>', re.S)
 TAG = re.compile(r"<[^>]+>")
 BOOKLET_P = re.compile(r'<p class="booklet"[^>]*>.*?</p>', re.S)
 CALENDAR_P = re.compile(r'<p class="calendar"[^>]*>.*?</p>', re.S)
+POSTER_P = re.compile(r'<p class="poster"[^>]*>.*?</p>', re.S)
+PRINTABLE_LI = re.compile(r'<li data-printable="([^"]*)">(.*?)</li>', re.S)
+LINK_TEXT = re.compile(r'<a\b[^>]*\bhref="([^"]*)"[^>]*>(.*?)</a>', re.S)
+H1 = re.compile(r"<h1>(.*?)</h1>", re.S)
+MAIN_P = re.compile(r"<p(?: [^>]*)?>(.*?)</p>", re.S)
 ANY_A = re.compile(r"<a\b[^>]*>", re.I)
 HREF_ATTR = re.compile(r'\bhref="([^"]*)"')
 
@@ -443,8 +455,153 @@ def _check_calendar(rel: str, text: str, want: calendars.Calendar | None) -> tup
     return text[: found.start()] + text[found.end() :], problems
 
 
+def poster_pages(root: Path, listed: dict[str, posters.Poster]) -> tuple[dict[str, posters.Poster], list[str]]:
+    """The station pages of this build that must link to a poster, as page
+    path -> poster: each listed station that has a page, unless the page's
+    own date is past the poster's year (docs/DECISIONS.md 0037)."""
+    want: dict[str, posters.Poster] = {}
+    problems: list[str] = []
+    for station_id, poster in listed.items():
+        rel = f"stations/{station_id}/index.html"
+        if not (root / rel).is_file():
+            continue
+        dates = STATION_DATE.findall((root / rel).read_text(encoding="utf-8"))
+        if len(dates) != 1:
+            problems.append(f"{rel}: no date to tell whether its poster's year is over")
+        elif posters.shown(poster, dt.date.fromisoformat(dates[0])):
+            want[rel] = poster
+    return want, problems
+
+
+def _check_poster(rel: str, text: str, want: posters.Poster | None) -> tuple[str, list[str]]:
+    """One page's poster sentence, held to the calendar sentence's rules
+    (_check_calendar). Returns the page without the sentence, and the
+    problems: a sentence on a page that is due none; or, on a page that is
+    due one, none or more than one, more than one link in it, an address
+    that is not exactly the listing's, a rel other than noopener, a click
+    event, a place before the tide tables or after the page's closing
+    notes, or a place before the booklet or calendar sentence. It runs
+    before _check_calendar, on the page that still has the calendar
+    sentence."""
+    blocks = list(POSTER_P.finditer(text))
+    if want is None:
+        return text, ([f"{rel}: a poster link on a page that is due none"] if blocks else [])
+    if len(blocks) != 1:
+        return POSTER_P.sub("", text), [f"{rel}: {len(blocks)} poster links, exactly 1 expected"]
+    problems: list[str] = []
+    found = blocks[0]
+    anchors = ANY_A.findall(found.group(0))
+    if len(anchors) != 1 or found.group(0).count("http") != 1:
+        problems.append(f"{rel}: the poster sentence has {len(anchors)} links, exactly 1 expected")
+    for a in anchors:
+        href_attr = HREF_ATTR.search(a)
+        href = htmllib.unescape(href_attr.group(1)) if href_attr else ""
+        if href != want.url:
+            problems.append(f"{rel}: {href} is not the poster's address, {want.url}")
+        rel_attr = REL_ATTR.search(a)
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if tokens != set(calendars.REL.split()):
+            problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
+        if "data-ga" in a:
+            problems.append(f"{rel}: the poster link carries a click event")
+    last_day = text.rfind('<section class="day"')
+    if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
+        problems.append(f"{rel}: the poster link is not between the tide tables and the closing notes")
+    earlier = [m for m in (BOOKLET_P.search(text), CALENDAR_P.search(text)) if m is not None]
+    if any(m.start() > found.start() for m in earlier):
+        problems.append(f"{rel}: the poster link comes before the booklet or calendar link")
+    return text[: found.start()] + text[found.end() :], problems
+
+
+def _station_ids(pages: dict[str, Any] | None) -> dict[str, Any]:
+    """calendar_pages' or poster_pages' value, keyed by station id."""
+    return {rel.split("/")[1]: item for rel, item in (pages or {}).items()}
+
+
+def check_printables(
+    root: Path,
+    html: list[Path],
+    cat: Catalog,
+    calendar_links: dict[str, calendars.Calendar] | None = None,
+    poster_links: dict[str, posters.Poster] | None = None,
+) -> list[str]:
+    """While a station page of this build is due a calendar or poster
+    sentence, tide-calendars/ exists and is exactly the page printables.py
+    gives for those sentences: its title, heading and two paragraphs, and
+    each town in order with a link to its station page and one link to each
+    of its listings, `https://www.etsy.com/listing/ID` with rel="noopener"
+    and no click event. Etsy is linked nowhere else on it and is not in its
+    JSON-LD. Every English page links to it once, in the footer, and the
+    Spanish page does not. With no sentence due, there is no such page and
+    no link to one (docs/DECISIONS.md 0037)."""
+    calendar_of, poster_of = _station_ids(calendar_links), _station_ids(poster_links)
+    stations = {sid: s for sid in {*calendar_of, *poster_of} if (s := cat.station(sid)) is not None}
+    listing = printables.block(calendar_of, poster_of, stations)
+    rel = printables.PATH + "index.html"
+    f = root / rel
+    problems: list[str] = []
+    if listing is None:
+        if f.is_file():
+            problems.append(f"{rel}: a list of calendars and posters in a build with none to list")
+    elif not f.is_file():
+        problems.append(f"{rel}: no page, though station pages link to a calendar or poster")
+    else:
+        problems += _check_printables_page(rel, f.read_text(encoding="utf-8"), listing)
+    href = f'href="/{printables.PATH}"'
+    for page in html:
+        text = page.read_text(encoding="utf-8")
+        want = 1 if listing is not None and '<html lang="en">' in text else 0
+        if text.count(href) != want:
+            where = page.relative_to(root).as_posix()
+            problems.append(f"{where}: {text.count(href)} links to {printables.PATH}, exactly {want} expected")
+    return problems
+
+
+def _check_printables_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    main = text[text.find("<main") : text.find("</main>")]
+    shown = [
+        (station_id, [(htmllib.unescape(href), htmllib.unescape(name)) for href, name in LINK_TEXT.findall(inner)])
+        for station_id, inner in PRINTABLE_LI.findall(main)
+    ]
+    want = [
+        (town.station_id, [(f"/stations/{town.station_id}/", town.name), *((i.url, i.title) for i in town.items)])
+        for state in listing["states"]
+        for town in state.towns
+    ]
+    if shown != want:
+        extra = [x for x in shown if x not in want]
+        missing = [w for w in want if w not in shown]
+        problems.append(
+            f"{rel}: the towns listed differ, or their order: shown but not due {extra}, due but not shown {missing}"
+        )
+    links = list(ETSY_A.finditer(text))
+    if len(links) != sum(len(town.items) for state in listing["states"] for town in state.towns):
+        problems.append(f"{rel}: {len(links)} etsy links, one for each listing expected")
+    for m in links:
+        rel_attr = REL_ATTR.search(m.group(0))
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if tokens != set(listing["rel"].split()):
+            problems.append(f"{rel}: {htmllib.unescape(m.group(1))} rel is {sorted(tokens)}")
+        if "data-ga" in m.group(0):
+            problems.append(f"{rel}: a listing link carries a click event")
+    if any("etsy" in block.lower() for block in JSON_LD.findall(text)):
+        problems.append(f"{rel}: etsy in JSON-LD")
+    title = [htmllib.unescape(t) for t in TITLE.findall(text)]
+    if title != [f"{listing['title']} | Tide Hours"]:
+        problems.append(f"{rel}: title {title}")
+    words = [htmllib.unescape(x) for x in (*H1.findall(main), *MAIN_P.findall(main))]
+    if words != [listing["heading"], listing["intro"], listing["how"]]:
+        problems.append(f"{rel}: the heading and the two paragraphs are {words}")
+    return problems
+
+
 def check_print_shop(
-    root: Path, html: list[Path], url: str, calendar_links: dict[str, calendars.Calendar] | None = None
+    root: Path,
+    html: list[Path],
+    url: str,
+    calendar_links: dict[str, calendars.Calendar] | None = None,
+    poster_links: dict[str, posters.Poster] | None = None,
 ) -> list[str]:
     """With no shop address, "etsy" appears nowhere. With one, the About page
     and the English king-tide page each link to it exactly once, with that
@@ -458,10 +615,17 @@ def check_print_shop(
     taken out of the page before the rules above run on the rest, so they
     hold for everything else, shop address or none. While any page is due
     one, the privacy and terms pages may name Etsy in words, never with a
-    link. The privacy page says exactly what calendars.notice says for this
-    build, and nothing about Etsy when the build has no Etsy link."""
+    link. The privacy page says exactly what printables.notice says for this
+    build, and nothing about Etsy when the build has no Etsy link.
+
+    The same holds for `poster_links`, from poster_pages, and the poster
+    sentence (_check_poster). While any page is due either sentence, the
+    page that lists them all, tide-calendars/, is left to check_printables
+    and is not held to the rules above (docs/DECISIONS.md 0037)."""
     want = calendar_links or {}
-    named = {p + "index.html" for p in printshop.MENTION_PAGES} if want else set()
+    want_poster = poster_links or {}
+    which = printables.kind(bool(want), bool(want_poster))
+    named = {p + "index.html" for p in printshop.MENTION_PAGES} if which else set()
     problems: list[str] = []
     for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
@@ -470,8 +634,12 @@ def check_print_shop(
     link_pages = {p + "index.html" for p in printshop.PAGES}
     for f in html:
         rel = f.relative_to(root).as_posix()
-        text, found = _check_calendar(rel, f.read_text(encoding="utf-8"), want.get(rel))
+        text, found = _check_poster(rel, f.read_text(encoding="utf-8"), want_poster.get(rel))
         problems += found
+        text, found = _check_calendar(rel, text, want.get(rel))
+        problems += found
+        if which and rel == printables.PATH + "index.html":
+            continue
         if "etsy" not in text.lower():
             if url and rel in link_pages:
                 problems.append(f"{rel}: no shop link with a shop address set")
@@ -481,22 +649,24 @@ def check_print_shop(
                 problems.append(f"{rel}: mentions etsy with no shop address set")
         else:
             problems += _check_print_shop_page(rel, text, url, rel in link_pages)
-    problems += _check_shop_notice(root, url, bool(want))
+    problems += _check_shop_notice(root, url, which)
     return problems
 
 
 SHOP_NOTICE = re.compile(r'<h2 id="shop">(.*?)</h2>\s*<p>(.*?)</p>', re.S)
 
 
-def _check_shop_notice(root: Path, url: str, any_calendar: bool) -> list[str]:
+def _check_shop_notice(root: Path, url: str, which: str | None) -> list[str]:
     """The privacy page's section on the Etsy links is exactly the one
-    calendars.notice gives for this build: none with no Etsy link, the print
+    printables.notice gives for this build: none with no Etsy link, the print
     shop's own sentence with only the shop link, and the sentence that names
-    the station pages while a calendar link shows (docs/DECISIONS.md 0035)."""
+    the list of calendars and posters and the station pages while a calendar
+    or poster link shows (docs/DECISIONS.md 0035, 0037). `which` is
+    printables.kind's value."""
     f = root / "privacy" / "index.html"
     if not f.is_file():
         return []
-    expect = calendars.notice(any_calendar, printshop.block(url))
+    expect = printables.notice(which, printshop.block(url))
     found = [(htmllib.unescape(h), htmllib.unescape(p)) for h, p in SHOP_NOTICE.findall(f.read_text(encoding="utf-8"))]
     want = [(expect["heading"], expect["body"])] if expect else []
     if found != want:
@@ -535,6 +705,7 @@ def main(
     print_shop_url: str = "",
     booklets_file: Path | None = None,
     calendars_file: Path | None = None,
+    posters_file: Path | None = None,
 ) -> int:
     problems: list[str] = []
     cat = load()
@@ -555,7 +726,10 @@ def main(
     problems += check_affiliate(root, html, amazon_tag, booklet_links)
     calendar_links, undated = calendar_pages(root, calendars.load(calendars_file))
     problems += undated
-    problems += check_print_shop(root, html, print_shop_url, calendar_links)
+    poster_links, undated = poster_pages(root, posters.load(posters_file))
+    problems += undated
+    problems += check_print_shop(root, html, print_shop_url, calendar_links, poster_links)
+    problems += check_printables(root, html, cat, calendar_links, poster_links)
     problems += check_sky(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
@@ -573,5 +747,6 @@ if __name__ == "__main__":
     ap.add_argument(
         "--calendars", type=Path, help="the calendar list the site was built with, if not the committed one"
     )
+    ap.add_argument("--posters", type=Path, help="the poster list the site was built with, if not the committed one")
     args = ap.parse_args()
-    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets, args.calendars))
+    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets, args.calendars, args.posters))

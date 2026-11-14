@@ -60,7 +60,7 @@
       {% endif %}
     </section>
     <p>{{ t.notice }} {{ t.credit }} <a href="https://tidesandcurrents.noaa.gov/">NOAA Tides and Currents</a></p>
-    <p><a href="/privacy/">{{ t.privacy }}</a> · <a href="/terms/">{{ t.terms }}</a> · <a href="/about/">{{ t.about }}</a></p>
+    <p><a href="/privacy/">{{ t.privacy }}</a> · <a href="/terms/">{{ t.terms }}</a> · <a href="/about/">{{ t.about }}</a>{% if printables and lang == "en" %} · <a href="/{{ printables.path }}">{{ printables.label }}</a>{% endif %}</p>
     {% if ga4_measurement_id %}
     <div id="analytics-choice" hidden>
       <button type="button" id="analytics-opt-out" hidden>Opt out of analytics</button>

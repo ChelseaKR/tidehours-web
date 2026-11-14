@@ -14,9 +14,8 @@ string, no tracking parameter and no click event. The link shows while the
 page's first day is in the calendar's year or earlier, so a 2027 calendar
 leaves the page on January 1, 2028 without anyone editing a file.
 
-The privacy page names the Etsy links by what the build shows: the print
-shop's sentence alone (0029), the print shop's and the calendars' together,
-or the calendars' alone (`notice`).
+The privacy page names the Etsy links by what the build shows
+(`printables.notice`, 0037).
 """
 
 from __future__ import annotations
@@ -111,17 +110,3 @@ def block(calendar: Calendar | None) -> dict[str, Any] | None:
         "before": text["before"].replace("{year}", str(calendar.year)),
         "after": text["after"],
     }
-
-
-def notice(any_shown: bool, print_shop: dict[str, Any] | None) -> dict[str, str] | None:
-    """The privacy page's words about the links to Etsy, or None when the
-    build has none. `print_shop` is printshop.block's value. With no
-    calendar link shown, the print shop's own sentence (0029), unchanged;
-    with one, a sentence that names the station pages too, and the print
-    shop's pages only when its link is on."""
-    if not any_shown:
-        if print_shop is None:
-            return None
-        return {"heading": print_shop["text"]["privacyHeading"], "body": print_shop["text"]["privacy"]}
-    text: dict[str, str] = json.loads(COPY.read_text(encoding="utf-8"))
-    return {"heading": text["privacyHeading"], "body": text["privacyWithShop" if print_shop else "privacy"]}

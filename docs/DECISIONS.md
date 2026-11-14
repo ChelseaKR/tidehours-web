@@ -2456,23 +2456,14 @@ listing that the list does not carry. No new decision number: like 0035's
 and 0037's later lists, this adds listings, and the two kinds follow this
 decision's rules.
 
-Update, 2026-11-14 (late): sixteen more listings went live that afternoon
+Update, 2026-11-14 (late): more listings went live that afternoon
 and are linked at the owner's request, each id from the line "LISTED
 2026-11-14 as ID" in its product notes. The listings were not fetched.
 
-- **Fourteen in `copy/gifts.json`**, each marked live on 2026-11-14: the
-  custom tide cross-stitch pattern ("Custom Tide Cross Stitch Pattern",
-  4617440352), a `custom` entry listed after the other two made-to-order
-  prints, its `about` the first sentence of its listing, word for word,
-  as for those two, and with no year, so it stays after 2027 with them;
-  tide
+- **Seven in `copy/gifts.json`**, each marked live on 2026-11-14: tide
   rings for Ogunquit (station 8419317), Cape May (8536110), Myrtle Beach
   (8661070), Tybee Island (8670870), Newport (9435380) and Long Beach
-  (9440581); tide blanket patterns for Newport, Ogunquit, Tybee Island and
-  Fernandina Beach (8720030); tide rings cross-stitch patterns for Monterey
-  (9413450) and Half Moon Bay (9414131), each `about` the first two
-  sentences of its listing, word for word, as for the first two patterns;
-  and the made-to-order year-of-daylight print. Each town's station is
+  (9440581), and the made-to-order year-of-daylight print. Each town's station is
   the one its calendar is listed under, and the one its listing names as
   the NOAA station it is computed for; `test_gifts.py` now checks that a
   town is under one station in every list.
@@ -2497,7 +2488,15 @@ and are linked at the owner's request, each id from the line "LISTED
   The gifts page lists both under "Year-of-tides posters".
 
 Station pages still link only their calendar and poster (0029, 0035,
-0037): a tide rings print, blanket or pattern is linked from the gifts
-page, which every station page's footer links to, and not from its town's
+0037): a tide rings print is linked from the gifts page, which every station page's footer links to, and not from its town's
 station page. A sentence for those on station pages would be a new
 decision.
+
+Update, 2026-11-14 (evening): the owner paused every knit, crochet and
+cross-stitch pattern listing on Etsy, to be sold elsewhere later, so
+`copy/gifts.json` no longer lists the tide blanket patterns (Bar Harbor,
+Half Moon Bay, Newport, Ogunquit, Tybee Island, Fernandina Beach) or the
+cross-stitch patterns (San Francisco, Bar Harbor, Monterey, Half Moon Bay,
+and the custom one), and the page's two pattern sections and their words
+in its description leave with them; the `blanket` and `stitch` kinds stay
+in the code for when they are listed again.

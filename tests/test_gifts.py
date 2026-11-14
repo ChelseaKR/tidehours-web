@@ -44,8 +44,7 @@ TITLE = "Tide chart gifts and tide art prints | Tide Hours"
 HEADING = "Tide chart gifts and tide art prints"
 DESCRIPTION = (
     "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, a winter solstice print, "
-    "year-of-daylight prints, tide art prints, tide posters, 2027 tide calendars, tide blanket patterns, cross-stitch "
-    "patterns and moon phase calendars."
+    "year-of-daylight prints, tide art prints, tide posters, 2027 tide calendars and moon phase calendars."
 )
 INTRO = (
     "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, "
@@ -62,12 +61,10 @@ SECTIONS = [
     "Tide rings art prints",
     "Year-of-tides posters",
     "Printable 2027 tide calendars",
-    "Tide blanket patterns",
-    "Cross-stitch patterns",
     "Moon phase calendars",
 ]
-# The made-to-order prints of the list and the cross-stitch patterns: each
-# line's words after the link are the listing's own approved description.
+# The made-to-order prints of the list: each line's words after the link
+# are the listing's own approved description.
 YEAR_IN_TIDES = (
     '<li data-gift="4617340915"><a href="https://www.etsy.com/listing/4617340915" rel="noopener">Your Year In '
     "Tides</a>. A whole year of tides at your place, drawn as rings, like the rings of a tree: the year someone "
@@ -77,23 +74,6 @@ WEDDING_SIGN = (
     '<li data-gift="4617341518"><a href="https://www.etsy.com/listing/4617341518" rel="noopener">Beach Wedding '
     "Welcome Sign</a>. A welcome sign for a wedding by the water: the predicted tide at your town or beach on your "
     "wedding day, with the time of your ceremony marked on the curve.</li>"
-)
-STITCH_TEXT = (
-    "<p>Full cross stitches only, 2 strands: no backstitch, no half or quarter stitches. No fabric, thread or kit "
-    "is shipped. There are no month marks, times or heights on it: it is a picture of the year, not a calendar or "
-    "a tide table.</p>"
-)
-SF_STITCH = (
-    '<li data-gift="4617334117"><a href="/stations/9414290/">San Francisco</a>, California: '
-    '<a href="https://www.etsy.com/listing/4617334117" rel="noopener">2027 Tide Rings Cross Stitch Pattern: San '
-    "Francisco</a>. A counted cross-stitch pattern of the whole 2027 tide year at San Francisco, California, drawn "
-    "as a spiral of rings, from the shop&#39;s Tide Rings poster. Cream and amber on navy.</li>"
-)
-MONTEREY_STITCH = (
-    '<li data-gift="4617392939"><a href="/stations/9413450/">Monterey</a>, California: '
-    '<a href="https://www.etsy.com/listing/4617392939" rel="noopener">2027 Tide Rings Cross Stitch Pattern: '
-    "Monterey</a>. A counted cross-stitch pattern of the whole 2027 tide year at Monterey, California, drawn as a "
-    "spiral of rings, from the shop&#39;s Tide Rings poster. Navy and red on cream.</li>"
 )
 # The made-to-order year-of-daylight print: the section's sentence, then
 # the line, whose words after the link are the listing's own approved
@@ -105,11 +85,6 @@ ANY_CITY = (
     "day of 2027 in your city, drawn as light: a ring of 365 spokes, one for each day, with the hours the sun is up "
     "as a band of gold (or coral) around it. Made to order for any city in the world with a sunrise and a sunset "
     "every day of the year.</li>"
-)
-CUSTOM_STITCH = (
-    '<li data-gift="4617440352"><a href="https://www.etsy.com/listing/4617440352" rel="noopener">Custom Tide Cross '
-    "Stitch Pattern</a>. A cross-stitch pattern of the tide on your day: the predicted tide at your place on your "
-    "date, from midnight to midnight, with your own line stitched above it.</li>"
 )
 # The solstice print's sentence: the wording of its live Etsy listing,
 # adapted only to join its first two sentences of the second paragraph.
@@ -139,11 +114,6 @@ OGUNQUIT_RINGS = (
     '<li data-gift="4617388180"><a href="/stations/8419317/">Ogunquit</a>, Maine: '
     '<a href="https://www.etsy.com/listing/4617388180" rel="noopener">2027 Tide Rings: Ogunquit</a></li>'
 )
-FERNANDINA_BLANKET = (
-    '<li data-gift="4617426192"><a href="/stations/8720030/">Fernandina Beach</a>, Florida: '
-    '<a href="https://www.etsy.com/listing/4617426192" rel="noopener">2027 Tide Blanket Pattern: Fernandina '
-    "Beach</a></li>"
-)
 # The book line the Guam test list gives (one town).
 GU_BOOK = (
     '<li data-gift="B0TESTAAAA"><a href="https://www.amazon.com/dp/B0TESTAAAA" rel="noopener">2027 Tide Tables: '
@@ -167,18 +137,14 @@ BOOK_PRIVACY = (
 # The committed list: each listing id, as marked "LISTED" in the owner's
 # product notes, with its kind, title and the day it was marked. The
 # town-bound ones of the afternoon of 2026-11-14 have their stations in
-# NEW_STATIONS. The Maine
-# Coast hardcover is left out until the owner has checked her author copy.
+# NEW_STATIONS. The tide blanket and cross-stitch pattern listings
+# (PAUSED) are paused on Etsy and not listed. The Maine Coast hardcover is
+# left out until the owner has checked her author copy.
 LIVE = {
     "4617340915": ("custom", "Your Year In Tides", "2026-11-14"),
     "4617341518": ("custom", "Beach Wedding Welcome Sign", "2026-11-14"),
-    "4617440352": ("custom", "Custom Tide Cross Stitch Pattern", "2026-11-14"),
-    "4617334117": ("stitch", "2027 Tide Rings Cross Stitch Pattern: San Francisco", "2026-11-14"),
-    "4617336719": ("stitch", "2027 Tide Rings Cross Stitch Pattern: Bar Harbor", "2026-11-14"),
     "4616980007": ("daylight", "2026 Winter Solstice Print: The Light Returns", "2026-11-13"),
     "4617410905": ("sun", "2027 Year of Daylight Print: Any City", "2026-11-14"),
-    "4617392939": ("stitch", "2027 Tide Rings Cross Stitch Pattern: Monterey", "2026-11-14"),
-    "4617403654": ("stitch", "2027 Tide Rings Cross Stitch Pattern: Half Moon Bay", "2026-11-14"),
     "4617246732": ("rings", "2027 Tide Rings: Bar Harbor", "2026-11-14"),
     "4617240419": ("rings", "2027 Tide Rings: Monterey", "2026-11-14"),
     "4617280124": ("rings", "2027 Tide Rings: San Francisco", "2026-11-14"),
@@ -189,21 +155,18 @@ LIVE = {
     "4617387277": ("rings", "2027 Tide Rings: Tybee Island", "2026-11-14"),
     "4617389139": ("rings", "2027 Tide Rings: Newport", "2026-11-14"),
     "4617391319": ("rings", "2027 Tide Rings: Long Beach", "2026-11-14"),
-    "4616975320": ("blanket", "2027 Tide Blanket Pattern: Bar Harbor", "2026-11-13"),
-    "4616976698": ("blanket", "2027 Tide Blanket Pattern: Half Moon Bay", "2026-11-13"),
-    "4617422176": ("blanket", "2027 Tide Blanket Pattern: Newport", "2026-11-14"),
-    "4617423848": ("blanket", "2027 Tide Blanket Pattern: Ogunquit", "2026-11-14"),
-    "4617425020": ("blanket", "2027 Tide Blanket Pattern: Tybee Island", "2026-11-14"),
-    "4617426192": ("blanket", "2027 Tide Blanket Pattern: Fernandina Beach", "2026-11-14"),
     "4616888829": ("moon", "2027 Moon Phase Poster: US Time Zones", "2026-11-13"),
     "4616911593": ("moon", "2027 Moon Phase Calendar: US Time Zones", "2026-11-13"),
     "4616923752": ("moon", "2027 Moon Phase Poster: Southern Hemisphere", "2026-11-13"),
 }
 NEW_STATIONS = {
     "4617388180": "8419317", "4617381055": "8536110", "4617393736": "8661070", "4617387277": "8670870",
-    "4617389139": "9435380", "4617391319": "9440581", "4617422176": "9435380", "4617423848": "8419317",
-    "4617425020": "8670870", "4617426192": "8720030", "4617392939": "9413450", "4617403654": "9414131",
+    "4617389139": "9435380", "4617391319": "9440581",
 }  # fmt: skip
+PAUSED = (
+    "4616975320", "4616976698", "4617422176", "4617423848", "4617425020", "4617426192",
+    "4617334117", "4617336719", "4617392939", "4617403654", "4617440352",
+)  # fmt: skip
 # A Guam list for the small builds: one of each kind.
 GU = "1630000"  # Apra Harbor
 GU_OTHER = "1631428"
@@ -329,10 +292,10 @@ def test_the_committed_list_is_exactly_the_listings_marked_live() -> None:
     by_ref = {g.ref: g for g in listed}
     assert all(g.year == 2027 for g in listed if g.kind not in ("daylight", "custom"))
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "custom")
-    assert by_ref["4617334117"].station == "9414290" and by_ref["4617336719"].station == "8413320"
     assert by_ref["4617246732"].station == "8413320" and by_ref["4617240419"].station == "9413450"
     assert by_ref["4617280124"].station == "9414290" and by_ref["4617279303"].station == "9414131"
-    assert by_ref["4616975320"].station == "8413320" and by_ref["4616976698"].station == "9414131"
+    # No tide blanket or cross-stitch pattern: those listings are paused.
+    assert not {g.kind for g in listed} & {"blanket", "stitch"} and not set(PAUSED) & set(by_ref)
     assert {ref: by_ref[ref].station for ref in NEW_STATIONS} == NEW_STATIONS
     sun = by_ref["4617410905"]
     assert sun.year == 2027 and sun.station is None and sun.about.startswith("Every day of 2027 in your city")
@@ -435,21 +398,33 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     assert "<p>" + HOW.replace("'", "&#39;") + "</p>" in main
     assert H2.findall(main) == SECTIONS
     for line in (
-        CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, STITCH_TEXT, SF_STITCH,
-        MONTEREY_STITCH, ANY_CITY, OGUNQUIT_RINGS, FERNANDINA_BLANKET, CUSTOM_STITCH,
+        CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, ANY_CITY, OGUNQUIT_RINGS,
     ):  # fmt: skip
         assert line in main
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 8 + 28 listings and the shop.
+    # once each: 40 + 8 + 17 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 28 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 17 + 1
     # Within a kind, by town.
-    section = main[main.find('id="g-calendars"') : main.find('id="g-blanket"')]
+    section = main[main.find('id="g-calendars"') : main.find('id="g-moon"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
     assert towns == sorted(towns, key=str.lower) and len(towns) == 40
     assert problems(check_site, published, shop=SHOP) == []
+
+
+def test_no_page_links_to_a_paused_pattern_listing(published: Path) -> None:
+    """The tide blanket and cross-stitch pattern listings are paused on
+    Etsy: no file of the published build names one, and the page has no
+    pattern section or pattern words in its description."""
+    for f in published.rglob("*"):
+        if f.is_file() and f.suffix in {".html", ".xml", ".txt", ".json"}:
+            text = f.read_text(encoding="utf-8")
+            assert not [ref for ref in PAUSED if ref in text], f
+    page = read(published, PAGE)
+    assert 'id="g-blanket"' not in page and 'id="g-stitch"' not in page
+    assert "blanket" not in page.lower() and "cross-stitch" not in page.lower()
 
 
 def test_the_page_names_no_price_sale_or_rating_and_has_no_product_markup(published: Path) -> None:
@@ -549,8 +524,8 @@ def test_only_a_moon_calendar_names_no_art_and_no_amazon(tmp_path: Path, lists: 
 def test_in_2028_the_page_lists_only_the_made_to_order_prints(tmp_path: Path, check_site: Any) -> None:
     """Every dated entry of the committed lists is of 2026 or 2027, so the
     build of January 1, 2028 lists only the custom prints, which have no
-    year: the shop's own sentence and the three made-to-order listings.
-    The made-to-order year-of-daylight print is of 2027 and leaves."""
+    year: the shop's own sentence and the two made-to-order listings. The
+    made-to-order year-of-daylight print is of 2027 and leaves."""
     root = build(tmp_path / "on", "--print-shop-url", SHOP, "--gifts", str(COMMITTED),
                  now="2028-01-01T11:20:00Z", states="ME")  # fmt: skip
     text = read(root, PAGE)
@@ -560,7 +535,6 @@ def test_in_2028_the_page_lists_only_the_made_to_order_prints(tmp_path: Path, ch
             SHOP,
             "https://www.etsy.com/listing/4617340915",
             "https://www.etsy.com/listing/4617341518",
-            "https://www.etsy.com/listing/4617440352",
         ]
     )
     assert "amazon" not in "".join(f.read_text(encoding="utf-8").lower() for f in pages(root))
@@ -568,7 +542,7 @@ def test_in_2028_the_page_lists_only_the_made_to_order_prints(tmp_path: Path, ch
     off = build(tmp_path / "off", "--gifts", str(COMMITTED), now="2028-01-01T11:20:00Z", states="ME")
     text = read(off, PAGE)
     assert 'data-gift="custom"' not in text and "etsy.com/shop" not in text
-    assert YEAR_IN_TIDES in text and WEDDING_SIGN in text and CUSTOM_STITCH in text
+    assert YEAR_IN_TIDES in text and WEDDING_SIGN in text
     assert problems(check_site, off) == []
 
 

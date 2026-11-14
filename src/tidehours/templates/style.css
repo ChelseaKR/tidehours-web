@@ -247,7 +247,12 @@ ul.derived li { margin-block: 0.25rem; }
 .find input { font: inherit; width: 100%; max-width: 26rem; min-height: 44px; padding: 0.5rem 0.7rem; border: 1px solid var(--muted); border-radius: 0.4rem; background: var(--surface); color: var(--fg); }
 .find input:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 .find output { display: block; min-height: 1.4em; color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
-ul.stations a, ul.near a { overflow-wrap: anywhere; }
+.find-results { list-style: none; margin: 0.2rem 0 0; padding: 0; }
+.find-results li { padding-block: 0.45rem; border-bottom: 1px solid var(--line); }
+.find-results a { display: inline-block; min-height: 24px; font-weight: 500; }
+ul.stations a, ul.near a, .find-results a { overflow-wrap: anywhere; }
+/* Home: states grouped by coast (0040). */
+.coast { font-size: 1.05rem; margin: 1.3rem 0 0.3rem; color: var(--brand); }
 /* State page: jump to a region, in coast order, and each region's count. */
 .regions-jump { margin: 0.6rem 0 0.2rem; }
 .regions-jump summary { padding-block: 0.4rem; font-weight: 500; }

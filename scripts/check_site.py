@@ -41,7 +41,9 @@ its answer box, and it is the first day's highs and lows as that day's table
 lists them, in order, by date, or says in words that the day has none (0038).
 Each state page lists its regions once each, in coast order, and each region
 page's row for a station shows that station page's first-day highs and lows,
-for the date its heading names (0039).
+for the date its heading names (0039). /places.json, the home page's find
+list, names every station page of the build once, by its display name, and
+the home page lists every state under its coast groups (0040).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
                                        [--calendars FILE] [--posters FILE]
@@ -371,6 +373,42 @@ def _check_hub(r: site.Region, text: str, root: Path) -> list[str]:
         if got != want:
             problems.append(f"{r.path}: {sid}: times {got!r}, expected {want!r}")
         problems += [f"{r.path}: {sid}: contains {b!r}" for b in BAD if b in got]
+    return problems
+
+
+HOME_GROUP = re.compile(r'<h3 class="coast" id="c-\d+">([^<]*)</h3>\s*<ul class="states"[^>]*>(.*?)</ul>', re.S)
+
+
+def check_places(root: Path, cat: Catalog) -> list[str]:
+    """/places.json has one row for each station page of the build, in id
+    order: [id, display name], plus the station's searched name from
+    copy/place_names.json when it has one, and no other row. The home page
+    shows site.coast_groups for the states of the build, each state linked
+    under its groups (docs/DECISIONS.md 0040)."""
+    problems: list[str] = []
+    f = root / "places.json"
+    if not f.is_file():
+        return ["places.json: missing"]
+    try:
+        rows = json.loads(f.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return [f"places.json: not JSON ({e})"]
+    searched = site.place_names()
+    built = [s for s in cat.stations if (root / "stations" / s.id / "index.html").is_file()]
+    want = [
+        [s.id, s.display_name] + ([n] if (n := site.place_name(s, searched)) != s.display_name else [])
+        for s in sorted(built, key=lambda s: s.id)
+    ]
+    if rows != want:
+        extra = [r for r in rows if r not in want][:5]
+        missing = [w for w in want if w not in rows][:5]
+        problems.append(f"places.json: {len(rows)} rows for {len(want)} station pages; not due {extra}, due {missing}")
+    states = [st for st in site.group(cat.stations) if (root / st.path / "index.html").is_file()]
+    home = (root / "index.html").read_text(encoding="utf-8")
+    shown = [(name, re.findall(r'<a href="/(states/[^"]+/)">', inner)) for name, inner in HOME_GROUP.findall(home)]
+    expect = [(name, [st.path for st in sts]) for name, sts in site.coast_groups(states)]
+    if shown != expect:
+        problems.append(f"index.html: state groups {shown}, expected {expect}")
     return problems
 
 
@@ -868,6 +906,7 @@ def main(
     problems += check_sky(root, cat)
     problems += check_next(root, cat)
     problems += check_hubs(root, cat)
+    problems += check_places(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

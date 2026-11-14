@@ -393,6 +393,47 @@ def hub_zone(region: Region) -> str | None:
     return None if label == ZONE_UNKNOWN else re.sub(r" \([^()]*\)$", "", label)
 
 
+# The home page's groups of states (docs/DECISIONS.md 0040), each in coast
+# order. Florida has a coast in two groups and is listed in both.
+COAST_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Pacific coast, north to south", ("WA", "OR", "CA")),
+    ("Alaska", ("AK",)),
+    ("Hawaii and the Pacific islands", ("HI", "GU", "MP", "AS", "UM")),
+    (
+        "Atlantic coast, north to south",
+        ("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "PA", "DE", "MD", "DC", "VA", "NC", "SC", "GA", "FL"),
+    ),
+    ("Gulf Coast, east to west", ("FL", "AL", "MS", "LA", "TX")),
+    ("Caribbean", ("PR", "VI")),
+    ("Other", (OTHER,)),
+)
+
+
+def coast_groups(states: list[State]) -> list[tuple[str, list[State]]]:
+    """The home page's groups, each with the states of this build in the
+    group's order; a group with none is left out. A state in no group stops
+    the build, so none can fall off the home page."""
+    by_code = {st.code: st for st in states}
+    grouped = {code for _, codes in COAST_GROUPS for code in codes}
+    lost = sorted(set(by_code) - grouped)
+    if lost:
+        raise ValueError(f"states in no home page group: {lost}")
+    out = [(name, [by_code[c] for c in codes if c in by_code]) for name, codes in COAST_GROUPS]
+    return [(name, sts) for name, sts in out if sts]
+
+
+def places_json(stations: list[Station], searched: dict[str, dict[str, str]]) -> str:
+    """/places.json, the home page's find list (0040): one row per station
+    page, [id, display name], with the searched-for name from
+    copy/place_names.json as a third item when the station has one. Compact,
+    in id order."""
+    rows: list[list[str]] = []
+    for s in sorted(stations, key=lambda s: s.id):
+        name = place_name(s, searched)
+        rows.append([s.id, s.display_name] + ([name] if name != s.display_name else []))
+    return json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
+
+
 def both_days(cat: Catalog, stations: list[Station], now: dt.datetime) -> dict[str, list[Day]]:
     """Each station's date at build time and the next, computed once: the
     station pages show both, and the region pages each station's first day
@@ -846,7 +887,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "king_states": kt_states,
         "kc": kt["copy"]["en"],
     }
-    page("", "index.html.jinja", states=states, partial=cfg.states is not None, **king_common)
+    page("", "index.html.jinja", groups=coast_groups(states), partial=cfg.states is not None, **king_common)
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
@@ -1046,6 +1087,8 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
+    # The home page's find list (0040), fetched only when someone uses the box.
+    (out / "places.json").write_text(places_json(stations, place_names()), encoding="utf-8")
     # The IndexNow ownership file (indexnow.py), served from the domain's
     # root. Public by design. Only a build for tidehours.com carries it,
     # because the key proves ownership of that one host; find_key reads the

@@ -2018,3 +2018,86 @@ sentences in `copy/calendar_link.json` from 0035.
 Update, 2026-11-13 (night): with the twelve calendars added to 0035's list,
 the page lists 40 towns and 46 listings. The page and its checks are
 unchanged.
+
+## 0038: Station pages: the next tide, and the chart above the table (owner, 2026-11-13)
+
+On 2026-11-13 the owner approved the phase 2 layout proposal "all as
+recommended". This is its first part, 2a, the station page (Q1, Q2, Q3 and
+Q7, option A each). It changes the layout of the first screen and adds one
+line. It does not change the look from PR #19, the H1, the two questions,
+the king-tide callout's place or words, or the printable sentences' words,
+place or count.
+
+**The answer box** (amends 0032's first screen). The H1 and the two
+questions keep 0032's exact wording, set smaller, in one box with both
+days. Each listed time is wrapped (`span.times`, `span.ev`) so the script
+can mark it; the text around the times, "Sunday, Nov 1: " and the
+heights, is unchanged.
+
+**The next-tide line** (amends 0002's role for the page's script). At
+build time, `p#next` opens the answer box with the first day's highs and
+lows in order, by date: "Friday, Nov 13, in order: high 2:25 AM, low
+5:30 AM, high 11:34 AM, low 7:35 PM." A day with neither says "Friday,
+Nov 13: no high or low tide predicted." It names the date, not "today"
+(0032's rule for descriptions), so it is true whenever it is read; it is
+what crawlers and readers without the script get (`Day.in_order`).
+
+The script that already labels the days (0002) now also takes the first
+high or low after the reader's clock from the times the build wrote in the
+day tables, and replaces the line: "Next low tide: 7:35 PM (0.0 ft), in
+2 h 5 min. The predicted tide is falling until then." After the day's last
+tide it names tomorrow's first: "Next high tide: 3:29 AM tomorrow (3.7 ft),
+in 7 h 29 min. The predicted tide is rising until then." It marks each time
+in the answer that has passed (dimmed, with "passed: " for screen readers).
+It never computes a tide, a height or a curve: the times, heights and
+direction all come from the build's own table, and "in" is the clock's
+difference to that time, so it is right across a daylight saving change.
+When the next tide on the page is not the station's today or tomorrow, when
+every tide on it has passed, or when the zone is unknown to the browser,
+the build's line stays. The wording is the proposal's Appendix A; on
+2026-11-13 the owner approved each line as written: the build sentence, the
+absence sentence, the "tomorrow" form and the spoken "passed: ".
+
+**The day cards.** The chart comes before the table in each day's card,
+then the sun and moon line. From 60rem wide, the table and the sun and moon
+sit beside the chart, and the two questions side by side. At 390×844 in
+king-tide season, today's chart now starts about 1,065 px down Monterey's
+page (the proposal measured 1,532 px before, on its mockup).
+
+**King tides** (0015 unchanged). The callout keeps its place before day 1
+and its words, with less padding and smaller type; its two links share a
+line.
+
+**The printable sentences** (0030, 0035, 0037 unchanged). A hairline and a
+little space before the first of them, so they do not read as part of "The
+rest of the week". No box, heading, icon or color.
+
+**Header.** One row from 360 px wide; it wraps below that, as before.
+
+**Weight.** Monterey's page grows by 3,514 bytes (1,090 gzip) and
+`style.css` by 3,650 bytes (902 gzip). The largest station page in a
+California build is 37,831 bytes, under check_site's 120,000.
+
+**Checks.** `check_site.check_next`: every station page has exactly one
+`p#next`, inside the answer box, and it is the first day's table's highs and
+lows in order, written out in the check itself, or the absence sentence,
+with no placeholder. `tests/test_next_tide.py` holds its negative controls
+(the line removed, doubled, moved out of the box, reordered, a wrong time,
+tomorrow's date, "Today", a placeholder, and a table that no longer
+matches), each asserting first that its sabotage changed the page.
+`tests/test_today.py` runs the shipped script under Node against the
+built rows: before the first tide, between tides, at the minute of a tide,
+after today's last (the "tomorrow" form), after every tide, a missed build
+and a clock behind the build, an unknown zone, and the fall-back day in New
+York. `test_station_title_shape_and_lead_answer` passes as written and
+asserts the line.
+
+**Not changed.** A high or low that rounds to midnight stays in the day
+the table already lists it under, so the line can end "low 12:00 AM." as
+the answer and the table do (for example station 9414811 on 2026-11-13).
+
+**Reversible.** Yes: drop `p#next` and the wrappers, the script's
+`tidehoursNext`, `check_next`, the new style rules, and put the chart back
+after the table.
+
+**For the app:** nothing changes.

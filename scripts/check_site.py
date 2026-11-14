@@ -36,7 +36,9 @@ otherwise there is no such page and no link to one (0037).
 Every station page has a sun and moon line for each of its two days, and it
 is the one sky.py computes for that station and date: a day without a
 sunrise, sunset, civil twilight, moonrise or moonset says so in words, and
-no line shows "00:00" (0019).
+no line shows "00:00" (0019). Every station page has one next-tide line, in
+its answer box, and it is the first day's highs and lows as that day's table
+lists them, in order, by date, or says in words that the day has none (0038).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
                                        [--calendars FILE] [--posters FILE]
@@ -87,6 +89,11 @@ H1 = re.compile(r"<h1>(.*?)</h1>", re.S)
 MAIN_P = re.compile(r"<p(?: [^>]*)?>(.*?)</p>", re.S)
 ANY_A = re.compile(r"<a\b[^>]*>", re.I)
 HREF_ATTR = re.compile(r'\bhref="([^"]*)"')
+NEXT_P = re.compile(r'<p class="next" id="next">(.*?)</p>', re.S)
+DAY_SECTION = re.compile(r'<section class="day"[^>]*\bdata-date="(\d{4}-\d{2}-\d{2})">(.*?)</section>', re.S)
+EVENT_ROW = re.compile(
+    r'<tr class="ev-(high|low)"><th scope="row">(High|Low)</th><td><time datetime="([^"]*)">([^<]*)</time></td>'
+)
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -236,6 +243,57 @@ def check_sky(root: Path, cat: Catalog) -> list[str]:
         if shown != want:
             problems.append(f"stations/{s.id}: sun and moon {shown or 'missing'}, expected {want}")
         problems += [f"stations/{s.id}: {d}: a sky line shows 00:00" for d, line in shown if "00:00" in line]
+    return problems
+
+
+def next_sentence(date: dt.date, events: list[tuple[str, str]]) -> str:
+    """The next-tide line a station page is built with, from its first
+    day's (kind, time) rows: "Friday, Nov 13, in order: high 2:25 AM, low
+    5:30 AM." or "Friday, Nov 13: no high or low tide predicted." Written
+    out here, not taken from days.py, so the check does not trust the code
+    it checks."""
+    when = f"{date.strftime('%A')}, {date.strftime('%b')} {date.day}"
+    if not events:
+        return f"{when}: no high or low tide predicted."
+    return f"{when}, in order: " + ", ".join(f"{kind.lower()} {time}" for kind, time in events) + "."
+
+
+def check_next(root: Path, cat: Catalog) -> list[str]:
+    """Each station page has exactly one next-tide line (p#next), inside its
+    answer box, and it says the first day's highs and lows exactly as that
+    day's table lists them, in order, with no placeholder (docs/DECISIONS.md
+    0038). The page's script may replace it in the browser; the build's
+    words are what crawlers and readers without the script get."""
+    problems: list[str] = []
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if not f.exists():
+            continue
+        body = SCRIPT.sub("", f.read_text(encoding="utf-8"))
+        where = f"stations/{s.id}"
+        lines = list(NEXT_P.finditer(body))
+        if len(lines) != 1:
+            problems.append(f"{where}: {len(lines)} next-tide lines, exactly 1 expected")
+            continue
+        line = lines[0]
+        answer = body.find('<div class="answer">')
+        if not 0 <= answer < line.start() < line.end() <= body.find("</div>", answer):
+            problems.append(f"{where}: the next-tide line is not in the answer box")
+        dated = STATION_DATE.findall(body)
+        first = DAY_SECTION.search(body)
+        if len(dated) != 1 or first is None or first.group(1) != dated[0]:
+            problems.append(f"{where}: no first day to check the next-tide line against")
+            continue
+        date = dt.date.fromisoformat(first.group(1))
+        rows = EVENT_ROW.findall(first.group(2))
+        bad_rows = [r for r in rows if r[0] != r[1].lower()]
+        if bad_rows or len(rows) != first.group(2).count('<tr class="ev-'):
+            problems.append(f"{where}: the first day's table has rows the check cannot read: {bad_rows}")
+        shown = " ".join(htmllib.unescape(TAG.sub("", line.group(1))).split())
+        want = next_sentence(date, [(kind, time) for _, kind, _, time in rows])
+        if shown != want:
+            problems.append(f"{where}: next-tide line {shown!r}, expected {want!r}")
+        problems += [f"{where}: the next-tide line contains {b!r}" for b in BAD if b in shown]
     return problems
 
 
@@ -731,6 +789,7 @@ def main(
     problems += check_print_shop(root, html, print_shop_url, calendar_links, poster_links)
     problems += check_printables(root, html, cat, calendar_links, poster_links)
     problems += check_sky(root, cat)
+    problems += check_next(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

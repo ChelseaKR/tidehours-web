@@ -240,6 +240,34 @@ ul.states a { font-weight: 500; }
 ul.states .count { white-space: nowrap; }
 ul.derived { padding-inline-start: 1.1rem; }
 ul.derived li { margin-block: 0.25rem; }
+/* Finding a place (docs/DECISIONS.md 0039): a filter the script adds under
+   the lead. Without the script there is no box. */
+.find { margin: 0.9rem 0 0.5rem; }
+.find label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.find input { font: inherit; width: 100%; max-width: 26rem; min-height: 44px; padding: 0.5rem 0.7rem; border: 1px solid var(--muted); border-radius: 0.4rem; background: var(--surface); color: var(--fg); }
+.find input:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.find output { display: block; min-height: 1.4em; color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
+ul.stations a, ul.near a { overflow-wrap: anywhere; }
+/* State page: jump to a region, in coast order, and each region's count. */
+.regions-jump { margin: 0.6rem 0 0.2rem; }
+.regions-jump summary { padding-block: 0.4rem; font-weight: 500; }
+.regions-jump ul { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0.3rem 0 0.4rem; padding: 0; }
+.regions-jump a { display: inline-block; padding: 0.3rem 0.65rem; min-height: 24px; border: 1px solid var(--panel-line); border-radius: 999px; background: var(--panel); text-decoration: none; font-size: 0.875rem; }
+.regions-jump a:hover { text-decoration: underline; }
+section[aria-labelledby^="r-"] h2 .count { font-family: var(--sans); font-weight: 400; margin-inline-start: 0.35rem; }
+/* Region page: each place with the day's highs and lows (build time). */
+main[data-region] ul.stations { grid-template-columns: 1fr; }
+main[data-region] ul.stations li { display: grid; gap: 0.05rem 1rem; }
+.hub-day { font-size: 1.1rem; margin: 1.1rem 0 0.3rem; }
+.hub-day .meta { font-family: var(--sans); font-weight: 400; }
+.hub-times { font-size: 0.9375rem; font-variant-numeric: tabular-nums lining-nums; }
+.hub-times .grp { display: inline-block; margin-inline-end: 1rem; }
+.hub-times .hi, .hub-times .lo { font-weight: 600; white-space: nowrap; }
+.hub-times .hi { color: var(--high); }
+.hub-times .lo { color: var(--low); }
+.hub-times .hi::before, .hub-times .lo::before { content: ""; display: inline-block; width: 0.62em; height: 0.55em; margin-inline-end: 0.35em; background: currentColor; }
+.hub-times .hi::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.hub-times .lo::before { clip-path: polygon(0 0, 100% 0, 50% 100%); }
 dl.glossary dt { font-family: var(--serif); font-weight: 600; margin-top: 0.9rem; }
 dl.glossary dd { margin: 0.15rem 0 0; }
 @media (min-width: 34rem) {
@@ -247,6 +275,9 @@ dl.glossary dd { margin: 0.15rem 0 0; }
   h1 { font-size: 2.25rem; }
   .day { padding-inline: 1.2rem; }
   .answer-days .times { display: inline; }
+}
+@media (min-width: 40rem) {
+  main[data-region] ul.stations li { grid-template-columns: minmax(14rem, 1fr) auto; align-items: baseline; }
 }
 @media (min-width: 60rem) {
   .wrap { max-width: 50rem; }

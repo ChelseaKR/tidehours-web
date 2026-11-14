@@ -1,27 +1,37 @@
 {% extends "base.html.jinja" %}
 {% block title %}{{ state_title(state) }}{% endblock %}
 {% block description %}Today's tide times at {{ state.count }} NOAA tide stations {% if state.code == "other" %}that NOAA lists without a state{% else %}in {{ state.name }}{% endif %}, by region: high and low tides and a tide curve for each.{% endblock %}
+{% set finding = state.code != "other" %}
+{% block main_attrs %}{% if finding %} data-find-label="Find a place in {{ state.name }}"{% endif %}{% endblock %}
 {% block content %}
 <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li></ol></nav>
 <h1>{% if state.code == "other" %}{{ state.name }}{% else %}{{ state.name }} tides today{% endif %}</h1>
 {% if state.code == "other" %}
 <p class="lead">These {{ state.count }} stations have no state on this site. Most have none in NOAA's station list, and their position rules out their reference station's state (for example, they are across the Canadian border); one, Apia, is in independent Samoa. They are grouped here by NOAA's region name.</p>
 {% else %}
-<p class="lead">Pick a place for today's and tomorrow's high and low tide times and a tide chart: {{ state.count }} NOAA tide prediction stations, by NOAA's regions.</p>
+<p class="lead">Pick a place for today's and tomorrow's high and low tide times and a tide chart: {{ state.count }} NOAA tide prediction stations, by NOAA's regions{% if regions|length > 1 %}, north to south{% endif %}.</p>
 {% endif %}
-{% for r in state.regions %}
+{#- Regions in coast order (docs/DECISIONS.md 0039): copy/region_order.json
+    where the state is listed, else north to south. -#}
+{% if finding and regions|length > 3 %}
+<details class="regions-jump"><summary id="jump">Jump to a region, north to south ({{ regions|length }})</summary>
+<nav aria-labelledby="jump"><ul>{% for r in regions %}<li><a href="#r-{{ r.slug }}">{{ r.name }}</a></li>{% endfor %}</ul></nav></details>
+{% endif %}
+{% macro places(n) %}<span class="count">{{ n }} place{{ "s" if n != 1 }}</span>{% endmacro %}
+{% macro row(s) %}<li{% if akas[s.id] is defined %} data-aka="{{ akas[s.id] }}"{% endif %}><a href="/stations/{{ s.id }}/">{{ s.name }}</a></li>{% endmacro %}
+{% for r in regions %}
 <section aria-labelledby="r-{{ r.slug }}">
-  <h2 id="r-{{ r.slug }}"><a href="/{{ r.path }}">{{ r.name }}</a></h2>
+  <h2 id="r-{{ r.slug }}"><a href="/{{ r.path }}">{{ r.name }}</a> {{ places(r.stations|length) }}</h2>
   <ul class="stations">
-  {% for s in r.stations %}<li><a href="/stations/{{ s.id }}/">{{ s.name }}</a></li>{% endfor %}
+  {% for s in r.stations %}{{ row(s) }}{% endfor %}
   </ul>
 </section>
 {% endfor %}
 {% if state.unregioned %}
 <section aria-labelledby="r-none">
-  <h2 id="r-none">Stations without a region in NOAA's list</h2>
+  <h2 id="r-none">Stations without a region in NOAA's list {{ places(state.unregioned|length) }}</h2>
   <ul class="stations">
-  {% for s in state.unregioned %}<li><a href="/stations/{{ s.id }}/">{{ s.name }}</a></li>{% endfor %}
+  {% for s in state.unregioned %}{{ row(s) }}{% endfor %}
   </ul>
 </section>
 {% endif %}
@@ -33,5 +43,54 @@
 {% endif %}
 {% if king_calendar %}
 <p><a href="/{{ king_calendar }}">{{ state.name }} king tides by month, November 2026 to February 2027</a>: each place's highest predicted tides of the winter.</p>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if finding %}
+<script>
+// Find a place (docs/DECISIONS.md 0039): a filter over the places already
+// listed on this page. No request, no index file, nothing typed leaves the
+// page. The box is added by this script, so without the script there is no
+// box that does nothing.
+var tidehoursFind = (function () {
+  function norm(s) {
+    return s.normalize("NFD").replace(/[\u0300-\u036f\u02bb\u2018\u2019']/g, "").toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function status(q, shown) {
+    if (q === "") return "";
+    if (shown === 0) return "No place on this page matches \u201c" + q + "\u201d. Try the town, beach or bay name.";
+    return shown + (shown === 1 ? " place matches" : " places match") + " \u201c" + q + "\u201d.";
+  }
+  return { norm: norm, status: status };
+})();
+(function () {
+  var main = document.getElementById("main");
+  var items = Array.prototype.slice.call(main.querySelectorAll("ul.stations li"));
+  var lead = main.querySelector(".lead");
+  if (!items.length || !lead) return;
+  var norm = tidehoursFind.norm;
+  var text = items.map(function (li) { return norm(li.textContent + " " + (li.getAttribute("data-aka") || "")); });
+  var box = document.createElement("div");
+  box.className = "find";
+  box.innerHTML = '<label for="find"></label><input id="find" type="search" autocomplete="off" spellcheck="false"><output for="find"></output>';
+  box.querySelector("label").textContent = main.getAttribute("data-find-label");
+  lead.after(box);
+  var input = box.querySelector("input"), out = box.querySelector("output");
+  input.addEventListener("input", function () {
+    var q = norm(input.value), shown = 0;
+    items.forEach(function (li, i) {
+      li.hidden = q !== "" && text[i].indexOf(q) < 0;
+      if (!li.hidden) shown++;
+    });
+    Array.prototype.forEach.call(main.querySelectorAll("section[aria-labelledby^='r-']"), function (s) {
+      s.hidden = !s.querySelector("li:not([hidden])");
+    });
+    var jump = main.querySelector(".regions-jump");
+    if (jump) jump.hidden = q !== "";
+    out.textContent = tidehoursFind.status(q === "" ? "" : input.value.trim(), shown);
+  });
+})();
+</script>
 {% endif %}
 {% endblock %}

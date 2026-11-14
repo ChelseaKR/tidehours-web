@@ -20,7 +20,9 @@
 <meta property="og:description" content="{{ self.description() }}">
 {% if not is_404 %}<meta property="og:url" content="{{ base_url }}{{ canonical }}">
 {% endif %}
-<meta name="theme-color" content="#0b4f6c">
+<meta name="theme-color" content="#f7f3e8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1624" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 {% block jsonld %}{% endblock %}
 {% if ga4_measurement_id %}{% include "_ga4.html.jinja" %}{% endif %}
@@ -39,6 +41,7 @@
       </ul>
     </nav>
   </div>
+  <div class="wave-rule" aria-hidden="true"></div>
 </header>
 <p class="notice"><span class="wrap">{{ t.notice }}</span></p>
 <main id="main" class="wrap"{% block main_attrs %}{% endblock %}>
@@ -60,6 +63,7 @@
       {% endif %}
     </section>
     <p>{{ t.notice }} {{ t.credit }} <a href="https://tidesandcurrents.noaa.gov/">NOAA Tides and Currents</a></p>
+    <p class="foot-read"><a href="/about/#reading"{% if lang != "en" %} hreflang="en"{% endif %}>{{ "Cómo leer una página de mareas" if lang == "es" else "How to read a tide page" }}</a></p>
     <p><a href="/privacy/">{{ t.privacy }}</a> · <a href="/terms/">{{ t.terms }}</a> · <a href="/about/">{{ t.about }}</a>{% if printables and lang == "en" %} · <a href="/{{ printables.path }}">{{ printables.label }}</a>{% endif %}</p>
     {% if ga4_measurement_id %}
     <div id="analytics-choice" hidden>

@@ -2,6 +2,15 @@
 
 ## 0.1.0 (unreleased)
 
+- A look of its own: a tide almanac on chart paper. Cream and navy, with
+  a navy night chart in dark mode; serif headings and tabular numbers; the
+  app icon's clock over a wave as the mark and `/favicon.svg`. High and low
+  rows carry up and down triangles, every chart names its datum (feet above
+  MLLW) with a dotted 0 ft line, and About gains "How to read a tide page",
+  linked from every footer. Titles, H1s, descriptions and URLs are
+  unchanged. The king-tide tables' rows are written without indentation,
+  which takes the English page from about 117 KB to 98 KB with the same
+  text (`docs/BRAND.md`).
 - Twelve more station pages link to their printable 2027 tide calendars:
   Long Beach, Eureka, Ogunquit, Tybee Island, Fernandina Beach, Atlantic
   Beach, Old Orchard Beach, Wrightsville Beach, Newport, Myrtle Beach,

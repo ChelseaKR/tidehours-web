@@ -951,6 +951,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     # extension gives, text/plain for .txt, as it does for robots.txt.
     (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
+    shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
     # The IndexNow ownership file (indexnow.py), served from the domain's
     # root. Public by design. Only a build for tidehours.com carries it,

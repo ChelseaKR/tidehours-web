@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Six more station pages lead their title, H1 and questions with the
+  name people search for: Crystal River (Kings Bay, FL), Piankatank
+  River (Dixie, VA), Tybee Island (Tybee Light, GA), Folly Beach (Folly
+  River Bridge, Folly Island, SC), and OCMD on the Ocean City Inlet and
+  Isle of Wight Bay pages, added to `src/tidehours/copy/place_names.json`
+  with the Search Console query and what ties each name to its station
+  (DECISIONS 0032).
 - Twelve more station pages link to their printable 2027 tide calendars:
   Long Beach, Eureka, Ogunquit, Tybee Island, Fernandina Beach, Atlantic
   Beach, Old Orchard Beach, Wrightsville Beach, Newport, Myrtle Beach,

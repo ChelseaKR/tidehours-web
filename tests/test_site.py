@@ -1146,6 +1146,31 @@ def test_searched_place_names_lead_their_pages(built: Path) -> None:
     assert sf is not None and site.place_name(sf, names) == sf.display_name
 
 
+def test_searched_names_added_2026_11_13() -> None:
+    # The second set of searched names (DECISIONS 0032, 2026-11-13): each
+    # station's title, H1 and questions lead with the place people typed.
+    # These states are not in the `built` fixture, so the title is checked
+    # through the same functions the station template calls.
+    cat = load()
+    names = site.place_names()
+    expected = {
+        "8727343": "Crystal River (Kings Bay, FL) tides today: high and low",
+        "8636831": "Piankatank River (Dixie, VA) tides today: high and low",
+        "8670892": "Tybee Island (Tybee Light, GA) tides today: high and low",
+        "8666652": "Folly Beach (Folly River Bridge, Folly Island, SC) tides",
+        "8570283": "OCMD, Ocean City Inlet, MD tides today: high and low",
+        "8570282": "OCMD, Ocean City (Isle of Wight Bay), MD tides today",
+    }
+    for sid, title in expected.items():
+        s = cat.station(sid)
+        assert s is not None, sid
+        assert site.station_title(site.place_name(s, names)) == title, sid
+    # A station near these that is searched by its own name keeps it.
+    fort_pulaski = cat.station("8670870")
+    assert fort_pulaski is not None
+    assert site.place_name(fort_pulaski, names) == "Fort Pulaski, Savannah River Entrance, GA"
+
+
 def test_region_pages_do_not_repeat_the_state() -> None:
     cat = load()
     states = {st.code: st for st in site.group(cat.stations)}

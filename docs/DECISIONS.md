@@ -1302,6 +1302,24 @@ yet on page 1 or 2, so this is for the click once they are.
   the name to the station (NOAA's region, or the station's own name). Like
   names.py, each entry is pinned to the station's current display name and
   stops applying when NOAA renames the station.
+- **Six more searched names (owner, 2026-11-13).** Search Console,
+  2026-10-16 to 2026-11-13, by the same rules, plus where the station
+  stands by the Census Bureau's place boundaries: "Crystal River (Kings Bay,
+  FL)" (NOAA's own name for 8727343 is "CRYSTAL RIVER, KINGS BAY"; 11
+  impressions for Crystal River searches went to its region page),
+  "Piankatank River (Dixie, VA)" (NOAA region), "Tybee Island (Tybee Light,
+  GA)" (0.1 mile from the city of Tybee Island), "Folly Beach (Folly River
+  Bridge, Folly Island, SC)" (inside the city of Folly Beach), and "OCMD,
+  Ocean City Inlet, MD" and "OCMD, Ocean City (Isle of Wight Bay), MD",
+  the two other Ocean City pages that "ocmd tides" reached. A longer name
+  can push a title to a shorter tier (Kings Bay's loses "tide chart",
+  Folly Beach's keeps only "tides"). Not added: queries for a place that
+  has its own station page (Sebastian Inlet, Panama City Beach, Clearwater
+  Beach, Sewells Point), queries with nothing tying the place to the
+  station that Google showed (Port St. Lucie, Dennis Port, Englewood Beach,
+  Boundary Bay), Hood Canal (14 stations share that NOAA region), and
+  shop towns with no query yet (Newport, OR; Fort Bragg), since every
+  entry names its query.
 
 Other station names are not split into "town, then station". The catalog
 has no town field, and guessing one from the name would be wrong for names

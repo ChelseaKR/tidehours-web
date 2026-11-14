@@ -1,10 +1,16 @@
 {
-  "about": "Names people search for that a station page does not carry (docs/DECISIONS.md 0032). Each entry is pinned to the station's display name; when that changes, the entry stops applying and tests/test_site.py fails. 'name' leads the page's title and H1, place first. 'query' is the Search Console query (28 days to 2026-11-11) that shows the name is searched for; 'basis' is what ties the name to the station.",
+  "about": "Names people search for that a station page does not carry (docs/DECISIONS.md 0032). Each entry is pinned to the station's display name; when that changes, the entry stops applying and tests/test_site.py fails. 'name' leads the page's title and H1, place first. 'query' is a Search Console query that shows the name is searched for (28 days to 2026-11-11 for the first five entries, 2026-10-16 to 2026-11-13 for the rest); 'basis' is what ties the name to the station.",
   "stations": {
     "8677344": {"station": "St. Simons Light, GA", "name": "St. Simons Island (St. Simons Light, GA)", "query": "st simons island high tide", "basis": "NOAA region St. Simons Sound; the station name"},
     "1615680": {"station": "Kahului, HI", "name": "Maui (Kahului, HI)", "query": "maui tide", "basis": "NOAA region Maui Island"},
     "1612340": {"station": "Honolulu, HI", "name": "Oʻahu (Honolulu, HI)", "query": "tide chart oahu", "basis": "NOAA region Oahu Island"},
     "1611400": {"station": "Nāwiliwili, HI", "name": "Kauaʻi (Nāwiliwili, HI)", "query": "when is low tide in kauai", "basis": "NOAA region Kauai Island"},
-    "8570280": {"station": "Ocean City (Fishing Pier), MD", "name": "OCMD, Ocean City (Fishing Pier), MD", "query": "ocmd tides", "basis": "the station name (Ocean City, MD)"}
+    "8570280": {"station": "Ocean City (Fishing Pier), MD", "name": "OCMD, Ocean City (Fishing Pier), MD", "query": "ocmd tides", "basis": "the station name (Ocean City, MD)"},
+    "8727343": {"station": "Kings Bay, FL", "name": "Crystal River (Kings Bay, FL)", "query": "kings bay crystal river tides", "basis": "NOAA's own station name, CRYSTAL RIVER, KINGS BAY, and its region Crystal River; inside the city of Crystal River (Census)"},
+    "8636831": {"station": "Dixie, VA", "name": "Piankatank River (Dixie, VA)", "query": "piankatank tide chart", "basis": "NOAA region Piankatank River; in the Piankatank district of Mathews County (Census)"},
+    "8670892": {"station": "Tybee Light, GA", "name": "Tybee Island (Tybee Light, GA)", "query": "tybee island high tide today", "basis": "the station name (the Tybee Island light); 0.1 mile from the city of Tybee Island (Census)"},
+    "8666652": {"station": "Folly River Bridge, Folly Island, SC", "name": "Folly Beach (Folly River Bridge, Folly Island, SC)", "query": "high tide folly beach today", "basis": "the station name (Folly Island); inside the city of Folly Beach (Census)"},
+    "8570283": {"station": "Ocean City Inlet, MD", "name": "OCMD, Ocean City Inlet, MD", "query": "ocmd tides", "basis": "the station name (Ocean City, MD); inside the town of Ocean City (Census)"},
+    "8570282": {"station": "Ocean City (Isle of Wight Bay), MD", "name": "OCMD, Ocean City (Isle of Wight Bay), MD", "query": "ocmd tides", "basis": "the station name (Ocean City, MD); inside the town of Ocean City (Census)"}
   }
 }

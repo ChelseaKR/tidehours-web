@@ -33,14 +33,14 @@
       <th scope="col">{{ c.next.cols.height }}</th>
     </tr></thead>
     <tbody>
-    {% for u in king_up %}
-      <tr data-kt-next="{{ u.stamp() }}">
-        <th scope="row"><a href="#station-{{ u.season.id }}">{{ u.season.place }}</a>, {{ u.season.state }}</th>
-        <td>{{ fmt_range(u.first, u.last, lang, c) }}</td>
-        <td>{{ fmt_date(u.peak.date, lang, c) }}, {{ fmt_time(u.peak.time, lang) }}</td>
-        <td>{{ fmt_feet(u.peak.height, lang, c) }}</td>
-      </tr>
-    {% endfor %}
+{% for u in king_up %}
+<tr data-kt-next="{{ u.stamp() }}">
+<th scope="row"><a href="#station-{{ u.season.id }}">{{ u.season.place }}</a>, {{ u.season.state }}</th>
+<td>{{ fmt_range(u.first, u.last, lang, c) }}</td>
+<td>{{ fmt_date(u.peak.date, lang, c) }}, {{ fmt_time(u.peak.time, lang) }}</td>
+<td>{{ fmt_feet(u.peak.height, lang, c) }}</td>
+</tr>
+{% endfor %}
     </tbody>
   </table>
   </div>
@@ -95,24 +95,24 @@
           <th scope="col">{{ c.stations.cols.above }}</th>
         </tr></thead>
         <tbody>
-        {% for series in s.series %}
-          {% set peak = series|max(attribute="height") %}
-          <tr>
-            <th scope="row">{{ fmt_range(series[0].date, series[-1].date, lang, c) }}{% if series[-1].date == window_end %}<span class="note">{{ fill(c.stations.clipped, end=fmt_long_date(window_end, lang, c)) }}</span>{% endif %}</th>
-            <td>{{ fmt_date(peak.date, lang, c) }}, {{ fmt_time(peak.time, lang) }}</td>
-            <td>{{ fmt_feet(peak.height, lang, c) }}</td>
-            <td>{{ fmt_feet(s.above_mhhw(peak), lang, c, true) }}</td>
-          </tr>
-        {% endfor %}
+{% for series in s.series %}
+{% set peak = series|max(attribute="height") %}
+<tr>
+<th scope="row">{{ fmt_range(series[0].date, series[-1].date, lang, c) }}{% if series[-1].date == window_end %}<span class="note">{{ fill(c.stations.clipped, end=fmt_long_date(window_end, lang, c)) }}</span>{% endif %}</th>
+<td>{{ fmt_date(peak.date, lang, c) }}, {{ fmt_time(peak.time, lang) }}</td>
+<td>{{ fmt_feet(peak.height, lang, c) }}</td>
+<td>{{ fmt_feet(s.above_mhhw(peak), lang, c, true) }}</td>
+</tr>
+{% endfor %}
         </tbody>
       </table>
       </div>
       <details>
         <summary>{{ fill(c.stations.everyDay, place=s.place) }}</summary>
         <ul>
-        {% for series in s.series %}{% for d in series %}
-          <li>{{ fmt_date(d.date, lang, c) }}: {{ fmt_time(d.time, lang) }}, {{ fmt_feet(d.height, lang, c) }}</li>
-        {% endfor %}{% endfor %}
+{% for series in s.series %}{% for d in series %}
+<li>{{ fmt_date(d.date, lang, c) }}: {{ fmt_time(d.time, lang) }}, {{ fmt_feet(d.height, lang, c) }}</li>
+{% endfor %}{% endfor %}
         </ul>
       </details>
       <p class="meta"><a href="/stations/{{ s.id }}/">{{ fill(c.stations.siteLink, place=s.place) }}</a> · <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ s.id }}">{{ fill(c.stations.noaaLink, id=s.id) }}</a></p>

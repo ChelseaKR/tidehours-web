@@ -1,37 +1,69 @@
-/* Tide Hours. Mobile first; light and dark from the system setting. */
+/* Tide Hours. Mobile first; light and dark from the system setting.
+
+   Identity: a tide almanac printed on chart paper. Light mode is the
+   cream paper of a nautical chart with navy ink and the pale blue NOAA
+   charts use for shallow water; dark mode is the navy "night chart".
+   Headings are a book serif, like the place names on a chart; every number
+   is tabular so times and heights line up the way an almanac's do. The
+   mark is the app icon's clock over a tide wave. Red buoy is the one warm
+   accent and marks king tides only. No web fonts, no images to download:
+   the mark and the wave rule are inline SVG. Contrast ratios are in
+   growth/design-audit-tide-hours-2026-11-05.md. */
 :root {
-  --bg: #fbfcfd;
-  --fg: #142229;
-  --muted: #4a5d66;
-  --line: #d5dee2;
-  --brand: #0b4f6c;
-  --link: #0a5a7d;
-  --panel: #eef4f6;
-  --warn: #fff6e0;
-  --warn-line: #b7791f;
-  --curve: #0b6e99;
-  --high: #0b6e99;
-  --low: #8a4b08;
-  --grid: #e3eaed;
-  --night: #e4eaf1;
+  --bg: #f7f3e8;        /* chart paper */
+  --surface: #fffdf7;   /* a day's table */
+  --fg: #14202e;        /* sounding ink */
+  --muted: #4b5561;
+  --line: #d9d0bb;
+  --brand: #17365d;     /* channel navy */
+  --link: #1a4e85;
+  --panel: #e2edf0;     /* shallow-water tint */
+  --panel-line: #9fbfca;
+  --warn: #fbefd5;
+  --warn-line: #9a5b00;
+  --buoy: #ad3420;      /* red nun buoy: king tides only */
+  --buoy-tint: #f8e6df;
+  --curve: #1d5a8c;
+  --high: #1d5a8c;
+  --low: #87470f;
+  --grid: #e6dfcd;
+  --datum: #7d8792;
+  --on-brand: #f7f3e8;
+  --wave: #9fbfca;
+  --foot-bg: #17365d;
+  --foot-fg: #f7f3e8;
+  --foot-link: #f7f3e8;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", P052, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --night: #e9ecf0;    /* chart shading where the sun is down */
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e171b;
-    --fg: #e7eef1;
-    --muted: #a9bac1;
-    --line: #2c3c43;
-    --brand: #7cc6e6;
-    --link: #8fd0ec;
-    --panel: #15232a;
+    --bg: #0b1624;
+    --surface: #101e30;
+    --fg: #e8edf2;
+    --muted: #a9b6c4;
+    --line: #26384d;
+    --brand: #9cc6ea;
+    --link: #9fcdf3;
+    --panel: #12253a;
+    --panel-line: #2f5373;
     --warn: #2b2312;
     --warn-line: #e0a84a;
-    --curve: #7cc6e6;
-    --high: #7cc6e6;
+    --buoy: #ff8e75;
+    --buoy-tint: #2a1915;
+    --curve: #8cc4f0;
+    --high: #8cc4f0;
     --low: #f0b46a;
-    --grid: #22323a;
-    --night: #081014;
+    --grid: #1d2d40;
+    --datum: #6f8195;
+    --on-brand: #0b1624;
+    --wave: #2f5373;
+    --foot-bg: #132a46;
+    --foot-fg: #e8edf2;
+    --foot-link: #9fcdf3;
+    --night: #060e18;
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -40,44 +72,97 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 1rem/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 1rem/1.55 var(--sans);
 }
-a { color: var(--link); text-underline-offset: 0.15em; }
-a:focus-visible, button:focus-visible, summary:focus-visible, .table-scroll:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+a { color: var(--link); text-underline-offset: 0.15em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible, summary:focus-visible, .table-scroll:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 2px; }
 .wrap { display: block; max-width: 46rem; margin-inline: auto; padding-inline: 1rem; }
 .skip { position: absolute; inset-inline-start: -999px; }
 .skip:focus { inset-inline-start: 1rem; top: 0.5rem; background: var(--bg); padding: 0.5rem; z-index: 1; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+h1, h2, h3, h4, .brand { font-family: var(--serif); font-weight: 600; letter-spacing: -0.005em; }
 
-.site-header { border-bottom: 1px solid var(--line); }
-.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 1rem; padding-block: 0.6rem; }
-.brand { font-weight: 700; font-size: 1.15rem; color: var(--brand); text-decoration: none; }
-.site-header ul { display: flex; flex-wrap: wrap; gap: 0 1rem; list-style: none; margin: 0; padding: 0; }
-.site-header nav a { display: inline-block; padding-block: 0.4rem; }
-.notice { margin: 0; background: var(--panel); color: var(--muted); font-size: 0.875rem; padding-block: 0.4rem; }
+/* Header: the mark and wordmark, then a wave rule drawn in CSS. */
+.site-header { background: var(--bg); }
+.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 1rem; padding-block: 0.7rem 0.55rem; }
+.brand { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; color: var(--brand); text-decoration: none; min-height: 44px; }
+/* The mark, the app icon's clock over a tide wave, drawn in the link's own
+   color through a mask, so the link's text stays exactly the name. */
+.brand::before {
+  content: ""; width: 2rem; height: 2rem; flex: none; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='16' cy='13' r='9'/%3E%3Cpath d='M16 13V7.8M16 13l3.6 2.2M2.5 26.5c3.4 0 3.4-2.6 6.75-2.6s3.4 2.6 6.75 2.6 3.4-2.6 6.75-2.6 3.4 2.6 6.75 2.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='16' cy='13' r='9'/%3E%3Cpath d='M16 13V7.8M16 13l3.6 2.2M2.5 26.5c3.4 0 3.4-2.6 6.75-2.6s3.4 2.6 6.75 2.6 3.4-2.6 6.75-2.6 3.4 2.6 6.75 2.6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.site-header ul { display: flex; flex-wrap: wrap; gap: 0 1.1rem; list-style: none; margin: 0; padding: 0; }
+.site-header nav a { display: inline-block; padding-block: 0.6rem; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+.site-header nav a:hover { border-bottom-color: currentColor; }
+.wave-rule {
+  height: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='10' viewBox='0 0 48 10'%3E%3Cpath d='M0 5c6 0 6-4 12-4s6 4 12 4 6 4 12 4 6-4 12-4' fill='none' stroke='%239fbfca' stroke-width='1.5'/%3E%3C/svg%3E") repeat-x center / 48px 10px;
+}
+@media (prefers-color-scheme: dark) {
+  .wave-rule { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='10' viewBox='0 0 48 10'%3E%3Cpath d='M0 5c6 0 6-4 12-4s6 4 12 4 6 4 12 4 6-4 12-4' fill='none' stroke='%232f5373' stroke-width='1.5'/%3E%3C/svg%3E"); }
+}
+/* "Predictions, not observations" sits on every page, under the header,
+   set like a chart's legend box: never hidden, never decorative. */
+.notice { margin: 0; background: var(--panel); color: var(--fg); font-size: 0.875rem; padding-block: 0.45rem; border-block: 1px solid var(--panel-line); }
+.notice .wrap { padding-inline-start: 2.4rem; position: relative; }
+.notice .wrap::before {
+  content: ""; position: absolute; inset-inline-start: 1rem; top: 0.2em; width: 1rem; height: 1rem;
+  border: 1.5px solid var(--brand); border-radius: 50%;
+  background: linear-gradient(var(--brand), var(--brand)) center 30% / 1.5px 1.5px no-repeat,
+              linear-gradient(var(--brand), var(--brand)) center 72% / 1.5px 5px no-repeat;
+}
 
-main { padding-block: 1rem 2rem; }
-h1 { font-size: 1.6rem; line-height: 1.2; margin: 0.6rem 0 0.4rem; }
-h2 { font-size: 1.25rem; margin: 1.8rem 0 0.5rem; }
-h3 { font-size: 1.1rem; margin: 1.4rem 0 0.4rem; }
-h4 { font-size: 1rem; margin: 1.2rem 0 0.3rem; }
-.lead { color: var(--muted); margin-top: 0; }
+main { padding-block: 1rem 2.5rem; }
+h1 { font-size: 1.75rem; line-height: 1.15; margin: 0.6rem 0 0.5rem; color: var(--brand); }
+h2 { font-size: 1.35rem; line-height: 1.25; margin: 2rem 0 0.5rem; }
+h3 { font-size: 1.15rem; margin: 1.5rem 0 0.4rem; }
+h4 { font-size: 1.02rem; margin: 1.2rem 0 0.3rem; }
+.lead { color: var(--muted); margin-top: 0; font-size: 1.05rem; }
 .meta, .dist, .count, .tag, .m { color: var(--muted); font-size: 0.875rem; }
+.dist, .count, .m, .meta { font-variant-numeric: tabular-nums; }
 .crumbs ol { display: flex; flex-wrap: wrap; gap: 0 0.4rem; list-style: none; margin: 0; padding: 0; font-size: 0.875rem; }
-.crumbs li + li::before { content: "/"; margin-inline-end: 0.4rem; color: var(--muted); }
-.callout { background: var(--panel); border-inline-start: 4px solid var(--brand); padding: 0.6rem 0.9rem; margin-block: 1rem; }
-.callout p { margin: 0.3rem 0; }
+.crumbs a { display: inline-block; padding-block: 0.2rem; }
+.crumbs li + li::before { content: "›"; margin-inline-end: 0.4rem; color: var(--muted); }
+.callout { background: var(--panel); border: 1px solid var(--panel-line); border-inline-start: 4px solid var(--brand); border-radius: 0 0.5rem 0.5rem 0; padding: 0.7rem 1rem; margin-block: 1rem; }
+.callout p { margin: 0.35rem 0; }
+.callout h2 { margin-top: 0.2rem; }
 .callout.warning { background: var(--warn); border-color: var(--warn-line); }
-.stale { background: var(--warn); border-inline-start: 4px solid var(--warn-line); padding: 0.6rem 0.9rem; }
+/* King tides: the one place the buoy red appears. */
+.callout.kt-link { background: var(--buoy-tint); border-color: var(--buoy); }
+/* The king-tide table is long: a neutral panel with the buoy rule only, so it
+   never reads as a warning box. */
+.callout.kt-next { background: var(--panel); border-color: var(--panel-line); border-inline-start-color: var(--buoy); }
+.kt-link h2, .kt-next h2 { color: var(--fg); }
+.kt-link h2::before, .kt-next h2::before {
+  content: ""; display: inline-block; width: 0.6em; height: 0.75em; margin-inline-end: 0.45em;
+  background: var(--buoy); clip-path: polygon(50% 0, 100% 100%, 0 100%); vertical-align: -0.02em;
+}
+.stale { background: var(--warn); border: 1px solid var(--warn-line); border-inline-start-width: 4px; border-radius: 0 0.5rem 0.5rem 0; padding: 0.6rem 0.9rem; }
 .none { color: var(--muted); font-style: italic; }
 
-.day h2 { margin-bottom: 0.3rem; }
+/* A day: a card with the date set like an almanac page heading. */
+.day { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: 0.5rem; padding: 0.3rem 0.9rem 0.8rem; margin-block: 1.2rem; }
+.day h2 { margin: 0.6rem 0 0.3rem; font-size: 1.25rem; }
 .day-label { color: var(--brand); }
-table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; }
-.events th, .events td { text-align: start; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-.events thead th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; font-variant-numeric: tabular-nums lining-nums; }
+.events th, .events td { text-align: start; padding: 0.5rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.events tbody tr:last-child > * { border-bottom: 0; }
+.events thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--line); }
+.events caption:not(.vh) { text-align: start; font-family: var(--serif); font-weight: 600; padding-block: 0.3rem; }
+.events td:first-of-type time { font-weight: 600; }
+/* High and low are told apart by shape as well as color: a rising or
+   falling triangle, drawn, so nothing extra is read aloud. */
+.ev-high th, .ev-low th { white-space: nowrap; }
 .ev-high th { color: var(--high); }
 .ev-low th { color: var(--low); }
+.ev-high th::before, .ev-low th::before {
+  content: ""; display: inline-block; width: 0.62em; height: 0.55em; margin-inline-end: 0.45em; background: currentColor;
+}
+.ev-high th::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.ev-low th::before { clip-path: polygon(0 0, 100% 0, 50% 100%); }
 /* Keyboard-reachable and named in the template (role, tabindex, caption id).
    position: relative keeps the visually hidden caption inside the box, so
    it cannot widen the page at 320px. */
@@ -86,8 +171,9 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; }
 
 .chart { margin: 0.6rem 0 0; }
 .tide-chart { display: block; width: 100%; height: auto; }
-.tide-chart .curve { fill: none; stroke: var(--curve); stroke-width: 2.5; }
+.tide-chart .curve { fill: none; stroke: var(--curve); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 .tide-chart .grid { stroke: var(--grid); stroke-width: 1; }
+.tide-chart .grid.datum { stroke: var(--datum); stroke-width: 1.5; stroke-dasharray: 2 3; }
 .tide-chart .tick { stroke: var(--grid); stroke-width: 1; }
 .tide-chart .night { fill: var(--night); }
 .sky { margin: 0.4rem 0 0; }
@@ -95,25 +181,49 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; }
 .chart-box .tide-chart { grid-column: 2; }
 .ax-y { grid-column: 1; grid-row: 1; position: relative; }
 .ax-x { grid-column: 2; position: relative; height: 1.3rem; }
-.ax { position: absolute; color: var(--muted); font-size: 0.75rem; line-height: 1; white-space: nowrap; }
+.ax { position: absolute; color: var(--muted); font-size: 0.75rem; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ax-y .ax { inset-inline-end: 0.3rem; transform: translateY(-50%); }
 .ax-x .ax { top: 0.25rem; transform: translateX(-50%); }
+.ax-key { grid-column: 2; color: var(--muted); font-size: 0.75rem; margin-top: 0.15rem; }
 .tide-chart .dot-H { fill: var(--high); }
 .tide-chart .dot-L { fill: var(--low); }
-figcaption { font-size: 0.875rem; color: var(--muted); }
+figcaption { font-size: 0.875rem; color: var(--muted); margin-top: 0.3rem; }
 
-ul.states, ul.stations, ul.near, ul.printables { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.1rem 1rem; grid-template-columns: 1fr; }
-ul.states li, ul.stations li, ul.near li, ul.printables li { padding-block: 0.35rem; border-bottom: 1px solid var(--line); }
+ul.states, ul.stations, ul.near, ul.printables { list-style: none; padding: 0; margin: 0; display: grid; gap: 0 1.25rem; grid-template-columns: 1fr; }
+ul.states li, ul.stations li, ul.near li, ul.printables li { padding-block: 0.45rem; border-bottom: 1px solid var(--line); }
+ul.states li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
 ul.states a, ul.stations a, ul.near a, ul.printables a { display: inline-block; min-height: 24px; }
+ul.states a { font-weight: 500; }
+ul.states .count { white-space: nowrap; }
+ul.derived { padding-inline-start: 1.1rem; }
+ul.derived li { margin-block: 0.25rem; }
+dl.glossary dt { font-family: var(--serif); font-weight: 600; margin-top: 0.9rem; }
+dl.glossary dd { margin: 0.15rem 0 0; }
 @media (min-width: 34rem) {
   ul.states, ul.stations { grid-template-columns: 1fr 1fr; }
-  h1 { font-size: 2rem; }
+  h1 { font-size: 2.25rem; }
+  .day { padding-inline: 1.2rem; }
+}
+@media (min-width: 60rem) {
+  .wrap { max-width: 50rem; }
 }
 details { margin-block: 0.4rem; }
 summary { cursor: pointer; color: var(--link); }
 
-.site-footer { border-top: 1px solid var(--line); background: var(--panel); font-size: 0.9rem; padding-block: 1rem 2rem; }
-.site-footer h2 { font-size: 1.05rem; margin-top: 0.4rem; }
+.site-footer { background: var(--foot-bg); color: var(--foot-fg); font-size: 0.9rem; padding-block: 0.4rem 2rem; margin-top: 1rem; }
+.site-footer a { color: var(--foot-link); }
+.site-footer a:focus-visible, .site-footer button:focus-visible { outline-color: var(--foot-fg); }
+.site-footer h2 { font-size: 1.1rem; margin-top: 1rem; }
+.site-footer .foot-read { margin: 1rem 0 0; padding: 0.8rem 0 0; border-top: 1px solid color-mix(in srgb, var(--foot-fg) 30%, transparent); }
 .soon { font-weight: 600; }
-.button { display: inline-block; background: var(--brand); color: var(--bg); padding: 0.55rem 1rem; border-radius: 0.4rem; text-decoration: none; font-weight: 600; }
+.button { display: inline-block; background: var(--brand); color: var(--on-brand); padding: 0.6rem 1.1rem; border-radius: 0.4rem; text-decoration: none; font-weight: 600; }
+.site-footer .button { background: var(--foot-fg); color: var(--foot-bg); }
 button { font: inherit; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  .site-header nav, .wave-rule, .site-footer .app { display: none; }
+  .site-footer { background: none; color: var(--fg); }
+  .site-footer a { color: var(--fg); }
+}

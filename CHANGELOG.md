@@ -5,17 +5,20 @@
 - A new page, `/tide-gifts/` ("Tide chart gifts and tide art prints"),
   lists every Tide Hours product the site links to, by kind and by town
   within a kind: the custom tide chart print (a link to the shop, while
-  the print shop link is on), tide rings art prints, year-of-tides
-  posters, printable 2027 tide calendars, tide blanket patterns, the
-  printed "2027 Tide Tables: Maine Coast" on Amazon, and moon phase
-  calendars. The calendars and posters are the station pages' own; the
-  rest are in `src/tidehours/copy/gifts.json`, where an entry without the
-  date its listing was marked live stops the build. Plain links only: no
+  the print shop link is on), the winter solstice print (until December
+  22, 2026), tide rings art prints, year-of-tides posters, printable 2027
+  tide calendars, tide blanket patterns and moon phase calendars. The
+  calendars and posters are the station pages' own; the rest are in
+  `src/tidehours/copy/gifts.json`, where an entry without the date its
+  listing was marked live stops the build, and an optional `until` date
+  (Pacific) takes an entry off the page. Books on Amazon can be listed
+  there too; none is yet, so nothing on the site names Amazon. Plain links only: no
   price, sale, tag, click event or product markup. The page exists only
   while an entry of that list shows, so it leaves with the 2027 entries
   on January 1, 2028. It is in the sitemap,
   and every English footer links to it ("Tide gifts"). The privacy page
-  names it among the pages that link to Etsy and Amazon. `check_site.py`
+  names it among the pages that link to Etsy (and Amazon, once a book is
+  listed). `check_site.py`
   checks the page and fails a link from it to any listing it does not
   list (DECISIONS 0041).
 - The home page groups the states by coast, Florida under both the Atlantic

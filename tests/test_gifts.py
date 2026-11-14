@@ -15,6 +15,7 @@ ones."""
 
 from __future__ import annotations
 
+import datetime as dt
 import functools
 import importlib.util
 import json
@@ -35,15 +36,15 @@ COMMITTED = Path(gifts.__file__).parent / "copy" / "gifts.json"
 
 NOW = "2026-11-14T11:20:00Z"
 SHOP = "https://www.etsy.com/shop/TideHours"
-# The states of the committed lists' stations, the Maine book's included.
+# The states of the committed lists' stations.
 STATES = "ME,CA,OR,MA,GA,MD,WA,FL,NH,NC,AK,SC,NJ,DE"
 PAGE = "tide-gifts/index.html"
 FOOTER = ' · <a href="/tide-gifts/">Tide gifts</a>'
 TITLE = "Tide chart gifts and tide art prints | Tide Hours"
 HEADING = "Tide chart gifts and tide art prints"
 DESCRIPTION = (
-    "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, tide art prints, tide posters, "
-    "2027 tide calendars, tide blanket patterns, printed tide tables and moon phase calendars."
+    "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, a winter solstice print, tide art "
+    "prints, tide posters, 2027 tide calendars, tide blanket patterns and moon phase calendars."
 )
 INTRO = (
     "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, "
@@ -51,17 +52,32 @@ INTRO = (
 )
 HOW = (
     "They are listed by kind, and by town within each kind. A town's name links to its tide times on this site, "
-    "and each gift links to where it is sold, on Etsy or Amazon."
+    "and each gift links to where it is sold, on Etsy."
 )
 SECTIONS = [
     "Custom tide chart prints",
+    "Winter solstice print",
     "Tide rings art prints",
     "Year-of-tides posters",
     "Printable 2027 tide calendars",
     "Tide blanket patterns",
-    "Printed tide tables",
     "Moon phase calendars",
 ]
+# The solstice print's sentence: the wording of its live Etsy listing,
+# adapted only to join its first two sentences of the second paragraph.
+SOLSTICE = (
+    "<p>The winter solstice in your city, December 21, 2026: the shortest day of the year, and the first bar on "
+    "the page. After it come the 364 days to December 20, 2027, one thin bar for each, from midnight at the top to "
+    "midnight at the bottom, so you can watch the light come back through spring to the long days of June and out "
+    "again. Made to order as a digital file, for any city in the 50 states, Puerto Rico or the U.S. Virgin Islands; "
+    "not interior or northern Alaska, Guam, the Northern Mariana Islands or American Samoa.</p>\n  "
+    '<ul class="printables">\n    <li data-gift="4616980007"><a href="https://www.etsy.com/listing/4616980007" '
+    'rel="noopener">2026 Winter Solstice Print: The Light Returns</a></li>'
+)
+SAN_FRANCISCO = (
+    '<li data-gift="4617280124"><a href="/stations/9414290/">San Francisco</a>, California: '
+    '<a href="https://www.etsy.com/listing/4617280124" rel="noopener">2027 Tide Rings: San Francisco</a></li>'
+)
 CUSTOM = (
     '<p data-gift="custom">A made-to-order print of the predicted tide at one place on one day, such as a wedding, '
     "a birth or the day you met, with a line of your own words. It is a digital file that you print. Order it in "
@@ -71,12 +87,11 @@ RINGS = (
     '<li data-gift="4617246732"><a href="/stations/8413320/">Bar Harbor</a>, Maine: '
     '<a href="https://www.etsy.com/listing/4617246732" rel="noopener">2027 Tide Rings: Bar Harbor</a></li>'
 )
-BOOK = (
-    '<li data-gift="B0HRP6Z64Q"><a href="https://www.amazon.com/dp/B0HRP6Z64Q" rel="noopener">2027 Tide Tables: '
-    "Maine Coast</a>, a hardcover book of every predicted high and low tide of 2027 at six towns: "
-    '<a href="/stations/8410140/">Eastport</a>, <a href="/stations/8413320/">Bar Harbor</a>, '
-    '<a href="/stations/8415490/">Rockland</a>, <a href="/stations/8418150/">Portland</a>, '
-    '<a href="/stations/8418911/">Kennebunkport</a> and <a href="/stations/8419317/">Wells</a>.</li>'
+# The book line the Guam test list gives (one town).
+GU_BOOK = (
+    '<li data-gift="B0TESTAAAA"><a href="https://www.amazon.com/dp/B0TESTAAAA" rel="noopener">2027 Tide Tables: '
+    "Apra Harbor</a>, a paperback book of every predicted high and low tide of 2027 at "
+    '<a href="/stations/1630000/">Apra Harbor</a>.</li>'
 )
 MOON = (
     '<li data-gift="4616923752"><a href="https://www.etsy.com/listing/4616923752" rel="noopener">2027 Moon Phase '
@@ -92,15 +107,17 @@ BOOK_PRIVACY = (
     "plain links, not affiliate links, and this site sends nothing to Amazon. A link takes you to Amazon, where "
     "Amazon's own privacy notice applies."
 )
-# The committed list: each listing id or ASIN, as marked live in the
-# owner's product notes (Etsy "LISTED", KDP "LIVE"), with its kind, title
-# and the day it was marked.
+# The committed list: each listing id, as marked "LISTED" in the owner's
+# product notes, with its kind, title and the day it was marked. The Maine
+# Coast hardcover is left out until the owner has checked her author copy.
 LIVE = {
+    "4616980007": ("daylight", "2026 Winter Solstice Print: The Light Returns", "2026-11-13"),
     "4617246732": ("rings", "2027 Tide Rings: Bar Harbor", "2026-11-14"),
     "4617240419": ("rings", "2027 Tide Rings: Monterey", "2026-11-14"),
+    "4617280124": ("rings", "2027 Tide Rings: San Francisco", "2026-11-14"),
+    "4617279303": ("rings", "2027 Tide Rings: Half Moon Bay", "2026-11-14"),
     "4616975320": ("blanket", "2027 Tide Blanket Pattern: Bar Harbor", "2026-11-13"),
     "4616976698": ("blanket", "2027 Tide Blanket Pattern: Half Moon Bay", "2026-11-13"),
-    "B0HRP6Z64Q": ("book", "2027 Tide Tables: Maine Coast", "2026-11-13"),
     "4616888829": ("moon", "2027 Moon Phase Poster: US Time Zones", "2026-11-13"),
     "4616911593": ("moon", "2027 Moon Phase Calendar: US Time Zones", "2026-11-13"),
     "4616923752": ("moon", "2027 Moon Phase Poster: Southern Hemisphere", "2026-11-13"),
@@ -116,6 +133,8 @@ TEST_GIFTS = [
     {"kind": "moon", "listing": "1234567894", "year": 2027, "title": "2027 Moon Phase Poster: Guam", "live": "2026-11-14"},
     {"kind": "book", "asin": "B0TESTAAAA", "year": 2027, "title": "2027 Tide Tables: Apra Harbor",
      "format": "paperback", "towns": [["Apra Harbor", GU]], "live": "2026-11-14"},
+    {"kind": "daylight", "listing": "1234567895", "year": 2026, "title": "2026 Winter Solstice Print: The Light Returns",
+     "live": "2026-11-13", "until": "2026-12-22"},
 ]  # fmt: skip
 ETSY_OR_AMAZON = re.compile(r'<a\b[^>]*href="(https?://[^"]*(?:etsy|amazon)\.[^"]*)"', re.I)
 H2 = re.compile(r"<h2 id=\"g-[^\"]*\">(.*?)</h2>")
@@ -219,13 +238,16 @@ def problems(
 def test_the_committed_list_is_exactly_the_listings_marked_live() -> None:
     listed = gifts.load(COMMITTED)
     assert {g.ref: (g.kind, g.title, g.live.isoformat()) for g in listed} == LIVE
-    assert all(g.year == 2027 for g in listed)
     by_ref = {g.ref: g for g in listed}
+    assert all(g.year == 2027 for g in listed if g.kind != "daylight")
     assert by_ref["4617246732"].station == "8413320" and by_ref["4617240419"].station == "9413450"
+    assert by_ref["4617280124"].station == "9414290" and by_ref["4617279303"].station == "9414131"
     assert by_ref["4616975320"].station == "8413320" and by_ref["4616976698"].station == "9414131"
-    book = by_ref["B0HRP6Z64Q"]
-    assert book.format == "hardcover" and book.url == "https://www.amazon.com/dp/B0HRP6Z64Q"
-    assert [s for _, s in book.towns] == ["8410140", "8413320", "8415490", "8418150", "8418911", "8419317"]
+    solstice = by_ref["4616980007"]
+    assert (solstice.year, solstice.until) == (2026, dt.date(2026, 12, 22)) and solstice.station is None
+    assert all(g.until is None for g in listed if g.kind != "daylight")
+    # No book until the owner has checked her author copy.
+    assert not [g for g in listed if g.kind == "book"]
     # None of them is a calendar or poster the station pages already link to.
     elsewhere = {c.listing for c in calendars.load().values()} | {p.listing for p in posters.load().values()}
     assert not set(LIVE) & elsewhere
@@ -258,6 +280,12 @@ BAD = {
     "a bad format": [{**TEST_GIFTS[3], "format": "ebook"}],
     "no towns": [{**TEST_GIFTS[3], "towns": []}],
     "a town twice": [{**TEST_GIFTS[3], "towns": [["Apra Harbor", GU], ["Apra", GU]]}],
+    "until is not a date": [{**TEST_GIFTS[4], "until": "after the solstice"}],
+    "until is a time": [{**TEST_GIFTS[4], "until": "2026-12-22T08:00"}],
+    "until before live": [{**TEST_GIFTS[4], "until": "2026-11-01"}],
+    "a solstice print without until": [without(TEST_GIFTS[4], "until")],
+    "two solstice prints": [TEST_GIFTS[4], {**TEST_GIFTS[4], "listing": "1234567896"}],
+    "a solstice print's other title": [{**TEST_GIFTS[4], "title": "2026 Winter Solstice Print: Best Gift"}],
 }
 
 
@@ -281,14 +309,14 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     assert '<p class="lead">' + INTRO + "</p>" in main
     assert "<p>" + HOW.replace("'", "&#39;") + "</p>" in main
     assert H2.findall(main) == SECTIONS
-    for line in (CUSTOM, RINGS, BOOK, MOON):
+    for line in (CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON):
         assert line in main
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 6 + 8 listings and the shop.
+    # once each: 40 + 6 + 10 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 6 + 8 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 6 + 10 + 1
     # Within a kind, by town.
     section = main[main.find('id="g-calendars"') : main.find('id="g-blanket"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
@@ -326,10 +354,22 @@ def test_the_page_is_in_the_sitemap_and_not_in_llms_txt(published: Path) -> None
 def test_privacy_and_terms_name_the_page(published: Path) -> None:
     privacy = read(published, "privacy/index.html").replace("&#39;", "'")
     assert f'<h2 id="shop">Shop links</h2>\n<p>{SHOP_PRIVACY}</p>' in privacy
-    assert f'<h2 id="booklets">Book links</h2>\n<p>{BOOK_PRIVACY}</p>' in privacy
+    assert 'id="booklets"' not in privacy and "Book links" not in privacy
     assert "no ads" in privacy
     terms = read(published, "terms/index.html")
-    assert "Amazon" in terms and "Etsy" in terms
+    assert "Etsy" in terms and "Amazon" not in terms
+
+
+def test_with_no_book_entry_nothing_links_to_or_names_amazon(published: Path, check_site: Any) -> None:
+    """The committed list has no book: no page or file of the published
+    build links to Amazon or names it, the gifts page has no "Printed tide
+    tables" section, and check_site agrees."""
+    assert not [g for g in gifts.load(COMMITTED) if g.kind == "book"]
+    for f in published.rglob("*"):
+        if f.is_file() and f.suffix in {".html", ".xml", ".txt", ".json"}:
+            assert "amazon" not in f.read_text(encoding="utf-8").lower(), f
+    assert "Printed tide tables" not in read(published, PAGE)
+    assert problems(check_site, published, shop=SHOP) == []
 
 
 # Other builds
@@ -350,15 +390,12 @@ def test_with_the_shop_off_there_is_no_custom_print(tmp_path: Path, lists: dict[
 
 def test_a_one_town_book_and_the_guam_list(guam: Path, lists: dict[str, Path], check_site: Any) -> None:
     text = read(guam, PAGE)
-    assert (
-        '<li data-gift="B0TESTAAAA"><a href="https://www.amazon.com/dp/B0TESTAAAA" rel="noopener">2027 Tide Tables: '
-        "Apra Harbor</a>, a paperback book of every predicted high and low tide of 2027 at "
-        '<a href="/stations/1630000/">Apra Harbor</a>.</li>'
-    ) in text
+    assert GU_BOOK in text
     assert H2.findall(text) == [
-        "Custom tide chart prints", "Tide rings art prints", "Tide blanket patterns", "Printed tide tables",
-        "Moon phase calendars",
+        "Custom tide chart prints", "Winter solstice print", "Tide rings art prints", "Tide blanket patterns",
+        "Printed tide tables", "Moon phase calendars",
     ]  # fmt: skip
+    assert "Amazon" in read(guam, "terms/index.html")
     privacy = read(guam, "privacy/index.html").replace("&#39;", "'")
     assert "<p>The About and king tides pages and the tide gifts page link to the Tide Hours shop on Etsy." in privacy
     assert f"<p>{BOOK_PRIVACY}</p>" in privacy
@@ -406,6 +443,41 @@ def test_nothing_to_list_leaves_no_trace(tmp_path: Path, lists: dict[str, Path],
     assert all("tide-gifts" not in f.read_text(encoding="utf-8") for f in pages(root))
     assert problems(check_site, root, gifts_file=lists["none"], calendars_file=lists["no calendars"],
                     posters_file=lists["no posters"]) == []  # fmt: skip
+
+
+SOLSTICE_ONLY = [TEST_GIFTS[0], TEST_GIFTS[4]]  # the Guam rings and the solstice print
+
+
+@pytest.mark.parametrize(
+    ("now", "shown"),
+    [
+        ("2026-12-21T11:20:00Z", True),  # the last daily build before the solstice print leaves
+        ("2026-12-22T07:59:00Z", True),  # 23:59 on December 21 in Pacific time
+        ("2026-12-22T08:00:00Z", False),  # midnight, December 22, Pacific
+        ("2026-12-22T11:20:00Z", False),  # the daily build of December 22
+    ],
+)
+def test_the_solstice_print_leaves_on_its_until_day_in_pacific_time(
+    tmp_path: Path, check_site: Any, now: str, shown: bool
+) -> None:
+    path = write_list(tmp_path / "gifts.json", SOLSTICE_ONLY)
+    root = build(tmp_path / "s", "--gifts", str(path), now=now, states="CA,GU")
+    text = read(root, PAGE)
+    assert ("listing/1234567895" in text) is shown
+    assert ("Winter solstice print" in text) is shown
+    assert "Tide rings art prints" in text
+    assert problems(check_site, root, gifts_file=path) == []
+
+
+def test_check_site_catches_a_solstice_print_shown_past_its_until(tmp_path: Path, check_site: Any) -> None:
+    """The December 21 page, checked against a list that says the print
+    left that day: the page still lists it, so check_site fails."""
+    path = write_list(tmp_path / "gifts.json", SOLSTICE_ONLY)
+    root = build(tmp_path / "s", "--gifts", str(path), now="2026-12-21T11:20:00Z", states="CA,GU")
+    assert problems(check_site, root, gifts_file=path) == []
+    earlier = write_list(tmp_path / "earlier.json", [TEST_GIFTS[0], {**TEST_GIFTS[4], "until": "2026-12-21"}])
+    found = problems(check_site, root, gifts_file=earlier)
+    assert f"{PAGE}: https://www.etsy.com/listing/1234567895 is not a live listing this build lists" in found
 
 
 def test_the_affiliate_switch_leaves_the_book_link_untagged(

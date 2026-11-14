@@ -99,9 +99,11 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    That station's page then links to it, and `/tide-calendars/` lists it
    with every other calendar and poster, until the poster's year is over.
 9. Other products (DECISIONS 0041): when a tide rings print, a tide
-   blanket pattern, a moon phase calendar or a multi-town book is live,
+   blanket pattern, a moon phase calendar, a solstice print or a
+   multi-town book is live,
    add it to `src/tidehours/copy/gifts.json` in a pull request with its
    Etsy listing id or ASIN, year, title, station or towns, and `live`, the
-   date it was marked live. `/tide-gifts/` then lists it until its year is
-   over. Calendars and posters go in their own lists (7 and 8) and appear
+   date it was marked live; add `until` (YYYY-MM-DD, Pacific) for one that
+   is delisted on a known day. `/tide-gifts/` then lists it until its year
+   is over or its `until` comes. Calendars and posters go in their own lists (7 and 8) and appear
    there too.

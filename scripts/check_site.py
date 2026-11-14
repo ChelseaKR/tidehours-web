@@ -35,8 +35,8 @@ link to each listing, and every English page's footer links to it once;
 otherwise there is no such page and no link to one (0037).
 While a live entry of src/tidehours/copy/gifts.json shows (its year not
 over), tide-gifts/ lists exactly those entries, the calendars and posters
-above, and the custom print when the shop address is set, by kind and town, each with the same plain
-link; a link to any listing it does not list, which covers one not marked
+above, and the custom print when the shop address is set, by kind and
+town, each with the same plain link; a link to any listing it does not list, which covers one not marked
 live, fails the build. Every English page's footer links to it once, and
 the privacy page names it among the pages that link to Etsy and Amazon
 (0041).
@@ -111,7 +111,7 @@ H2_TEXT = re.compile(r"<h2[^>]*>(.*?)</h2>", re.S)
 BUILT = re.compile(r"page built (\d{4}-\d{2}-\d{2}) \(UTC\)")
 # What no word on the gifts page may be: a price, a discount, a rating or a
 # claim (0029, 0030, 0041).
-GIFT_FORBIDDEN = re.compile(r"[$%\u2605]|\b(sale|discount|free shipping)\b", re.I)
+GIFT_FORBIDDEN = re.compile(r"[$%\u2605]|\b(sale|discount|free shipping|best|cheap|deals?|rated|official)\b", re.I)
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -801,6 +801,21 @@ def build_date(root: Path, cat: Catalog) -> dt.date | None:
     return None
 
 
+def until_day(root: Path, cat: Catalog, built: dt.date) -> dt.date:
+    """The build's date in gifts.UNTIL_ZONE, which an entry's `until` is
+    read in: the date a station page in that zone shows, or the build's
+    UTC date when the build has none (the daily build runs at 11:20 UTC,
+    when the two are the same day)."""
+    zone = str(gifts.UNTIL_ZONE)
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if s.tz == zone and f.is_file():
+            found = STATION_DATE.findall(f.read_text(encoding="utf-8"))
+            if len(found) == 1:
+                return dt.date.fromisoformat(found[0])
+    return built
+
+
 def gift_listing(
     root: Path,
     cat: Catalog,
@@ -811,14 +826,16 @@ def gift_listing(
 ) -> tuple[dict[str, Any] | None, list[str]]:
     """What tide-gifts/ must show for this build, worked out from the
     build itself: the calendars and posters its station pages are due, the
-    entries of `listed` whose year is not over on the build's date and
-    whose station, if any, has a page, and the custom print when the shop
-    address is set (docs/DECISIONS.md 0041)."""
+    entries of `listed` whose year is not over on the build's date, whose
+    `until`, if any, has not come, and whose station, if any, has a page,
+    and the custom print when the shop address is set (docs/DECISIONS.md
+    0041)."""
     stations = {s.id: s for s in cat.stations if (root / "stations" / s.id / "index.html").is_file()}
     built = build_date(root, cat)
     if built is None:
         return None, ["no station page says when the build was made"]
-    shown = [g for g in listed if gifts.shown(g, built) and (g.station is None or g.station in stations)]
+    today = until_day(root, cat, built)
+    shown = [g for g in listed if gifts.shown(g, built, today) and (g.station is None or g.station in stations)]
     listing = gifts.block(
         _station_ids(calendar_links), _station_ids(poster_links), shown, stations, printshop.block(url)
     )
@@ -910,9 +927,7 @@ def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]
     ]
     if plain != want_p:
         problems.append(f"{rel}: the section paragraphs are {plain}")
-    bad = GIFT_FORBIDDEN.findall(htmllib.unescape(TAG.sub(" ", main))) + booklets.CLAIMS.findall(
-        htmllib.unescape(TAG.sub(" ", main))
-    )
+    bad = GIFT_FORBIDDEN.findall(htmllib.unescape(TAG.sub(" ", main)))
     if bad:
         problems.append(f"{rel}: a price, sale or claim word: {bad}")
     return problems

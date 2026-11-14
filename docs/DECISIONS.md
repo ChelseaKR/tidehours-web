@@ -2240,9 +2240,11 @@ chart gift", "Bar Harbor tide calendar 2027", "tide art print"). The site
 already had `tide-calendars/` (0037), which lists the printable calendars
 and posters by state for a reader who wants a town's calendar. This page is
 for a reader who wants a gift: every product the site can link to, grouped
-by kind, and by town within a kind. The wording below is this change's, for
-the owner to approve before it is merged. The listings were not fetched for
-this change.
+by kind, and by town within a kind. The owner approved the page and its
+wording on 2026-11-14 with two changes, both below: the Maine Coast
+hardcover waits until she has checked her author copy, and the products
+listed that day (two more tide rings prints and the winter solstice print)
+are added. The listings were not fetched for this change.
 
 **Nothing forbids it.** No decision here freezes the site or rules out a
 new page. 0029 kept shop links off station, state and region pages, and
@@ -2265,6 +2267,19 @@ what the thing is:
   and not to a listing, because the listing ids of the custom print and its
   occasion versions are not marked live in the product notes the owner
   keeps for each listing.
+- **Winter solstice print:** the made-to-order daylight print for the
+  solstice of December 21, 2026, one line with its listing. Its sentence is
+  the wording already approved on its live Etsy listing, with only its first
+  two sentences of the second paragraph joined ("Made to order as a digital
+  file" and the places it works): "The winter solstice in your city,
+  December 21, 2026: the shortest day of the year, and the first bar on the
+  page. After it come the 364 days to December 20, 2027, one thin bar for
+  each, from midnight at the top to midnight at the bottom, so you can
+  watch the light come back through spring to the long days of June and
+  out again. Made to order as a digital file, for any city in the 50
+  states, Puerto Rico or the U.S. Virgin Islands; not interior or northern
+  Alaska, Guam, the Northern Mariana Islands or American Samoa." It shows
+  sun, not tide, so the page's tide wording does not describe it.
 - **Tide rings art prints, year-of-tides posters, printable calendars and
   tide blanket patterns:** one line per town, alphabetical: the town's
   name linked to its station page, the state, and the listing linked by
@@ -2276,24 +2291,30 @@ what the thing is:
 
 **The lists.** The calendars and posters are exactly the ones the station
 pages of this build link to (0035, 0037); this page adds no id to them. The
-other products are in `copy/gifts.json`, a list of entries of four kinds
-(`rings`, `blanket`, `moon`, `book`) with the Etsy listing id or ASIN, the
-year, a title in a fixed shape ("2027 Tide Rings: Bar Harbor", "2027 Tide
-Blanket Pattern: Half Moon Bay", "2027 Moon Phase Poster: US Time Zones",
-"2027 Tide Tables: Maine Coast"), the station for a town-bound entry, the
-format and the towns for a book, and **`live`, the date its listing was
-marked live**. An entry without a `live` date, or with anything but a date
+other products are in `copy/gifts.json`, a list of entries of five kinds
+(`daylight`, `rings`, `blanket`, `moon`, `book`) with the Etsy listing id or
+ASIN, the year, a title in a fixed shape ("2026 Winter Solstice Print: The
+Light Returns", "2027 Tide Rings: Bar Harbor", "2027 Tide Blanket Pattern:
+Half Moon Bay", "2027 Moon Phase Poster: US Time Zones", "2027 Tide
+Tables: Maine Coast"), the station for a town-bound entry, the format and
+the towns for a book, **`live`, the date its listing was marked live**,
+and, optionally, **`until`, the first day it no longer shows**, read in
+Pacific time (the shop's own). A solstice print must carry `until`, and a
+list may hold at most one, since its sentence names its dates. An entry without a `live` date, or with anything but a date
 there ("draft", "LISTED", an empty string), stops the build, as do a slug,
 a whole address, a claim word, a price, an unknown kind or key, a listing
 listed twice or also in the calendar or poster list, and a station the
-catalog does not have. As committed it holds the eight entries marked live
-in the owner's product notes on 2026-11-13 and 2026-11-14: tide rings for
-Bar Harbor and Monterey, tide blanket patterns for Bar Harbor and Half
-Moon Bay, the three moon phase calendars, and the hardcover "2027 Tide
-Tables: Maine Coast" (Eastport, Bar Harbor, Rockland, Portland,
-Kennebunkport and Wells). `booklets.json` (0030) is still empty: no single
-station's booklet is marked live, and the hardcover covers six towns, so it
-is on this page and not on a station page. `--gifts FILE` on the build and
+catalog does not have, an `until` that is not a date or not after `live`,
+and a second solstice print. As committed it holds the ten entries marked
+live in the owner's product notes on 2026-11-13 and 2026-11-14: the winter
+solstice print (`until` 2026-12-22, the day the owner delists it), tide
+rings for Bar Harbor, Half Moon Bay, Monterey and San Francisco, tide
+blanket patterns for Bar Harbor and Half Moon Bay, and the three moon phase
+calendars. The hardcover "2027 Tide Tables: Maine Coast" (ASIN B0HRP6Z64Q,
+marked live) is left out until the owner has checked her author copy, so
+the "Printed tide tables" section, the privacy page's "Book links" section
+and Amazon's name on the terms page do not render; adding its entry back
+brings all three. `booklets.json` (0030) is still empty. `--gifts FILE` on the build and
 on `check_site.py` names another list; it is for tests.
 
 **The links.** Exactly `https://www.etsy.com/listing/ID` or
@@ -2313,8 +2334,12 @@ markup for things this site does not hold. Etsy and Amazon are never in
 its JSON-LD.
 
 **When it exists.** Only while an entry of `gifts.json` shows: its year is
-not over by the build's date (UTC), and a town-bound one's station has a
-page in the build. The calendars, posters and custom print alone make no
+not over by the build's date (UTC), its `until`, if any, has not come by
+the build's date in Pacific time, and a town-bound one's station has a page
+in the build. The solstice print leaves with the first build on or after
+midnight, December 22, 2026, Pacific: the daily build of December 22 at
+11:20 UTC. The December 21 build stays up until then, so the page lists it
+for about three hours after midnight Pacific on December 22. The calendars, posters and custom print alone make no
 page, because `tide-calendars/` and the print shop's own link already list
 them. So the build of January 1, 2028 has no gifts page and no footer link
 to one, with nobody editing a file; the About and king-tide pages keep the
@@ -2337,7 +2362,8 @@ earlier case is unchanged. As published: "The About and king tides pages,
 the tide calendars and posters page, the tide gifts page, and the station
 pages of towns with a printable calendar or poster, link to the Tide Hours
 shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy,
-where Etsy's own privacy policy applies." While the page lists a book, the
+where Etsy's own privacy policy applies." While the page lists a book (none
+as committed), the
 Amazon section (`/privacy/#booklets`) reads, under "Book links": "The tide
 gifts page links to printed tide tables that Tide Hours publishes and sells
 on Amazon. They are plain links, not affiliate links, and this site sends
@@ -2349,7 +2375,8 @@ Amazon and Etsy among the trademarks. The "no ads" sentence is unchanged.
 **Checked.** `check_site.py` works out from the build what the page must
 list (`gift_listing`: the calendars and posters due on the station pages,
 the live entries whose year is not over on the date the station pages say
-the build was made, and the custom print when the shop address is set),
+the build was made and whose `until` has not come on the date a Pacific
+station page shows, and the custom print when the shop address is set),
 and `check_gifts` fails the build if the page is missing or present when it
 should not be; if its title, heading, two paragraphs, section headings or
 section sentences differ; if its lines or their links differ or are out of
@@ -2368,13 +2395,17 @@ build has it. It is a heading, two paragraphs, and a heading, a sentence
 and a list for each kind, styled as `ul.printables`; no new CSS and no
 script.
 
-**Tests.** `tests/test_gifts.py`: the committed list is exactly the eight
-listings marked live; 21 bad entries are refused, six of them a missing or
-non-date `live`; the published page word for word, its 55 outbound links
-(40 calendars, 6 posters, 8 gifts and the shop), towns in order; no price,
-sale, rating or product markup; the footer of every English page and not
-the Spanish one; the sitemap and not `llms.txt`; the privacy and terms
-pages; the shop off; a one-town book; a moon calendar alone; the 2028
+**Tests.** `tests/test_gifts.py`: the committed list is exactly the ten
+listings marked live, with no book; 27 bad entries are refused, six of them
+a missing or non-date `live` and six about `until` or the solstice print; the
+published page word for word, its 57 outbound links (40 calendars, 6
+posters, 10 gifts and the shop), towns in order; with no book entry, no
+file of the published build links to or names Amazon; the solstice print
+shown at 23:59 on December 21 Pacific and gone at midnight, and check_site
+failing a page that still lists it past its `until`; no price, sale, rating
+or product markup; the footer of every English page and not the Spanish
+one; the sitemap and not `llms.txt`; the privacy and terms pages; the shop
+off; a one-town book; a moon calendar alone; the 2028
 build; an empty list, and calendars, posters and the custom print with no
 gift, both without a page; the affiliate switch on; the accessibility sample;
 and 25 negative controls, three of them links to a listing or book that is
@@ -2386,9 +2417,7 @@ means the site as published.
 **Not checked.** The listings themselves: their ids are from the owner's
 notes, and Etsy and Amazon were not asked. The link titles are this
 change's, written to match the calendars' and posters'; the listings' own
-titles are longer. The Maine hardcover's notes say to look at an author
-copy before telling anyone about it; whether that has happened is with the
-owner.
+titles are longer. The Maine hardcover waits for the owner's author copy.
 
 **Reversible.** Yes: empty `gifts.json` and the next build has no page and
 no footer link. To remove the code, drop `gifts.py`,

@@ -818,7 +818,8 @@ def printables_page(
 
 def gifts_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> list[gifts.Gift]:
     """The entries of copy/gifts.json that show in this build: a year that
-    is not over by the build's date (UTC), and for a town-bound entry, its
+    is not over by the build's date (UTC), a day before its `until` (in
+    gifts.UNTIL_ZONE) for an entry that has one, and for a town-bound entry, its
     station among the build's (docs/DECISIONS.md 0041). A station the
     catalog does not have stops the build, and so does a listing that is
     also in the calendar or poster list."""
@@ -832,9 +833,9 @@ def gifts_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.date
     twice = sorted(g.ref for g in listed if g.ref in elsewhere)
     if twice:
         raise ValueError(f"gifts: listing {', '.join(twice)} is in the calendar or poster list too")
-    built = now.astimezone(dt.UTC).date()
+    built, today = now.astimezone(dt.UTC).date(), gifts.until_day(now)
     ids = {s.id for s in stations}
-    return [g for g in listed if gifts.shown(g, built) and (g.station is None or g.station in ids)]
+    return [g for g in listed if gifts.shown(g, built, today) and (g.station is None or g.station in ids)]
 
 
 def gifts_listing(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, Any] | None:

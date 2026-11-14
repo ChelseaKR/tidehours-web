@@ -34,6 +34,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from . import printables
 from .booklets import CLAIMS, STATION_ID, valid_asin
@@ -48,7 +49,9 @@ PATH = "tide-gifts/"
 LIST = Path(__file__).parent / "copy" / "gifts.json"
 COPY = Path(__file__).parent / "copy" / "gifts_page.json"
 # The order of the sections on the page.
-ORDER = ("custom", "rings", "posters", "calendars", "blanket", "book", "moon")
+ORDER = ("custom", "daylight", "rings", "posters", "calendars", "blanket", "book", "moon")
+# The zone an entry's `until` date is read in: the shop's own.
+UNTIL_ZONE = ZoneInfo("America/Los_Angeles")
 # The kinds copy/gifts.json may list, with the keys an entry has and the
 # shape of its title. A title cannot carry a price or a claim.
 _PLACE = r"[A-Z][A-Za-z.' -]{0,38}[A-Za-z.]"
@@ -57,13 +60,18 @@ TITLES = {
     "blanket": re.compile(rf"(20[0-9]{{2}}) Tide Blanket Pattern: {_PLACE}"),
     "moon": re.compile(r"(20[0-9]{2}) Moon Phase (?:Poster|Calendar): [A-Z][A-Za-z ]{0,38}[a-z]"),
     "book": BOOK_TITLE,
+    "daylight": re.compile(r"(20[0-9]{2}) Winter Solstice Print: The Light Returns"),
 }
 KEYS = {
     "rings": {"kind", "listing", "year", "title", "station", "live"},
     "blanket": {"kind", "listing", "year", "title", "station", "live"},
     "moon": {"kind", "listing", "year", "title", "live"},
     "book": {"kind", "asin", "year", "title", "format", "towns", "live"},
+    "daylight": {"kind", "listing", "year", "title", "live", "until"},
 }
+# Every kind may carry `until`: the first day, in UNTIL_ZONE, on which the
+# entry no longer shows. A made-to-order seasonal print must carry one.
+OPTIONAL = {"until"}
 FORMATS = ("hardcover", "paperback")
 TOWN_NAME = re.compile(_PLACE)
 LIVE = re.compile(r"20[0-9]{2}-[0-9]{2}-[0-9]{2}")
@@ -82,6 +90,7 @@ class Gift:
     station: str | None = None  # rings and blanket: the town's station
     towns: tuple[tuple[str, str], ...] = ()  # book: (name, station id), in the book's order
     format: str | None = None  # book: hardcover or paperback
+    until: dt.date | None = None  # the first day (UNTIL_ZONE) it no longer shows
 
     @property
     def url(self) -> str:
@@ -98,15 +107,12 @@ def _gift(n: int, entry: Any) -> Gift:
     if not isinstance(entry, dict) or entry.get("kind") not in KEYS:
         raise ValueError(f"{where}: kind is one of {', '.join(sorted(KEYS))}")
     kind = entry["kind"]
-    if set(entry) != KEYS[kind]:
+    if not KEYS[kind] <= set(entry) <= KEYS[kind] | OPTIONAL:
         raise ValueError(f"{where}: a {kind} entry has exactly {', '.join(sorted(KEYS[kind]))}")
-    live = entry["live"]
-    if not isinstance(live, str) or LIVE.fullmatch(live) is None:
-        raise ValueError(f"{where}: live is the date its listing was marked live, not {live!r}")
-    try:
-        live_on = dt.date.fromisoformat(live)
-    except ValueError as err:
-        raise ValueError(f"{where}: live is not a date: {live!r}") from err
+    live_on = _date(where, "live", entry["live"])
+    until = _date(where, "until", entry["until"]) if "until" in entry else None
+    if until is not None and until <= live_on:
+        raise ValueError(f"{where}: until {until} is not after live {live_on}")
     year, title = entry["year"], entry["title"]
     if type(year) is not int or not 2000 <= year <= 2099:
         raise ValueError(f"{where}: {year!r} is not a year")
@@ -114,17 +120,28 @@ def _gift(n: int, entry: Any) -> Gift:
     if named is None or named.group(1) != str(year) or CLAIMS.search(title):
         raise ValueError(f"{where}: {title!r} is not a {kind} title for {year}")
     if kind == "book":
-        return _book(where, entry, year, title, live_on)
+        return _book(where, entry, year, title, live_on, until)
     listing = entry["listing"]
     if not isinstance(listing, str) or not valid_listing(listing):
         raise ValueError(f"{where}: {listing!r} is not an Etsy listing id")
     station = entry.get("station")
-    if kind != "moon" and (not isinstance(station, str) or STATION_ID.fullmatch(station) is None):
+    if kind in ("rings", "blanket") and (not isinstance(station, str) or STATION_ID.fullmatch(station) is None):
         raise ValueError(f"{where}: {station!r} is not a station id")
-    return Gift(kind, listing, year, title, live_on, station)
+    return Gift(kind, listing, year, title, live_on, station, until=until)
 
 
-def _book(where: str, entry: dict[str, Any], year: int, title: str, live: dt.date) -> Gift:
+def _date(where: str, key: str, value: Any) -> dt.date:
+    """`live`, the date the listing was marked live, or `until`: a date
+    written YYYY-MM-DD and nothing else."""
+    if not isinstance(value, str) or LIVE.fullmatch(value) is None:
+        raise ValueError(f"{where}: {key} is a date like 2026-11-14, not {value!r}")
+    try:
+        return dt.date.fromisoformat(value)
+    except ValueError as err:
+        raise ValueError(f"{where}: {key} is not a date: {value!r}") from err
+
+
+def _book(where: str, entry: dict[str, Any], year: int, title: str, live: dt.date, until: dt.date | None) -> Gift:
     asin, fmt, towns = entry["asin"], entry["format"], entry["towns"]
     if not isinstance(asin, str) or not valid_asin(asin):
         raise ValueError(f"{where}: {asin!r} is not an ASIN")
@@ -143,7 +160,7 @@ def _book(where: str, entry: dict[str, Any], year: int, title: str, live: dt.dat
         pairs.append((name, station))
     if not ok or len({s for _, s in pairs}) != len(pairs):
         raise ValueError(f"{where}: towns is a list of one to twelve [name, station id] pairs, each station once")
-    return Gift("book", asin, year, title, live, None, tuple(pairs), fmt)
+    return Gift("book", asin, year, title, live, None, tuple(pairs), fmt, until)
 
 
 def load(path: Path | None = None) -> list[Gift]:
@@ -159,13 +176,24 @@ def load(path: Path | None = None) -> list[Gift]:
     refs = [g.ref for g in out]
     if len(refs) != len(set(refs)):
         raise ValueError(f"{source.name}: one listing is listed twice")
+    if sum(g.kind == "daylight" for g in out) > 1:
+        raise ValueError(f"{source.name}: at most one solstice print, whose dates the section names")
     return out
 
 
-def shown(gift: Gift, built: dt.date) -> bool:
+def until_day(now: dt.datetime) -> dt.date:
+    """The day an entry's `until` is compared with: the build's date in
+    UNTIL_ZONE."""
+    return now.astimezone(UNTIL_ZONE).date()
+
+
+def shown(gift: Gift, built: dt.date, today: dt.date | None = None) -> bool:
     """Whether the entry shows in a build of `built` (UTC): until its year
-    is over."""
-    return gift.year >= built.year
+    is over, and, for an entry with `until`, while `today` (the build's
+    date in UNTIL_ZONE; `built` when not given) is before it."""
+    if gift.year < built.year:
+        return False
+    return gift.until is None or (today or built) < gift.until
 
 
 @dataclass(frozen=True)
@@ -248,6 +276,13 @@ def _book_entry(gift: Gift, stations: Mapping[str, Station], copy: dict[str, str
     return Entry(gift.ref, gift.title, gift.url, tail=tail, towns=tuple(towns))
 
 
+def _daylight_years(text: str, years: set[int]) -> str:
+    """The solstice print's sentence with its solstice's year and the next
+    (load refuses a second solstice print, so there is one year)."""
+    year = min(years)
+    return text.replace("{year}", str(year)).replace("{next}", str(year + 1))
+
+
 def sections(
     calendar_of: Mapping[str, Calendar],
     poster_of: Mapping[str, Poster],
@@ -275,8 +310,8 @@ def sections(
     for g in listed:
         if g.kind == "book":
             add("book", g.year, _book_entry(g, stations, text["book"]))
-        elif g.kind == "moon":
-            add("moon", g.year, Entry(g.ref, g.title, g.url))
+        elif g.kind in ("moon", "daylight"):
+            add(g.kind, g.year, Entry(g.ref, g.title, g.url))
         elif g.station is not None and g.station in stations:
             add(g.kind, g.year, _town_entry(g.ref, g.title, g.url, stations[g.station]))
     out: list[Section] = []
@@ -295,8 +330,9 @@ def sections(
         if key not in found:
             continue
         years, entries = found[key]
-        ordered = _by_town(entries) if key not in ("moon", "book") else tuple(entries)
-        out.append(Section(key, _one_year(set(years), copy["heading"]), _one_year(set(years), copy["text"]), ordered))
+        ordered = _by_town(entries) if key not in ("moon", "book", "daylight") else tuple(entries)
+        text_ = _daylight_years(copy["text"], years) if key == "daylight" else copy["text"]
+        out.append(Section(key, _one_year(set(years), copy["heading"]), _one_year(set(years), text_), ordered))
     return out
 
 
@@ -323,7 +359,7 @@ def block(
     text = _copy()
     years: set[int] = {c.year for c in calendar_of.values()}
     kinds = [_one_year(set(years), text["sections"][s.key]["short"]) for s in secs]
-    art = any(s.key in ("custom", "rings", "posters") for s in secs)
+    art = any(s.key in ("custom", "daylight", "rings", "posters") for s in secs)
     title = text["titleArt" if art else "title"]
     return {
         "rel": REL,

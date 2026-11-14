@@ -13,6 +13,11 @@
       "link": "Tide Hours shop on Etsy",
       "after": "."
     },
+    "daylight": {
+      "heading": "Winter solstice print",
+      "short": "a winter solstice print",
+      "text": "The winter solstice in your city, December 21, {year}: the shortest day of the year, and the first bar on the page. After it come the 364 days to December 20, {next}, one thin bar for each, from midnight at the top to midnight at the bottom, so you can watch the light come back through spring to the long days of June and out again. Made to order as a digital file, for any city in the 50 states, Puerto Rico or the U.S. Virgin Islands; not interior or northern Alaska, Guam, the Northern Mariana Islands or American Samoa."
+    },
     "rings": {
       "heading": "Tide rings art prints",
       "short": "tide art prints",

@@ -1,10 +1,12 @@
 {
   "gifts": [
+    {"kind": "daylight", "listing": "4616980007", "year": 2026, "title": "2026 Winter Solstice Print: The Light Returns", "live": "2026-11-13", "until": "2026-12-22"},
     {"kind": "rings", "listing": "4617246732", "year": 2027, "title": "2027 Tide Rings: Bar Harbor", "station": "8413320", "live": "2026-11-14"},
     {"kind": "rings", "listing": "4617240419", "year": 2027, "title": "2027 Tide Rings: Monterey", "station": "9413450", "live": "2026-11-14"},
+    {"kind": "rings", "listing": "4617280124", "year": 2027, "title": "2027 Tide Rings: San Francisco", "station": "9414290", "live": "2026-11-14"},
+    {"kind": "rings", "listing": "4617279303", "year": 2027, "title": "2027 Tide Rings: Half Moon Bay", "station": "9414131", "live": "2026-11-14"},
     {"kind": "blanket", "listing": "4616975320", "year": 2027, "title": "2027 Tide Blanket Pattern: Bar Harbor", "station": "8413320", "live": "2026-11-13"},
     {"kind": "blanket", "listing": "4616976698", "year": 2027, "title": "2027 Tide Blanket Pattern: Half Moon Bay", "station": "9414131", "live": "2026-11-13"},
-    {"kind": "book", "asin": "B0HRP6Z64Q", "year": 2027, "title": "2027 Tide Tables: Maine Coast", "format": "hardcover", "towns": [["Eastport", "8410140"], ["Bar Harbor", "8413320"], ["Rockland", "8415490"], ["Portland", "8418150"], ["Kennebunkport", "8418911"], ["Wells", "8419317"]], "live": "2026-11-13"},
     {"kind": "moon", "listing": "4616888829", "year": 2027, "title": "2027 Moon Phase Poster: US Time Zones", "live": "2026-11-13"},
     {"kind": "moon", "listing": "4616911593", "year": 2027, "title": "2027 Moon Phase Calendar: US Time Zones", "live": "2026-11-13"},
     {"kind": "moon", "listing": "4616923752", "year": 2027, "title": "2027 Moon Phase Poster: Southern Hemisphere", "live": "2026-11-13"}

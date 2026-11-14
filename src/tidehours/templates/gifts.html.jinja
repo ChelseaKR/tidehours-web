@@ -1,0 +1,30 @@
+{% extends "base.html.jinja" %}
+{#-
+  Every Tide Hours product this build links to, by kind and, within a kind,
+  by town (docs/DECISIONS.md 0041, gifts.py). Built only when there is
+  something to list. Each town links to its station page; each gift links
+  to its own listing with the station pages' plain link (0035): no slug,
+  no query string, no tag, no price, no claim, no image and no click event.
+-#}
+{% block title %}{{ gifts_page.title }} | Tide Hours{% endblock %}
+{% block description %}{{ gifts_page.description }}{% endblock %}
+{% block content %}
+<h1>{{ gifts_page.heading }}</h1>
+<p class="lead">{{ gifts_page.intro }}</p>
+<p>{{ gifts_page.how }}</p>
+{% for sec in gifts_page.sections %}
+<section aria-labelledby="g-{{ sec.key }}">
+  <h2 id="g-{{ sec.key }}">{{ sec.heading }}</h2>
+  {% if sec.link %}
+  <p data-gift="custom">{{ sec.text }} <a href="{{ sec.link.url }}" rel="{{ sec.link.rel }}">{{ sec.link.text }}</a>{{ sec.link.after }}</p>
+  {% else %}
+  <p>{{ sec.text }}</p>
+  <ul class="printables">
+  {% for e in sec.entries %}
+    <li data-gift="{{ e.key }}">{% if e.town %}<a href="/{{ e.town_path }}">{{ e.town }}</a>{% if e.state %}, {{ e.state }}{% endif %}: {% endif %}<a href="{{ e.url }}" rel="{{ gifts_page.rel }}">{{ e.title }}</a>{{ e.tail }}{% for name, path, after in e.towns %}{% if path %}<a href="/{{ path }}">{{ name }}</a>{% else %}{{ name }}{% endif %}{{ after }}{% endfor %}</li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

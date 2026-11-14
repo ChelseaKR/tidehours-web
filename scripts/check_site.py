@@ -33,6 +33,13 @@ calendar or poster link, tide-calendars/ lists exactly those towns, by
 state and town, each with a link to its station page and the same plain
 link to each listing, and every English page's footer links to it once;
 otherwise there is no such page and no link to one (0037).
+While a live entry of src/tidehours/copy/gifts.json shows (its year not
+over), tide-gifts/ lists exactly those entries, the calendars and posters
+above, and the custom print when the shop address is set, by kind and
+town, each with the same plain link; a link to any listing it does not list, which covers one not marked
+live, fails the build. Every English page's footer links to it once, and
+the privacy page names it among the pages that link to Etsy and Amazon
+(0041).
 Every station page has a sun and moon line for each of its two days, and it
 is the one sky.py computes for that station and date: a day without a
 sunrise, sunset, civil twilight, moonrise or moonset says so in words, and
@@ -46,7 +53,7 @@ list, names every station page of the build once, by its display name, and
 the home page lists every state under its coast groups (0040).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
-                                       [--calendars FILE] [--posters FILE]
+                                       [--calendars FILE] [--posters FILE] [--gifts FILE]
 """
 
 from __future__ import annotations
@@ -61,7 +68,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, booklets, calendars, kingtides, ktformat, posters, printables, printshop, site
+from tidehours import affiliate, booklets, calendars, gifts, kingtides, ktformat, posters, printables, printshop, site
 from tidehours.catalog import Catalog, Station, load
 from tidehours.days import sky_text
 from tidehours.sky import moon_day, moon_times, sun_day
@@ -99,6 +106,12 @@ DAY_SECTION = re.compile(r'<section class="day"[^>]*\bdata-date="(\d{4}-\d{2}-\d
 EVENT_ROW = re.compile(
     r'<tr class="ev-(high|low)"><th scope="row">(High|Low)</th><td><time datetime="([^"]*)">([^<]*)</time></td>'
 )
+GIFT_ITEM = re.compile(r'<(li|p) data-gift="([^"]*)">(.*?)</\1>', re.S)
+H2_TEXT = re.compile(r"<h2[^>]*>(.*?)</h2>", re.S)
+BUILT = re.compile(r"page built (\d{4}-\d{2}-\d{2}) \(UTC\)")
+# What no word on the gifts page may be: a price, a discount, a rating or a
+# claim (0029, 0030, 0041).
+GIFT_FORBIDDEN = re.compile(r"[$%\u2605]|\b(sale|discount|free shipping|best|cheap|deals?|rated|official)\b", re.I)
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -494,7 +507,11 @@ def _check_booklet(rel: str, text: str, want: booklets.Booklet | None) -> tuple[
 
 
 def check_affiliate(
-    root: Path, html: list[Path], tag: str, booklet_links: dict[str, booklets.Booklet] | None = None
+    root: Path,
+    html: list[Path],
+    tag: str,
+    booklet_links: dict[str, booklets.Booklet] | None = None,
+    gift_books: bool = False,
 ) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
     king-tide page links to Amazon: at most MAX_LINKS links, each a plain
@@ -508,9 +525,12 @@ def check_affiliate(
     That sentence is checked on its own (_check_booklet) and taken out of
     the page before the rules above run on the rest, so they hold for
     everything else, tag or no tag. While any page is due one, the privacy
-    and terms pages may name Amazon in words, never with a link."""
+    and terms pages may name Amazon in words, never with a link.
+
+    The same holds while the tide gifts page lists a book (`gift_books`,
+    docs/DECISIONS.md 0041): that page is left to check_gifts."""
     want = booklet_links or {}
-    named = {p + "index.html" for p in booklets.MENTION_PAGES} if want else set()
+    named = {p + "index.html" for p in booklets.MENTION_PAGES} if want or gift_books else set()
     problems: list[str] = []
     for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
@@ -518,6 +538,8 @@ def check_affiliate(
             problems.append(f"{name}: mentions amazon")
     for f in html:
         rel = f.relative_to(root).as_posix()
+        if gift_books and rel == gifts.PATH + "index.html":
+            continue
         page = f.read_text(encoding="utf-8")
         text, found = _check_booklet(rel, page, want.get(rel))
         problems += found
@@ -769,12 +791,170 @@ def _check_printables_page(rel: str, text: str, listing: dict[str, Any]) -> list
     return problems
 
 
+def build_date(root: Path, cat: Catalog) -> dt.date | None:
+    """The day the build was made (UTC), as its station pages say it."""
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if f.is_file():
+            found = BUILT.findall(f.read_text(encoding="utf-8"))
+            return dt.date.fromisoformat(found[0]) if found else None
+    return None
+
+
+def until_day(root: Path, cat: Catalog, built: dt.date) -> dt.date:
+    """The build's date in gifts.UNTIL_ZONE, which an entry's `until` is
+    read in: the date a station page in that zone shows, or the build's
+    UTC date when the build has none (the daily build runs at 11:20 UTC,
+    when the two are the same day)."""
+    zone = str(gifts.UNTIL_ZONE)
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if s.tz == zone and f.is_file():
+            found = STATION_DATE.findall(f.read_text(encoding="utf-8"))
+            if len(found) == 1:
+                return dt.date.fromisoformat(found[0])
+    return built
+
+
+def gift_listing(
+    root: Path,
+    cat: Catalog,
+    listed: list[gifts.Gift],
+    url: str,
+    calendar_links: dict[str, calendars.Calendar] | None = None,
+    poster_links: dict[str, posters.Poster] | None = None,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """What tide-gifts/ must show for this build, worked out from the
+    build itself: the calendars and posters its station pages are due, the
+    entries of `listed` whose year is not over on the build's date, whose
+    `until`, if any, has not come, and whose station, if any, has a page,
+    and the custom print when the shop address is set (docs/DECISIONS.md
+    0041)."""
+    stations = {s.id: s for s in cat.stations if (root / "stations" / s.id / "index.html").is_file()}
+    built = build_date(root, cat)
+    if built is None:
+        return None, ["no station page says when the build was made"]
+    today = until_day(root, cat, built)
+    shown = [g for g in listed if gifts.shown(g, built, today) and (g.station is None or g.station in stations)]
+    listing = gifts.block(
+        _station_ids(calendar_links), _station_ids(poster_links), shown, stations, printshop.block(url)
+    )
+    return listing, []
+
+
+def check_gifts(root: Path, html: list[Path], listing: dict[str, Any] | None) -> list[str]:
+    """While an entry of copy/gifts.json shows (`listing`, from
+    gift_listing), tide-gifts/ exists and is exactly the page gifts.py
+    gives: its title, heading, two paragraphs, sections and their words,
+    and each line's links in order. Every link from it to Etsy or Amazon is
+    one it lists, once, with rel="noopener" and no click event, so a link to
+    a listing that no list carries, or that is not marked live, fails. No
+    price, discount or rating, and Etsy and Amazon are not in its JSON-LD.
+    Every English page links to it once, in the footer, and the Spanish
+    page does not. With nothing to list, there is no such page and no link
+    to one (docs/DECISIONS.md 0041)."""
+    rel = gifts.PATH + "index.html"
+    f = root / rel
+    problems: list[str] = []
+    if listing is None:
+        if f.is_file():
+            problems.append(f"{rel}: a gifts page in a build with nothing to list")
+    elif not f.is_file():
+        problems.append(f"{rel}: no page, though the build has gifts to list")
+    else:
+        problems += _check_gifts_page(rel, f.read_text(encoding="utf-8"), listing)
+    href = f'href="/{gifts.PATH}"'
+    for page in html:
+        text = page.read_text(encoding="utf-8")
+        want = 1 if listing is not None and '<html lang="en">' in text else 0
+        if text.count(href) != want:
+            where = page.relative_to(root).as_posix()
+            problems.append(f"{where}: {text.count(href)} links to {gifts.PATH}, exactly {want} expected")
+    return problems
+
+
+def _gift_lines(listing: dict[str, Any]) -> list[tuple[str, list[tuple[str, str]]]]:
+    """Each line the page must show, as (data-gift, its links in order)."""
+    out: list[tuple[str, list[tuple[str, str]]]] = []
+    for sec in listing["sections"]:
+        if sec.link:
+            out.append(("custom", [(sec.link["url"], sec.link["text"])]))
+        out += [(e.key, gifts.links_of(e)) for e in sec.entries]
+    return out
+
+
+def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    main = text[text.find("<main") : text.find("</main>")]
+    shown = [
+        (key, [(htmllib.unescape(h), htmllib.unescape(TAG.sub("", t))) for h, t in LINK_TEXT.findall(inner)])
+        for _, key, inner in GIFT_ITEM.findall(main)
+    ]
+    want = _gift_lines(listing)
+    if shown != want:
+        extra = [x for x in shown if x not in want]
+        missing = [w for w in want if w not in shown]
+        problems.append(
+            f"{rel}: the gifts listed differ, or their order: shown but not due {extra}, due but not shown {missing}"
+        )
+    allowed = [h for _, links in want for h, _ in links if h.startswith("http")]
+    outbound = [*ETSY_A.finditer(text), *AMAZON_A.finditer(text)]
+    hrefs = [htmllib.unescape(m.group(1)) for m in outbound]
+    problems += [f"{rel}: {h} is not a live listing this build lists" for h in hrefs if h not in allowed]
+    if sorted(hrefs) != sorted(allowed):
+        problems.append(f"{rel}: {len(hrefs)} links to Etsy or Amazon, one for each of the {len(allowed)} listed")
+    for m in outbound:
+        rel_attr = REL_ATTR.search(m.group(0))
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if tokens != set(listing["rel"].split()):
+            problems.append(f"{rel}: {htmllib.unescape(m.group(1))} rel is {sorted(tokens)}")
+        if "data-ga" in m.group(0):
+            problems.append(f"{rel}: a gift link carries a click event")
+    if any(w in block.lower() for block in JSON_LD.findall(text) for w in ("etsy", "amazon")):
+        problems.append(f"{rel}: etsy or amazon in JSON-LD")
+    title = [htmllib.unescape(t) for t in TITLE.findall(text)]
+    if title != [f"{listing['title']} | Tide Hours"]:
+        problems.append(f"{rel}: title {title}")
+    words = [htmllib.unescape(x) for x in (*H1.findall(main), *MAIN_P.findall(main)[:2])]
+    if words != [listing["heading"], listing["intro"], listing["how"]]:
+        problems.append(f"{rel}: the heading and the two paragraphs are {words}")
+    headings = [htmllib.unescape(h) for h in H2_TEXT.findall(main)]
+    if headings != [sec.heading for sec in listing["sections"]]:
+        problems.append(f"{rel}: the section headings are {headings}")
+    plain = [" ".join(htmllib.unescape(TAG.sub("", p)).split()) for p in MAIN_P.findall(main)[2:]]
+    want_p = [
+        f"{sec.text} {sec.link['text']}{sec.link['after']}" if sec.link else sec.text for sec in listing["sections"]
+    ]
+    if plain != want_p:
+        problems.append(f"{rel}: the section paragraphs are {plain}")
+    bad = GIFT_FORBIDDEN.findall(htmllib.unescape(TAG.sub(" ", main)))
+    if bad:
+        problems.append(f"{rel}: a price, sale or claim word: {bad}")
+    return problems
+
+
+def _check_book_notice(root: Path, booklet_links: dict[str, booklets.Booklet], gift_books: bool) -> list[str]:
+    """The privacy page's section on the Amazon book links is exactly the one
+    gifts.book_notice gives for this build (docs/DECISIONS.md 0030, 0041)."""
+    f = root / "privacy" / "index.html"
+    if not f.is_file():
+        return []
+    expect = gifts.book_notice(booklets.notice(bool(booklet_links)), gift_books)
+    pattern = re.compile(r'<h2 id="booklets">(.*?)</h2>\s*<p>(.*?)</p>', re.S)
+    found = [(htmllib.unescape(h), htmllib.unescape(p)) for h, p in pattern.findall(f.read_text(encoding="utf-8"))]
+    want = [(expect["heading"], expect["body"])] if expect else []
+    if found != want:
+        return [f"privacy/index.html: the book section is {found or 'missing'}, expected {want or 'none'}"]
+    return []
+
+
 def check_print_shop(
     root: Path,
     html: list[Path],
     url: str,
     calendar_links: dict[str, calendars.Calendar] | None = None,
     poster_links: dict[str, posters.Poster] | None = None,
+    gift_etsy: bool = False,
 ) -> list[str]:
     """With no shop address, "etsy" appears nowhere. With one, the About page
     and the English king-tide page each link to it exactly once, with that
@@ -794,11 +974,13 @@ def check_print_shop(
     The same holds for `poster_links`, from poster_pages, and the poster
     sentence (_check_poster). While any page is due either sentence, the
     page that lists them all, tide-calendars/, is left to check_printables
-    and is not held to the rules above (docs/DECISIONS.md 0037)."""
+    and is not held to the rules above (docs/DECISIONS.md 0037). So is the
+    tide gifts page while it links to Etsy (`gift_etsy`), which is left to
+    check_gifts (0041)."""
     want = calendar_links or {}
     want_poster = poster_links or {}
     which = printables.kind(bool(want), bool(want_poster))
-    named = {p + "index.html" for p in printshop.MENTION_PAGES} if which else set()
+    named = {p + "index.html" for p in printshop.MENTION_PAGES} if which or gift_etsy else set()
     problems: list[str] = []
     for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
@@ -813,6 +995,8 @@ def check_print_shop(
         problems += found
         if which and rel == printables.PATH + "index.html":
             continue
+        if gift_etsy and rel == gifts.PATH + "index.html":
+            continue
         if "etsy" not in text.lower():
             if url and rel in link_pages:
                 problems.append(f"{rel}: no shop link with a shop address set")
@@ -822,24 +1006,24 @@ def check_print_shop(
                 problems.append(f"{rel}: mentions etsy with no shop address set")
         else:
             problems += _check_print_shop_page(rel, text, url, rel in link_pages)
-    problems += _check_shop_notice(root, url, which)
+    problems += _check_shop_notice(root, url, which, gift_etsy)
     return problems
 
 
 SHOP_NOTICE = re.compile(r'<h2 id="shop">(.*?)</h2>\s*<p>(.*?)</p>', re.S)
 
 
-def _check_shop_notice(root: Path, url: str, which: str | None) -> list[str]:
+def _check_shop_notice(root: Path, url: str, which: str | None, gift_etsy: bool = False) -> list[str]:
     """The privacy page's section on the Etsy links is exactly the one
     printables.notice gives for this build: none with no Etsy link, the print
     shop's own sentence with only the shop link, and the sentence that names
     the list of calendars and posters and the station pages while a calendar
-    or poster link shows (docs/DECISIONS.md 0035, 0037). `which` is
-    printables.kind's value."""
+    or poster link shows (docs/DECISIONS.md 0035, 0037), and the tide gifts
+    page while it links to Etsy (0041). `which` is printables.kind's value."""
     f = root / "privacy" / "index.html"
     if not f.is_file():
         return []
-    expect = printables.notice(which, printshop.block(url))
+    expect = gifts.shop_notice(which, printshop.block(url), gift_etsy)
     found = [(htmllib.unescape(h), htmllib.unescape(p)) for h, p in SHOP_NOTICE.findall(f.read_text(encoding="utf-8"))]
     want = [(expect["heading"], expect["body"])] if expect else []
     if found != want:
@@ -879,6 +1063,7 @@ def main(
     booklets_file: Path | None = None,
     calendars_file: Path | None = None,
     posters_file: Path | None = None,
+    gifts_file: Path | None = None,
 ) -> int:
     problems: list[str] = []
     cat = load()
@@ -896,13 +1081,17 @@ def main(
     problems += check_king_calendar(root, cat)
     booklet_links, undated = booklet_pages(root, booklets.load(booklets_file))
     problems += undated
-    problems += check_affiliate(root, html, amazon_tag, booklet_links)
     calendar_links, undated = calendar_pages(root, calendars.load(calendars_file))
     problems += undated
     poster_links, undated = poster_pages(root, posters.load(posters_file))
     problems += undated
-    problems += check_print_shop(root, html, print_shop_url, calendar_links, poster_links)
+    gift_page, undated = gift_listing(root, cat, gifts.load(gifts_file), print_shop_url, calendar_links, poster_links)
+    problems += undated
+    problems += check_affiliate(root, html, amazon_tag, booklet_links, gifts.has_books(gift_page))
+    problems += _check_book_notice(root, booklet_links, gifts.has_books(gift_page))
+    problems += check_print_shop(root, html, print_shop_url, calendar_links, poster_links, gifts.has_etsy(gift_page))
     problems += check_printables(root, html, cat, calendar_links, poster_links)
+    problems += check_gifts(root, html, gift_page)
     problems += check_sky(root, cat)
     problems += check_next(root, cat)
     problems += check_hubs(root, cat)
@@ -924,5 +1113,16 @@ if __name__ == "__main__":
         "--calendars", type=Path, help="the calendar list the site was built with, if not the committed one"
     )
     ap.add_argument("--posters", type=Path, help="the poster list the site was built with, if not the committed one")
+    ap.add_argument("--gifts", type=Path, help="the gift list the site was built with, if not the committed one")
     args = ap.parse_args()
-    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets, args.calendars, args.posters))
+    sys.exit(
+        main(
+            args.site_dir,
+            args.amazon_tag,
+            args.print_shop_url,
+            args.booklets,
+            args.calendars,
+            args.posters,
+            args.gifts,
+        )
+    )

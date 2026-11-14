@@ -28,6 +28,7 @@ from . import (
     affiliate,
     booklets,
     calendars,
+    gifts,
     indexnow,
     kingtides,
     ktformat,
@@ -273,6 +274,10 @@ class Config:
     # the committed list, copy/posters.json; a test passes its own
     # (docs/DECISIONS.md 0037).
     posters_file: Path | None = None
+    # The other Tide Hours products the tide gifts page lists. None (the
+    # default) reads the committed list, copy/gifts.json; a test passes its
+    # own (docs/DECISIONS.md 0041).
+    gifts_file: Path | None = None
 
 
 @dataclass
@@ -811,6 +816,48 @@ def printables_page(
         page(printables.PATH, "printables.html.jinja", listing=listing)
 
 
+def gifts_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> list[gifts.Gift]:
+    """The entries of copy/gifts.json that show in this build: a year that
+    is not over by the build's date (UTC), a day before its `until` (in
+    gifts.UNTIL_ZONE) for an entry that has one, and for a town-bound entry, its
+    station among the build's (docs/DECISIONS.md 0041). A station the
+    catalog does not have stops the build, and so does a listing that is
+    also in the calendar or poster list."""
+    listed = gifts.load(cfg.gifts_file)
+    named = {g.station for g in listed if g.station} | {sid for g in listed for _, sid in g.towns}
+    unknown = sorted(sid for sid in named if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"gifts: no station {', '.join(unknown)} in the catalog")
+    elsewhere = {c.listing for c in calendars.load(cfg.calendars_file).values()}
+    elsewhere |= {p.listing for p in posters.load(cfg.posters_file).values()}
+    twice = sorted(g.ref for g in listed if g.ref in elsewhere)
+    if twice:
+        raise ValueError(f"gifts: listing {', '.join(twice)} is in the calendar or poster list too")
+    built, today = now.astimezone(dt.UTC).date(), gifts.until_day(now)
+    ids = {s.id for s in stations}
+    return [g for g in listed if gifts.shown(g, built, today) and (g.station is None or g.station in ids)]
+
+
+def gifts_listing(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, Any] | None:
+    """What the tide gifts page shows in this build, or None when it has
+    nothing to list (docs/DECISIONS.md 0041)."""
+    by_id = {s.id: s for s in stations}
+    return gifts.block(
+        calendars_shown(cat, stations, cfg, now),
+        posters_shown(cat, stations, cfg, now),
+        gifts_shown(cat, stations, cfg, now),
+        by_id,
+        printshop.block(cfg.print_shop_url),
+    )
+
+
+def gifts_page(page: Callable[..., None], listing: dict[str, Any] | None) -> None:
+    """The tide gifts page, when the build has something to list
+    (docs/DECISIONS.md 0041)."""
+    if listing is not None:
+        page(gifts.PATH, "gifts.html.jinja", gifts_page=listing)
+
+
 def selected(cat: Catalog, cfg: Config) -> list[Station]:
     """The stations this build makes pages for."""
     return [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
@@ -837,6 +884,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     poster_of = posters_shown(cat, stations, cfg, now)
     printed = printables.kind(bool(calendar_of), bool(poster_of))
     shop = printshop.block(cfg.print_shop_url)
+    gift_page = gifts_listing(cat, stations, cfg, now)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
         "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
@@ -846,9 +894,10 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": shop,
-        "booklet_links": booklets.notice(bool(booklet_of)),
-        "shop_links": printables.notice(printed, shop),
+        "booklet_links": gifts.book_notice(booklets.notice(bool(booklet_of)), gifts.has_books(gift_page)),
+        "shop_links": gifts.shop_notice(printed, shop, gifts.has_etsy(gift_page)),
         "printables": printables.link(printed),
+        "gifts": gifts.link(gift_page),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
@@ -892,6 +941,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
     printables_page(page, calendar_of, poster_of, by_id)
+    gifts_page(page, gift_page)
     for lang in ("en", "es"):
         page(
             "king-tides/" if lang == "en" else "es/king-tides/",
@@ -1074,6 +1124,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": printshop.block(cfg.print_shop_url),
         "printables": printables.link(printed),
+        "gifts": gifts.link(gifts_listing(cat, stations, cfg, now)),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),

@@ -1,0 +1,58 @@
+{
+  "title": "Tide chart gifts",
+  "titleArt": "Tide chart gifts and tide art prints",
+  "description": "Gifts from Tide Hours, listed by kind and by town: {kinds}.",
+  "intro": "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, not for navigation, and not a NOAA product.",
+  "how": "They are listed by kind, and by town within each kind. A town's name links to its tide times on this site, and each gift links to where it is sold, on {stores}.",
+  "footer": "Tide gifts",
+  "sections": {
+    "custom": {
+      "heading": "Custom tide chart prints",
+      "short": "custom tide chart prints",
+      "text": "A made-to-order print of the predicted tide at one place on one day, such as a wedding, a birth or the day you met, with a line of your own words. It is a digital file that you print. Order it in the",
+      "link": "Tide Hours shop on Etsy",
+      "after": "."
+    },
+    "daylight": {
+      "heading": "Winter solstice print",
+      "short": "a winter solstice print",
+      "text": "The winter solstice in your city, December 21, {year}: the shortest day of the year, and the first bar on the page. After it come the 364 days to December 20, {next}, one thin bar for each, from midnight at the top to midnight at the bottom, so you can watch the light come back through spring to the long days of June and out again. Made to order as a digital file, for any city in the 50 states, Puerto Rico or the U.S. Virgin Islands; not interior or northern Alaska, Guam, the Northern Mariana Islands or American Samoa."
+    },
+    "rings": {
+      "heading": "Tide rings art prints",
+      "short": "tide art prints",
+      "text": "A town's whole {year} tide year drawn as rings, like the rings of a tree, one ring for each lunar month. A printable digital download."
+    },
+    "posters": {
+      "heading": "Year-of-tides posters",
+      "short": "tide posters",
+      "text": "A whole {year} year of predicted highs and lows at one town on one sheet, a ribbon for each month. A printable digital download."
+    },
+    "calendars": {
+      "heading": "Printable {year} tide calendars",
+      "short": "{year} tide calendars",
+      "text": "Every predicted high and low tide of the year at one town, a month to a page, with the lowest tides of each month marked. Printable PDFs in US Letter and A4."
+    },
+    "blanket": {
+      "heading": "Tide blanket patterns",
+      "short": "tide blanket patterns",
+      "text": "A printable color chart for a knitted or crocheted {year} tide blanket: one row for each day of the year at one town, its color set by that day's tidal range, like a temperature blanket."
+    },
+    "book": {
+      "heading": "Printed tide tables",
+      "short": "printed tide tables",
+      "text": "Tide tables printed and bound as a book, sold on Amazon.",
+      "item": ", a {format} book of every predicted high and low tide of {year} at {count} towns: ",
+      "itemOne": ", a {format} book of every predicted high and low tide of {year} at "
+    },
+    "moon": {
+      "heading": "Moon phase calendars",
+      "short": "moon phase calendars",
+      "text": "The {year} phases of the moon, for the time zones each one names. They show the moon, not the tide."
+    }
+  },
+  "privacyShop": "{places} {verb} {target}. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies.",
+  "privacyBooksHeading": "Book links",
+  "privacyBooks": "The tide gifts page links to printed tide tables that Tide Hours publishes and sells on Amazon. They are plain links, not affiliate links, and this site sends nothing to Amazon. A link takes you to Amazon, where Amazon's own privacy notice applies.",
+  "privacyBooksAndBooklets": "Some station pages, and the tide gifts page, link to printed tide tables that Tide Hours publishes and sells on Amazon. They are plain links, not affiliate links, and this site sends nothing to Amazon. A link takes you to Amazon, where Amazon's own privacy notice applies."
+}

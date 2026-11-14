@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+- The home page groups the states by coast, Florida under both the Atlantic
+  and the Gulf, and has a find box for every station by name. Its list,
+  `/places.json` (about 40 KB compressed), is fetched only when someone
+  uses the box. `check_site.py` checks the list and the groups (DECISIONS
+  0040).
 - State pages list their regions in coast order: California's in the
   owner's order (`copy/region_order.json`), the rest north to south, with a
   jump list, a count per region and a find box over the names on the page.

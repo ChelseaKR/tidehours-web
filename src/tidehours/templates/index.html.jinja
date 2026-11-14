@@ -9,16 +9,21 @@
 {% block content %}
 <h1>Tide times for every NOAA tide station in the US</h1>
 <p class="lead">Today's and tomorrow's high and low tides, with a tide curve, for {{ "{:,}".format(station_count) }} NOAA tide prediction stations from Alaska to Puerto Rico and Guam. Free, no account.</p>
+{#- The script below puts the find box here (docs/DECISIONS.md 0040). -#}
+<div id="find-anchor"></div>
 {% if partial %}
 <p class="callout">This build covers only some states; the full site lists every station.</p>
 {% endif %}
 <section aria-labelledby="states">
   <h2 id="states">Choose a state or territory</h2>
-  <ul class="states">
-  {% for st in states %}
+{% for name, sts in groups %}
+  <h3 class="coast" id="c-{{ loop.index0 }}">{{ name }}</h3>
+  <ul class="states" aria-labelledby="c-{{ loop.index0 }}">
+  {% for st in sts %}
     <li><a href="/{{ st.path }}">{{ st.name }}</a> <span class="count">{{ st.count }} station{{ "s" if st.count != 1 }}</span></li>
   {% endfor %}
   </ul>
+{% endfor %}
 </section>
 <section aria-labelledby="kt">
   <h2 id="kt">{% if king_up %}King tides {{ fmt_months(king_months, "en", kc) }}{% else %}King tides 2026–27{% endif %}</h2>
@@ -28,4 +33,72 @@
   <h2 id="what">What these numbers are</h2>
   <p>Every page shows predicted astronomical tides, computed from NOAA CO-OPS harmonic constants, datums and station offsets with the same method as the Tide Hours iPhone app, and checked against NOAA's own published predictions. They are predictions, not observations, and not for navigation. Tide Hours is not a NOAA product. <a href="/about/">More about the method and the checks</a>.</p>
 </section>
+{% endblock %}
+{% block scripts %}
+<script>
+// Find a tide station (docs/DECISIONS.md 0040): any of the site's stations
+// by name. The list, /places.json (id, name, searched name), is fetched from
+// this site the first time the box is used and filtered in the browser.
+// Nothing typed leaves the page. Without the script there is no box.
+var tidehoursFindAll = (function () {
+  var LIMIT = 12;
+  function norm(s) {
+    return s.normalize("NFD").replace(/[\u0300-\u036f\u02bb\u2018\u2019']/g, "").toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function rows(data) {
+    return data.map(function (r) { return { id: r[0], name: r[1], key: norm(r[1] + " " + (r[2] || "")) }; });
+  }
+  function match(places, q) {
+    return places.filter(function (p) { return p.key.indexOf(q) >= 0; });
+  }
+  function status(n, typed) {
+    if (n === 0) return "No station name matches \u201c" + typed + "\u201d. Try a nearby town, or pick a state below.";
+    if (n > LIMIT) return "The first " + LIMIT + " of " + n + " stations that match. Type more to narrow them.";
+    return n + (n === 1 ? " station matches." : " stations match.");
+  }
+  return { LIMIT: LIMIT, norm: norm, rows: rows, match: match, status: status,
+    failed: "The list of places did not load. The states below list every station." };
+})();
+(function () {
+  var anchor = document.getElementById("find-anchor");
+  if (!anchor || !window.fetch) return;
+  var F = tidehoursFindAll;
+  var box = document.createElement("div");
+  box.className = "find";
+  box.innerHTML = '<label for="find">Find a tide station by town, beach or bay</label>' +
+    '<input id="find" type="search" autocomplete="off" spellcheck="false" aria-describedby="find-status">' +
+    '<output id="find-status" for="find"></output><ul class="find-results"></ul>';
+  anchor.replaceWith(box);
+  var input = box.querySelector("input"), out = box.querySelector("output"), list = box.querySelector("ul");
+  var places = null, loading = null;
+  function load() {
+    if (!loading) {
+      loading = fetch("/places.json")
+        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then(function (data) { places = F.rows(data); }, function () { out.textContent = F.failed; });
+    }
+    return loading;
+  }
+  function run() {
+    var q = F.norm(input.value);
+    list.textContent = "";
+    if (q.length < 2) { out.textContent = ""; return; }
+    load().then(function () {
+      if (!places || F.norm(input.value) !== q) return;
+      var hits = F.match(places, q);
+      hits.slice(0, F.LIMIT).forEach(function (p) {
+        var li = document.createElement("li"), a = document.createElement("a");
+        a.href = "/stations/" + p.id + "/";
+        a.textContent = p.name;
+        li.append(a);
+        list.append(li);
+      });
+      out.textContent = F.status(hits.length, input.value.trim());
+    });
+  }
+  input.addEventListener("focus", load, { once: true });
+  input.addEventListener("input", run);
+})();
+</script>
 {% endblock %}

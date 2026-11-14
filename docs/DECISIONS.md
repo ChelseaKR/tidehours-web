@@ -2177,3 +2177,59 @@ times, the find script and their styles and checks, and the state and
 region pages are as before.
 
 **For the app:** nothing changes.
+
+## 0040: A find box over a static list, and the home page by coast (owner, 2026-11-14)
+
+Phase 2c of the layout proposal the owner approved on 2026-11-13 (Q6, option
+A). On 2026-11-14 she approved every line of wording below as written.
+
+**States by coast** (`site.COAST_GROUPS`). Under "Choose a state or
+territory", the home page groups the states: "Pacific coast, north to
+south" (Washington, Oregon, California); "Alaska"; "Hawaii and the Pacific
+islands" (Hawaii, Guam, the Northern Mariana Islands, American Samoa, the
+U.S. Minor Outlying Islands); "Atlantic coast, north to south" (Maine to
+Florida, with Pennsylvania and the District of Columbia where their rivers
+meet the coast); "Gulf Coast, east to west" (Florida to Texas); "Caribbean"
+(Puerto Rico, the U.S. Virgin Islands); and "Other" (stations without a
+state). Florida has a coast in two groups and is listed in both, with the
+same link. A state in no group stops the build, so none can fall off the
+page. Each group is an `h3` naming its `ul.states`.
+
+**Find a tide station** (amends 0034's "the site has no search": the home
+page now filters a static list, but there is still no search page and no
+`SearchAction`). The build
+writes `/places.json`: one row per station page, `[id, display name]`,
+with the searched-for name from `copy/place_names.json` as a third item for
+the five stations that have one. It is 132,997 bytes, 40,283 gzip (CloudFront
+compresses it, `infra/site.yaml`), and is not in the sitemap. The home
+page's script puts a box, "Find a tide station by town, beach or bay", under
+the lead. It fetches `/places.json` from this site the first time the box
+is focused, never before, and filters it in the browser. Nothing typed
+leaves the page. From two letters on, it lists at most 12 stations, each
+linking to its page, and says "1 station matches.", "2 stations match.",
+"The first 12 of 40 stations that match. Type more to narrow them.", or
+"No station name matches “xyz”. Try a nearby town, or pick a state below."
+If the list does not load: "The list of places did not load. The states
+below list every station." It ignores case, accents and the ʻokina, as the
+state pages' box does (0039). Without the script, or without `fetch`, there
+is no box, and the states list every station as before.
+
+**Weight.** The home page goes from 7,195 to 10,985 bytes (2,097 to 3,497
+gzip) with the groups and the script; the list costs nothing until someone
+uses the box.
+
+**Checks.** `check_site.check_places`: `/places.json` is exactly the
+station pages of the build, in id order, each with its display name and
+its searched name when it has one; and the home page shows
+`site.coast_groups` for the states of the build. `tests/test_home_find.py`:
+every state in a group and Florida in two, the built home page, the list,
+the find script under Node with the full catalog's list (two matches for
+"half moon", "Maui" by its searched name, nothing for one letter, the
+first 12 for "bay", no match, a list that fails to load, and one fetch,
+on first use), and seven negative controls for `check_places`.
+`test_jsonld` still refuses `SearchAction`.
+
+**Reversible.** Yes: drop the groups, the anchor, the script, the list and
+their styles and checks, and the home page is as before.
+
+**For the app:** nothing changes.

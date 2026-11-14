@@ -330,6 +330,94 @@ def group(stations: list[Station]) -> list[State]:
     return out
 
 
+REGION_ORDER_FILE = Path(__file__).parent / "copy" / "region_order.json"
+
+
+def region_order(path: Path = REGION_ORDER_FILE) -> dict[str, list[str]]:
+    """State code -> its regions' URL slugs in coast order, from
+    copy/region_order.json (docs/DECISIONS.md 0039). Refuses a state code
+    the site does not name, the "other" group, a slug listed twice, and
+    anything that is not a list of slugs."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if set(data) != {"about", "states"} or not isinstance(data["states"], dict):
+        raise ValueError(f"{path.name}: expected exactly 'about' and 'states'")
+    order: dict[str, list[str]] = {}
+    for code, slugs in data["states"].items():
+        if code not in STATE_NAMES or code == OTHER:
+            raise ValueError(f"{path.name}: {code!r} is not a state on this site")
+        if not isinstance(slugs, list) or not all(isinstance(x, str) and x == slug(x) for x in slugs):
+            raise ValueError(f"{path.name}: {code}: expected a list of region URL slugs")
+        if len(slugs) != len(set(slugs)):
+            raise ValueError(f"{path.name}: {code}: a region is listed twice")
+        order[code] = slugs
+    return order
+
+
+def coast_order(state: State, order: dict[str, list[str]]) -> list[Region]:
+    """A state's regions in the order its state page lists them (0039): the
+    order in copy/region_order.json when the state is listed there, which
+    must name each of its regions exactly once; otherwise north to south by
+    the average latitude of each region's stations, then by name. The
+    "other" group keeps its alphabetical order."""
+    if state.code == OTHER:
+        return list(state.regions)
+    listed = order.get(state.code)
+    if listed is None:
+        return sorted(state.regions, key=lambda r: (-sum(s.lat for s in r.stations) / len(r.stations), r.name.lower()))
+    by_slug = {r.slug: r for r in state.regions}
+    unknown = [x for x in listed if x not in by_slug]
+    missing = [x for x in by_slug if x not in listed]
+    if unknown or missing:
+        raise ValueError(f"region_order.json: {state.code}: unknown regions {unknown}, regions not listed {missing}")
+    return [by_slug[x] for x in listed]
+
+
+def hub_day(region: Region, first_days: dict[str, Day]) -> dt.date | None:
+    """The date a region page's times are for (0039): its stations' first
+    day as built, which is the same date for every US station at 11:20 UTC
+    (0002). None when the stations' dates differ, and then the page shows
+    names only, as before."""
+    dates = {first_days[s.id].date for s in region.stations}
+    return dates.pop() if len(dates) == 1 else None
+
+
+def hub_zone(region: Region) -> str | None:
+    """The zone a region page's times are in, as the station pages name it
+    without the abbreviation ("Pacific Time"), since the heading already
+    sets it in parentheses; None when its stations span two zones or the
+    zone has no name."""
+    zones = {s.tz for s in region.stations}
+    if len(zones) != 1:
+        return None
+    label = zone_label(zones.pop())
+    return None if label == ZONE_UNKNOWN else re.sub(r" \([^()]*\)$", "", label)
+
+
+def both_days(cat: Catalog, stations: list[Station], now: dt.datetime) -> dict[str, list[Day]]:
+    """Each station's date at build time and the next, computed once: the
+    station pages show both, and the region pages each station's first day
+    (0039). The page's script says which of them is "today" when it is
+    read (0002)."""
+    out: dict[str, list[Day]] = {}
+    for s in stations:
+        first = local_today(s, now)
+        p = cat.predictor(s.id)
+        out[s.id] = [station_day(s, p, first), station_day(s, p, first + dt.timedelta(days=1))]
+    return out
+
+
+def searched_names(state: State, searched: dict[str, dict[str, str]]) -> dict[str, str]:
+    """Station id -> the searched-for name its page leads with (0032), for
+    the stations of a state that have one: the state page's find box
+    matches it too (0039)."""
+    out: dict[str, str] = {}
+    for s in [*(s for r in state.regions for s in r.stations), *state.unregioned]:
+        name = place_name(s, searched)
+        if name != s.display_name:
+            out[s.id] = name
+    return out
+
+
 def distance_km(a: Station, b: Station) -> float:
     la1, la2 = math.radians(a.lat), math.radians(b.lat)
     dla, dlo = la2 - la1, math.radians(b.lon - a.lon)
@@ -781,11 +869,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
     king_calendar_pages(page, kt, states, king_common)
+    days_of = both_days(cat, stations, now)
+    first_days = {sid: d[0] for sid, d in days_of.items()}
+    order = region_order()
     for st in states:
         page(
             st.path,
             "state.html.jinja",
             state=st,
+            regions=coast_order(st, order),
+            akas=searched_names(st, searched),
             king=kt_states.get(st.code),
             king_calendar=kingtides.calendar_path_for(st.code),
             **king_common,
@@ -797,16 +890,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
                 index=region_indexable(r),
                 state=st,
                 region=r,
+                hub_date=hub_day(r, first_days),
+                hub_zone=hub_zone(r),
+                first_days=first_days,
                 region_king=region_king(r, links, kt_up),
                 **king_common,
             )
     pages += moved_pages(e.get_template("moved.html.jinja"), common, states)
     for s in stations:
-        today = local_today(s, now)
-        p = cat.predictor(s.id)
-        # The station's date at build time and the next; the page's script
-        # says which of them is "today" when it is read.
-        days: list[Day] = [station_day(s, p, today), station_day(s, p, today + dt.timedelta(days=1))]
+        days = days_of[s.id]
+        today = days[0].date
         st, region = region_of[s.id]
         ref = cat.station(s.reference_id) if s.reference_id else None
         season = kt_by_id.get(s.id)

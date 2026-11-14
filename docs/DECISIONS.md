@@ -2101,3 +2101,79 @@ the answer and the table do (for example station 9414811 on 2026-11-13).
 after the table.
 
 **For the app:** nothing changes.
+
+## 0039: Hubs in coast order, with the day's tides on region pages (owner, 2026-11-14)
+
+Phase 2b of the layout proposal the owner approved on 2026-11-13 (Q4 and
+Q5, option A each). On 2026-11-14 she approved the California order and
+every line of wording below as written. The look from PR #19 is unchanged.
+
+**State pages: coast order** (`copy/region_order.json`, `site.coast_order`).
+A state listed in the file has its regions in the file's order, and the
+file must name each of its regions exactly once; the build stops on an
+unknown or missing region, a region listed twice, a state the site does not
+name, or the "other" group. Only California is listed, in the owner's
+order: down the north coast, into San Francisco Bay and the Delta rivers,
+then back out to the coast and south (Outer Coast, San Francisco; Humboldt
+Bay; San Francisco Bay; San Pablo Bay; Carquinez Strait; Suisun Bay;
+Sacramento River; San Joaquin River; Mokelumne River; Outer Coast, Port
+San Luis; Monterey Bay; Santa Barbara Channel; Santa Barbara Islands; San
+Pedro Channel; Southern California). Every other state's regions go north
+to south by the average latitude of their stations; on Florida's page, that
+interleaves the Atlantic and Gulf regions. The "other" group keeps its
+alphabetical order. Stations without a region stay last.
+
+- The lead ends ", north to south." when a state has more than one region.
+- With more than three regions, a collapsed "Jump to a region, north to
+  south (15)" lists them, linking to each region's section.
+- Each region heading gains its count, "20 places" or "1 place".
+- A find box, "Find a place in California", filters the names already on
+  the page as you type: "1 place matches “half moon”.", "12 places match
+  “bay”.", or "No place on this page matches “xyz”. Try the town, beach or
+  bay name." It ignores case, accents and the ʻokina, and also matches a
+  station's searched name from `copy/place_names.json` ("Maui"). The
+  page's script adds the box, so a page read without the script has none.
+  No request is made, and nothing typed leaves the page. The "other"
+  group's page has no box, jump list or lead change.
+
+**Region pages: the day's highs and lows.** Under the lead, "High and low
+tides, Friday, November 13, 2026 (Pacific Time; heights on each place's
+page)", then each place's row adds its times for that day, computed at
+build time from the same `Day` as its station page: "High 2:25 AM, 11:34 AM
+Low 5:30 AM, 7:35 PM". Times only, so no height appears without its datum.
+A day without either says "no high or low tide predicted", and one without
+a high or a low says "no high tide" or "no low tide", as the descriptions
+do (0032). The 11 regions whose stations span two zones (on the Florida
+panhandle, in Alaska and one in Texas) say "(local time at each place; heights on
+each place's page)". A region whose stations have different dates gets no
+heading and no times, as before; at 11:20 UTC no region does (0002). The
+rows stay alphabetical.
+
+**Amends 0028:** region pages now change every day, so their sitemap
+`lastmod` moves daily and IndexNow announces the 304 indexable region pages
+each day, about 3,560 URLs a day against its 10,000 limit. Whether that
+changes how often search engines crawl them was not studied.
+
+**Weight,** on a full build pinned to 2026-11-13: the largest region page,
+Florida Keys, goes from 24,300 to 60,352 bytes (3,779 to 7,048 gzip). The
+California state page goes from 19,186 to 23,003 bytes, and `style.css`
+grows by 2,475 bytes (503 gzip). The largest page of the build is still
+the Spanish king-tide page, at 96,591 bytes, under 120,000.
+
+**Checks.** `check_site.check_hubs`: each state page lists every region once,
+in `coast_order`'s order, with the stations without a region last; each
+region page lists exactly its stations; and under a dated heading each
+row's times are its station page's first-day highs and lows, written out in
+the check itself. The station page's date must be the heading's. Without a
+heading, no row shows times. `tests/test_hubs.py`: the owner's order, the
+order file's refusals, north to south for the rest, the built pages' words,
+the find script under Node (matches, no match, an empty box, case and
+spaces, accents and the ʻokina, a searched name), and eight negative
+controls for `check_hubs`. `tests/test_indexnow.py` now expects a new day to
+change the region pages as well as the station pages, and nothing else.
+
+**Reversible.** Yes: drop the order file, `coast_order`, the hub heading and
+times, the find script and their styles and checks, and the state and
+region pages are as before.
+
+**For the app:** nothing changes.

@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- State pages list their regions in coast order: California's in the
+  owner's order (`copy/region_order.json`), the rest north to south, with a
+  jump list, a count per region and a find box over the names on the page.
+  Region pages show each place's highs and lows for the day, times only,
+  from the same numbers as its station page. `check_site.py` checks both
+  (DECISIONS 0039).
 - Station pages answer first in one box: a next-tide line ("Friday, Nov 13,
   in order: high 2:25 AM, low 5:30 AM, ..."), which the page's script turns
   into "Next low tide: 7:35 PM (0.0 ft), in 2 h 5 min." from the build's own

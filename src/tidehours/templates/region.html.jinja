@@ -4,13 +4,21 @@
 {% block jsonld %}
 {% with crumbs = [["Home", ""], [state.name, state.path]] %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}
+{% block main_attrs %} data-region{% endblock %}
 {% block content %}
 <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/{{ state.path }}">{{ state.name }}</a></li></ol></nav>
 <h1>{{ region.name }} tides today</h1>
 <p class="lead">Pick a place for today's and tomorrow's high and low tide times and a tide chart: {{ region.stations|length }} NOAA tide prediction station{{ "s" if region.stations|length != 1 }} in {{ region_place(region, state) }}.</p>
+{#- Each place's highs and lows for the day, computed at build time from the
+    same numbers as its station page; times only, so no height shows
+    without its datum (docs/DECISIONS.md 0039). -#}
+{% if hub_date %}
+<h2 class="hub-day" data-date="{{ hub_date.isoformat() }}">High and low tides, {{ hub_date|long_date }} <span class="meta">({{ hub_zone if hub_zone else "local time at each place" }}; heights on each place's page)</span></h2>
+{% endif %}
+{% macro group(day, kind, css) %}{% set these = day.events|selectattr("kind", "equalto", kind)|list %}<span class="grp">{% if these %}<span class="{{ css }}">{{ kind }}</span> {% for e in these %}{{ e.time }}{{ ", " if not loop.last }}{% endfor %}{% else %}no {{ kind|lower }} tide{% endif %}</span>{% endmacro %}
 <ul class="stations">
 {% for s in region.stations %}
-  <li><a href="/stations/{{ s.id }}/">{{ s.name }}</a>{% if s.is_subordinate %} <span class="tag">from a reference station</span>{% endif %}</li>
+  <li data-station="{{ s.id }}"><span><a href="/stations/{{ s.id }}/">{{ s.name }}</a>{% if s.is_subordinate %} <span class="tag">from a reference station</span>{% endif %}</span>{% if hub_date %}{% set day = first_days[s.id] %}<span class="hub-times">{% if day.events %}{{ group(day, "High", "hi") }} {{ group(day, "Low", "lo") }}{% else %}no high or low tide predicted{% endif %}</span>{% endif %}</li>
 {% endfor %}
 </ul>
 {% if region_king %}

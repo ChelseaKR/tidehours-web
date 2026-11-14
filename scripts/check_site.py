@@ -39,6 +39,9 @@ sunrise, sunset, civil twilight, moonrise or moonset says so in words, and
 no line shows "00:00" (0019). Every station page has one next-tide line, in
 its answer box, and it is the first day's highs and lows as that day's table
 lists them, in order, by date, or says in words that the day has none (0038).
+Each state page lists its regions once each, in coast order, and each region
+page's row for a station shows that station page's first-day highs and lows,
+for the date its heading names (0039).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
                                        [--calendars FILE] [--posters FILE]
@@ -294,6 +297,80 @@ def check_next(root: Path, cat: Catalog) -> list[str]:
         if shown != want:
             problems.append(f"{where}: next-tide line {shown!r}, expected {want!r}")
         problems += [f"{where}: the next-tide line contains {b!r}" for b in BAD if b in shown]
+    return problems
+
+
+HUB_DAY = re.compile(r'<h2 class="hub-day" data-date="(\d{4}-\d{2}-\d{2})">')
+HUB_ROW = re.compile(r'<li data-station="([^"]+)">(.*?)</li>', re.S)
+REGION_SECTION = re.compile(r'<section aria-labelledby="(r-[^"]+)">')
+
+
+def hub_times(events: list[tuple[str, str]]) -> str:
+    """A region page row's times, as its text reads, from a station page's
+    first-day (kind, time) rows: "High 2:25 AM, 11:34 AM Low 5:30 AM",
+    "High 2:25 AM no low tide", or "no high or low tide predicted". Written
+    out here, not taken from the template."""
+    if not events:
+        return "no high or low tide predicted"
+    parts = []
+    for kind in ("High", "Low"):
+        times = [t for k, t in events if k == kind]
+        parts.append(f"{kind} {', '.join(times)}" if times else f"no {kind.lower()} tide")
+    return " ".join(parts)
+
+
+def check_hubs(root: Path, cat: Catalog) -> list[str]:
+    """Each state page lists every one of its regions once, in the order
+    site.coast_order gives (copy/region_order.json, else north to south),
+    with the stations without a region last. Each region page lists exactly
+    its stations; when it has a dated heading, every station page's date is
+    that date, and each row's times are that station page's first-day
+    highs and lows, in order; without one, no row shows times
+    (docs/DECISIONS.md 0039)."""
+    problems: list[str] = []
+    order = site.region_order()
+    for st in site.group(cat.stations):
+        f = root / st.path / "index.html"
+        if not f.is_file():
+            continue
+        want = ["r-" + r.slug for r in site.coast_order(st, order)] + (["r-none"] if st.unregioned else [])
+        shown = REGION_SECTION.findall(f.read_text(encoding="utf-8"))
+        if shown != want:
+            problems.append(f"{st.path}: regions {shown}, expected {want}")
+        for r in st.regions:
+            g = root / r.path / "index.html"
+            if g.is_file():
+                problems += _check_hub(r, g.read_text(encoding="utf-8"), root)
+    return problems
+
+
+def _check_hub(r: site.Region, text: str, root: Path) -> list[str]:
+    problems: list[str] = []
+    rows = HUB_ROW.findall(text)
+    if sorted(sid for sid, _ in rows) != sorted(s.id for s in r.stations) or len(rows) != len(r.stations):
+        problems.append(f"{r.path}: rows {[sid for sid, _ in rows]}, expected the region's {len(r.stations)} stations")
+    dated = HUB_DAY.findall(text)
+    if len(dated) > 1:
+        problems.append(f"{r.path}: {len(dated)} dated headings")
+    for sid, row in rows:
+        times = row.split('<span class="hub-times">', 1)
+        if not dated:
+            if len(times) > 1:
+                problems.append(f"{r.path}: {sid}: times under no dated heading")
+            continue
+        station = root / "stations" / sid / "index.html"
+        if not station.is_file():
+            continue
+        page = SCRIPT.sub("", station.read_text(encoding="utf-8"))
+        first = DAY_SECTION.search(page)
+        if first is None or first.group(1) != dated[0]:
+            problems.append(f"{r.path}: {sid}: its page's first day is not {dated[0]}")
+            continue
+        want = hub_times([(kind, time) for _, kind, _, time in EVENT_ROW.findall(first.group(2))])
+        got = " ".join(htmllib.unescape(TAG.sub(" ", times[1])).split()) if len(times) > 1 else "none"
+        if got != want:
+            problems.append(f"{r.path}: {sid}: times {got!r}, expected {want!r}")
+        problems += [f"{r.path}: {sid}: contains {b!r}" for b in BAD if b in got]
     return problems
 
 
@@ -790,6 +867,7 @@ def main(
     problems += check_printables(root, html, cat, calendar_links, poster_links)
     problems += check_sky(root, cat)
     problems += check_next(root, cat)
+    problems += check_hubs(root, cat)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

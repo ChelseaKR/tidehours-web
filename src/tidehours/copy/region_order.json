@@ -1,0 +1,22 @@
+{
+  "about": "Each listed state's regions in coast order, by URL slug, for its state page (docs/DECISIONS.md 0039). A listed state must list every one of its regions exactly once. A state not listed here has its regions north to south by the average latitude of their stations. California's order was reviewed and approved by the owner on 2026-11-14: down the north coast, into San Francisco Bay and the Delta rivers, then back out to the coast and south.",
+  "states": {
+    "CA": [
+      "outer-coast-san-francisco",
+      "humboldt-bay",
+      "san-francisco-bay",
+      "san-pablo-bay",
+      "carquinez-strait",
+      "suisun-bay",
+      "sacramento-river",
+      "san-joaquin-river",
+      "mokelumne-river",
+      "outer-coast-port-san-luis",
+      "monterey-bay",
+      "santa-barbara-channel",
+      "santa-barbara-islands",
+      "san-pedro-channel",
+      "southern-california"
+    ]
+  }
+}

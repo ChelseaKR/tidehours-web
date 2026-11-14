@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Station pages answer first in one box: a next-tide line ("Friday, Nov 13,
+  in order: high 2:25 AM, low 5:30 AM, ..."), which the page's script turns
+  into "Next low tide: 7:35 PM (0.0 ft), in 2 h 5 min." from the build's own
+  times, then 0032's two questions, set smaller. Passed times are dimmed.
+  Each day's chart comes before its table, the king-tide callout is
+  shorter, a hairline sets off the printable sentences, and the header is
+  one row on phones. `check_site.py` checks the line (DECISIONS 0038).
 - A look of its own: a tide almanac on chart paper. Cream and navy, with
   a navy night chart in dark mode; serif headings and tabular numbers; the
   app icon's clock over a wave as the mark and `/favicon.svg`. High and low

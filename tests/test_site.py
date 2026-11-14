@@ -1007,6 +1007,10 @@ def test_station_title_shape_and_lead_answer(built: Path) -> None:
     first = high[high.index('data-date="2026-11-01"') : high.index("</li>")]
     assert "Sunday, Nov 1: " in first and '<time datetime="2026-11-01T05:40-08:00">5:40 AM</time></strong> (' in first
     assert re.search(r"\(−?\d+\.\d ft\)", first)
+    # The next-tide line (0038) opens the box: the first day's highs and
+    # lows in order, by date, as built; the page's script refines it.
+    assert block.count('id="next"') == 1
+    assert block.index('<p class="next" id="next">Sunday, Nov 1, in order: high 5:40 AM, ') < block.index('id="q-high"')
     lead = re.search(r'<p class="lead">(.*?)</p>', sf, re.S)
     assert lead and "Times are Pacific Time (PT), local to the station;" in lead.group(1)
 

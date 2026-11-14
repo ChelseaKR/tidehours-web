@@ -28,14 +28,17 @@
 <p class="stale" id="stale" role="status" hidden></p>
 {#- The answer first (docs/DECISIONS.md 0032): each day's highs, then its
     lows, by date. The script below adds "Today" or "Tomorrow" from the
-    station's own clock and hides a day that has passed. -#}
+    station's own clock and hides a day that has passed. Above them, the
+    next-tide line (0038): the first day's highs and lows in order, by
+    date, which the script replaces with the next of those times. -#}
 <div class="answer">
+  <p class="next" id="next">{{ today.in_order() }}</p>
 {% for kind in ("High", "Low") %}
   <h2 id="q-{{ kind|lower }}">When is {{ kind|lower }} tide at {{ place }} today?</h2>
   <ul class="answer-days">
   {% for day in days %}
     {% set these = day.events|selectattr("kind", "equalto", kind)|list %}
-    <li data-date="{{ day.date.isoformat() }}"><span class="day-label"></span>{{ day.date.strftime("%A") }}, {{ day.date|short_date }}: {% if these %}{% for e in these %}<strong><time datetime="{{ e.iso }}">{{ e.time }}</time></strong> ({{ e.height_ft }}){{ ", " if not loop.last }}{% endfor %}{% else %}no {{ kind|lower }} tide predicted{% endif %}</li>
+    <li data-date="{{ day.date.isoformat() }}"><span class="day-label"></span>{{ day.date.strftime("%A") }}, {{ day.date|short_date }}: {% if these %}<span class="times">{% for e in these %}<span class="ev"><strong><time datetime="{{ e.iso }}">{{ e.time }}</time></strong> ({{ e.height_ft }})</span>{{ ", " if not loop.last }}{% endfor %}</span>{% else %}no {{ kind|lower }} tide predicted{% endif %}</li>
   {% endfor %}
   </ul>
 {% endfor %}
@@ -80,6 +83,14 @@
   {#- The heading is the date, which is true whenever the page is read. The
       script below adds "Today" or "Tomorrow" from the station's own clock. -#}
   <h2 id="day-{{ loop.index }}"><span class="day-label"></span><time datetime="{{ day.date.isoformat() }}">{{ day.long_date }}</time></h2>
+  {% if day.svg %}
+  <figure class="chart">
+    {{ day.svg|safe }}
+    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}{% if day.sun.dark %}, shaded where the sun is down{% endif %}: {{ day.summary() }}.</figcaption>
+  </figure>
+  {% else %}
+  <p class="none">No tide curve can be drawn for this day.</p>
+  {% endif %}
   {% if day.events %}
   <table class="events">
     <caption class="vh">High and low tides at {{ station.display_name }}, {{ day.long_date }}</caption>
@@ -94,14 +105,6 @@
   <p class="none">No high or low tide is predicted at this station on this day.</p>
   {% endif %}
   <p class="sky" data-sky="{{ day.date.isoformat() }}"><span class="sun">{{ day.sun_text }} {{ day.civil_text }}</span> <span class="moon">{{ day.moon_text }} {{ day.moonrise_text }}</span></p>
-  {% if day.svg %}
-  <figure class="chart">
-    {{ day.svg|safe }}
-    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}{% if day.sun.dark %}, shaded where the sun is down{% endif %}: {{ day.summary() }}.</figcaption>
-  </figure>
-  {% else %}
-  <p class="none">No tide curve can be drawn for this day.</p>
-  {% endif %}
 </section>
 {% endfor %}
 
@@ -218,9 +221,77 @@ var tidehoursDays = (function () {
         (dates[dates.length - 1] < today ? ", which have passed" : "") +
         ". The site updates once a day; NOAA's own predictions for this station are linked below.";
     }
-    return { today: today, days: days, message: message };
+    return { today: today, tomorrow: tomorrow, days: days, message: message };
   }
   return { plan: plan };
+})();
+// The next tide (docs/DECISIONS.md 0038). This never computes a tide: it
+// takes the first high or low after the reader's clock from the times the
+// build already wrote in the day tables, says when it is and how long until
+// then, and marks the times in the answer that have passed. When the next
+// one is not today's or tomorrow's at the station, or every tide on the page
+// has passed, the build's sentence stays as it is.
+var tidehoursNext = (function () {
+  function events(doc) {
+    return Array.prototype.map.call(doc.querySelectorAll("section.day tr.ev-high, section.day tr.ev-low"), function (tr) {
+      var t = tr.querySelector("time");
+      var iso = t.getAttribute("datetime");
+      return {
+        at: Date.parse(iso),
+        date: iso.slice(0, 10),
+        kind: tr.className === "ev-high" ? "high" : "low",
+        time: t.textContent,
+        ft: tr.cells[2].firstChild.textContent.trim()
+      };
+    });
+  }
+  // "2 h 5 min", "45 min", "3 h"; never less than a minute. Non-breaking
+  // spaces keep it on one line.
+  function until(ms) {
+    var m = Math.max(1, Math.round(ms / 60000)), h = Math.floor(m / 60);
+    m = m % 60;
+    return (h ? h + "\u00a0h" : "") + (h && m ? "\u00a0" : "") + (m ? m + "\u00a0min" : "");
+  }
+  // list: the page's highs and lows, in order. Returns the parts of the
+  // sentence, or null to keep the build's.
+  function next(list, now, today, tomorrow) {
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i];
+      if (e.at <= now) continue;
+      if (e.date !== today && e.date !== tomorrow) return null;
+      return {
+        kind: e.kind,
+        lead: "Next " + e.kind + " tide:",
+        time: e.time + (e.date === tomorrow ? " tomorrow" : ""),
+        rest: " (" + e.ft + "), in " + until(e.at - now) + ".",
+        trend: "The predicted tide is " + (e.kind === "high" ? "rising" : "falling") + " until then."
+      };
+    }
+    return null;
+  }
+  function show(doc, now, today, tomorrow) {
+    var p = doc.getElementById("next");
+    var n = p && next(events(doc), now, today, tomorrow);
+    if (!n) return;
+    var kind = doc.createElement("span"), time = doc.createElement("b"), trend = doc.createElement("span");
+    kind.className = "kind ev-" + n.kind;
+    kind.textContent = n.lead;
+    time.textContent = n.time;
+    trend.className = "trend";
+    trend.textContent = n.trend;
+    p.textContent = "";
+    p.append(kind, " ", time, n.rest, " ", trend);
+    Array.prototype.forEach.call(doc.querySelectorAll(".answer .ev"), function (ev) {
+      var t = ev.querySelector("time");
+      if (Date.parse(t.getAttribute("datetime")) > now || ev.classList.contains("past")) return;
+      var said = doc.createElement("span");
+      said.className = "vh";
+      said.textContent = "passed: ";
+      ev.classList.add("past");
+      ev.insertBefore(said, ev.firstChild);
+    });
+  }
+  return { events: events, next: next, until: until, show: show };
 })();
 (function () {
   var main = document.getElementById("main");
@@ -248,6 +319,9 @@ var tidehoursDays = (function () {
     box.textContent = result.message;
     box.hidden = false;
   }
+  try {
+    tidehoursNext.show(document, new Date().getTime(), result.today, result.tomorrow);
+  } catch (e) { /* the build's sentence stays */ }
 })();
 </script>
 {% endblock %}

@@ -2054,8 +2054,9 @@ direction all come from the build's own table, and "in" is the clock's
 difference to that time, so it is right across a daylight saving change.
 When the next tide on the page is not the station's today or tomorrow, when
 every tide on it has passed, or when the zone is unknown to the browser,
-the build's line stays. The wording is the proposal's Appendix A, approved
-with Q2.
+the build's line stays. The wording is the proposal's Appendix A; on
+2026-11-13 the owner approved each line as written: the build sentence, the
+absence sentence, the "tomorrow" form and the spoken "passed: ".
 
 **The day cards.** The chart comes before the table in each day's card,
 then the sun and moon line. From 60rem wide, the table and the sun and moon

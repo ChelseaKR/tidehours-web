@@ -11,6 +11,12 @@
   unchanged. The king-tide tables' rows are written without indentation,
   which takes the English page from about 117 KB to 98 KB with the same
   text (`docs/BRAND.md`).
+- Twelve more station pages link to their printable 2027 tide calendars:
+  Long Beach, Eureka, Ogunquit, Tybee Island, Fernandina Beach, Atlantic
+  Beach, Old Orchard Beach, Wrightsville Beach, Newport, Myrtle Beach,
+  Cape May and Lewes, added to `src/tidehours/copy/calendars.json` with
+  the owner's listing ids. `/tide-calendars/` now lists 40 towns and 46
+  listings (DECISIONS 0035).
 - The station pages of Bar Harbor, Eastport, Homer, Provincetown, La Jolla
   and Monterey link to that town's printable 2027 year-of-tides poster in
   the Tide Hours shop on Etsy, after the calendar sentence and by the same

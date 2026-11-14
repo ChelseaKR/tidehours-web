@@ -30,7 +30,7 @@ from tidehours import calendars, catalog, cli, posters, printables
 NOW = "2026-11-01T11:20:00Z"
 SHOP = "https://www.etsy.com/shop/TideHours"
 # The states of the committed lists' stations.
-STATES = "ME,CA,OR,MA,GA,MD,WA,FL,NH,NC,AK"
+STATES = "ME,CA,OR,MA,GA,MD,WA,FL,NH,NC,AK,SC,NJ,DE"
 HUB = "tide-calendars/index.html"
 FOOTER = ' · <a href="/tide-calendars/">Tide calendars and posters</a>'
 TITLE = "Printable 2027 tide calendars and posters | Tide Hours"
@@ -50,10 +50,24 @@ HOW = (
 # The committed lists as the page shows them: state -> town -> station id.
 LISTED = {
     "Alaska": {"Homer": "9455558", "Seward": "9455090"},
-    "California": {"Fort Bragg": "9417426", "Half Moon Bay": "9414131", "La Jolla": "9410230", "Monterey": "9413450"},
-    "Florida": {"New Smyrna Beach": "8721164", "St. Augustine": "8720587"},
-    "Georgia": {"St. Simons Island": "8677344"},
-    "Maine": {"Bar Harbor": "8413320", "Eastport": "8410140", "Kennebunkport": "8418911", "Portland": "8418150"},
+    "California": {
+        "Eureka": "9418767",
+        "Fort Bragg": "9417426",
+        "Half Moon Bay": "9414131",
+        "La Jolla": "9410230",
+        "Monterey": "9413450",
+    },
+    "Delaware": {"Lewes": "8557380"},
+    "Florida": {"Fernandina Beach": "8720030", "New Smyrna Beach": "8721164", "St. Augustine": "8720587"},
+    "Georgia": {"St. Simons Island": "8677344", "Tybee Island": "8670870"},
+    "Maine": {
+        "Bar Harbor": "8413320",
+        "Eastport": "8410140",
+        "Kennebunkport": "8418911",
+        "Ogunquit": "8419317",
+        "Old Orchard Beach": "8418445",
+        "Portland": "8418150",
+    },
     "Maryland": {"Ocean City": "8570283"},
     "Massachusetts": {
         "Brewster Flats": "8447241",
@@ -65,9 +79,17 @@ LISTED = {
         "Provincetown": "8446121",
     },
     "New Hampshire": {"Portsmouth": "8423898"},
-    "North Carolina": {"Hatteras Island": "8654400"},
-    "Oregon": {"Garibaldi": "9437540"},
-    "Washington": {"Hood Canal": "9445478", "La Push": "9442396", "Olympia": "9446807", "Westport": "9441102"},
+    "New Jersey": {"Cape May": "8536110"},
+    "North Carolina": {"Atlantic Beach": "8656590", "Hatteras Island": "8654400", "Wrightsville Beach": "8658163"},
+    "Oregon": {"Garibaldi": "9437540", "Newport": "9435380"},
+    "South Carolina": {"Myrtle Beach": "8661070"},
+    "Washington": {
+        "Hood Canal": "9445478",
+        "La Push": "9442396",
+        "Long Beach": "9440581",
+        "Olympia": "9446807",
+        "Westport": "9441102",
+    },
 }
 WITH_POSTER = {"Bar Harbor", "Eastport", "Homer", "Provincetown", "La Jolla", "Monterey"}
 BAR_HARBOR = (
@@ -280,11 +302,11 @@ def test_the_page_lists_the_committed_calendars_and_posters(committed: Path, che
         for item in items
         if (m := re.match(r'<li data-printable="(\d+)"><a href="/stations/\1/">(.*?)</a>: ', item))
     ]
-    assert found == want and len(found) == 28
+    assert found == want and len(found) == 40
     assert BAR_HARBOR in main and SEWARD in main
-    # Exactly the 34 listings the station pages link to, each once, plain.
+    # Exactly the 46 listings the station pages link to, each once, plain.
     listed = [c.url for c in calendars.load().values()] + [p.url for p in posters.load().values()]
-    assert len(listed) == 34
+    assert len(listed) == 46
     assert sorted(ETSY_A.findall(html)) == sorted(listed)
     for a in re.findall(r"<a\b[^>]*etsy[^>]*>", html):
         assert re.fullmatch(r'<a href="https://www\.etsy\.com/listing/[1-9][0-9]{9}" rel="noopener">', a), a

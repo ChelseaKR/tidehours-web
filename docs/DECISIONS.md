@@ -1605,6 +1605,18 @@ Fishing Pier, 8654400), Seward (9455090), Gloucester (8441841), La Push
 (9442396), Hood Canal (Union, 9445478) and Homer (9455558). Each link goes on
 the page of the station its calendar is computed from. Nothing else changes.
 
+Update, 2026-11-13 (night): twelve more calendars went on sale and are added
+at the owner's request, bringing the list to forty: Long Beach (Cape
+Disappointment, 9440581), Eureka (Humboldt Bay, North Spit, 9418767),
+Ogunquit (Wells, Webhannet River, 8419317), Tybee Island (Fort Pulaski,
+8670870), Fernandina Beach (8720030), Atlantic Beach (8656590), Old Orchard
+Beach (Pine Point, Scarborough River, 8418445), Wrightsville Beach (8658163),
+Newport (Southbeach, 9435380), Myrtle Beach (Springmaid Pier, 8661070), Cape
+May (ferry terminal, 8536110) and Lewes (Breakwater Harbor, 8557380). Each
+link goes on the page of the station its calendar is computed from, as
+before. Delaware, New Jersey and South Carolina join the states whose pages
+can show one. Nothing else changes.
+
 ## 0036: Near stands: fewer highs and lows NOAA does not list (2026-11-12)
 
 **What was wrong.** The site's standard is that it shows no tide NOAA does
@@ -2002,3 +2014,7 @@ lines and the checks, and put back `calendars.notice` and the two privacy
 sentences in `copy/calendar_link.json` from 0035.
 
 **For the app:** nothing changes.
+
+Update, 2026-11-13 (night): with the twelve calendars added to 0035's list,
+the page lists 40 towns and 46 listings. The page and its checks are
+unchanged.

@@ -60,7 +60,7 @@
     --datum: #6f8195;
     --on-brand: #0b1624;
     --wave: #2f5373;
-    --foot-bg: #060e18;
+    --foot-bg: #132a46;
     --foot-fg: #e8edf2;
     --foot-link: #9fcdf3;
     --night: #060e18;
@@ -131,7 +131,10 @@ h4 { font-size: 1.02rem; margin: 1.2rem 0 0.3rem; }
 .callout h2 { margin-top: 0.2rem; }
 .callout.warning { background: var(--warn); border-color: var(--warn-line); }
 /* King tides: the one place the buoy red appears. */
-.callout.kt-link, .callout.kt-next { background: var(--buoy-tint); border-color: var(--buoy); }
+.callout.kt-link { background: var(--buoy-tint); border-color: var(--buoy); }
+/* The king-tide table is long: a neutral panel with the buoy rule only, so it
+   never reads as a warning box. */
+.callout.kt-next { background: var(--panel); border-color: var(--panel-line); border-inline-start-color: var(--buoy); }
 .kt-link h2, .kt-next h2 { color: var(--fg); }
 .kt-link h2::before, .kt-next h2::before {
   content: ""; display: inline-block; width: 0.6em; height: 0.75em; margin-inline-end: 0.45em;
@@ -202,7 +205,6 @@ dl.glossary dd { margin: 0.15rem 0 0; }
   .day { padding-inline: 1.2rem; }
 }
 @media (min-width: 60rem) {
-  ul.states { grid-template-columns: 1fr 1fr 1fr; }
   .wrap { max-width: 50rem; }
 }
 details { margin-block: 0.4rem; }

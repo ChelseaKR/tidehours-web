@@ -17,11 +17,13 @@
   <h2 id="g-{{ sec.key }}">{{ sec.heading }}</h2>
   {% if sec.link %}
   <p data-gift="custom">{{ sec.text }} <a href="{{ sec.link.url }}" rel="{{ sec.link.rel }}">{{ sec.link.text }}</a>{{ sec.link.after }}</p>
-  {% else %}
+  {% elif sec.text %}
   <p>{{ sec.text }}</p>
+  {% endif %}
+  {% if sec.entries %}
   <ul class="printables">
   {% for e in sec.entries %}
-    <li data-gift="{{ e.key }}">{% if e.town %}<a href="/{{ e.town_path }}">{{ e.town }}</a>{% if e.state %}, {{ e.state }}{% endif %}: {% endif %}<a href="{{ e.url }}" rel="{{ gifts_page.rel }}">{{ e.title }}</a>{{ e.tail }}{% for name, path, after in e.towns %}{% if path %}<a href="/{{ path }}">{{ name }}</a>{% else %}{{ name }}{% endif %}{{ after }}{% endfor %}</li>
+    <li data-gift="{{ e.key }}">{% if e.town %}<a href="/{{ e.town_path }}">{{ e.town }}</a>{% if e.state %}, {{ e.state }}{% endif %}: {% endif %}<a href="{{ e.url }}" rel="{{ gifts_page.rel }}">{{ e.title }}</a>{{ e.tail }}{% for name, path, after in e.towns %}{% if path %}<a href="/{{ path }}">{{ name }}</a>{% else %}{{ name }}{% endif %}{{ after }}{% endfor %}{% if e.about %}. {{ e.about }}{% endif %}</li>
   {% endfor %}
   </ul>
   {% endif %}

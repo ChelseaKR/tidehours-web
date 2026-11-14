@@ -883,6 +883,18 @@ def _gift_lines(listing: dict[str, Any]) -> list[tuple[str, list[tuple[str, str]
     return out
 
 
+def _check_gift_words(rel: str, main: str, listing: dict[str, Any]) -> list[str]:
+    """Each line's words, as gifts.line_text gives them: the town, the
+    title, and for a custom print or a pattern the listing's own words."""
+    shown = [
+        " ".join(htmllib.unescape(TAG.sub("", inner)).split())
+        for tag, _, inner in GIFT_ITEM.findall(main)
+        if tag == "li"
+    ]
+    want = [gifts.line_text(e) for sec in listing["sections"] for e in sec.entries]
+    return [] if shown == want else [f"{rel}: the gift lines read {shown}, expected {want}"]
+
+
 def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]:
     problems: list[str] = []
     main = text[text.find("<main") : text.find("</main>")]
@@ -897,6 +909,7 @@ def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]
         problems.append(
             f"{rel}: the gifts listed differ, or their order: shown but not due {extra}, due but not shown {missing}"
         )
+    problems += _check_gift_words(rel, main, listing)
     allowed = [h for _, links in want for h, _ in links if h.startswith("http")]
     outbound = [*ETSY_A.finditer(text), *AMAZON_A.finditer(text)]
     hrefs = [htmllib.unescape(m.group(1)) for m in outbound]
@@ -923,7 +936,9 @@ def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]
         problems.append(f"{rel}: the section headings are {headings}")
     plain = [" ".join(htmllib.unescape(TAG.sub("", p)).split()) for p in MAIN_P.findall(main)[2:]]
     want_p = [
-        f"{sec.text} {sec.link['text']}{sec.link['after']}" if sec.link else sec.text for sec in listing["sections"]
+        f"{sec.text} {sec.link['text']}{sec.link['after']}" if sec.link else sec.text
+        for sec in listing["sections"]
+        if sec.link or sec.text
     ]
     if plain != want_p:
         problems.append(f"{rel}: the section paragraphs are {plain}")

@@ -2426,3 +2426,32 @@ cases in `gifts.shop_notice` and `gifts.book_notice`, the sample line,
 `check_gifts` and `tests/conftest.py`.
 
 **For the app:** nothing changes.
+
+Update, 2026-11-14 (evening): four more products went live and are added
+at the owner's request ("Yes, add them"), with two new kinds in
+`copy/gifts.json`:
+
+- **`custom`**, a made-to-order print with no year and no town: "Your Year
+  In Tides" (Etsy 4617340915) and "Beach Wedding Welcome Sign"
+  (4617341518). They are listed under "Custom tide chart prints", after the
+  print shop's own sentence and shop link when that link is on, and alone
+  under the heading when it is off. With no year, only an `until` would take
+  one off the page, so the page no longer leaves on January 1, 2028: from
+  then it lists the custom prints alone.
+- **`stitch`**, a cross-stitch pattern of a town's tide rings, one station
+  each: San Francisco (4617334117, station 9414290) and Bar Harbor
+  (4617336719, 8413320), under a new section, "Cross-stitch patterns",
+  after the blanket patterns. The meta description's list of kinds gains
+  "cross-stitch patterns".
+
+Each entry of the two kinds carries `about`, one or two sentences shown
+after its link, and each is the listing's own approved description, word
+for word: the first sentence of the custom prints', the first two of the
+patterns'. The section sentence for the patterns joins three sentences of
+their shared description, word for word. `about` is refused if it is not
+plain sentences or carries a price, a claim word or markup. `check_site.py`
+now also checks each line's words (`gifts.line_text`), so a changed or
+dropped `about` fails the build, as does a link to either new kind's
+listing that the list does not carry. No new decision number: like 0035's
+and 0037's later lists, this adds listings, and the two kinds follow this
+decision's rules.

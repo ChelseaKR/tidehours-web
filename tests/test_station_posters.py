@@ -1,7 +1,7 @@
 """A station page's link to its printable year-of-tides poster in the Tide
 Hours shop on Etsy (docs/DECISIONS.md 0037, built as 0035 builds the calendar
 links): the committed list is the six posters the owner listed on
-2026-11-13; an empty list leaves no trace; one listed poster puts one plain
+2026-11-13 and the two of 2026-11-14; an empty list leaves no trace; one listed poster puts one plain
 link on that station's page and on the page that lists them; a bad entry is
 refused; the link leaves when the poster's year is over; and the sentence
 sits after the calendar sentence when both show. Negative controls prove
@@ -45,8 +45,8 @@ SENTENCE = (
     "2027 Tide Poster: Apra Harbor."
 )
 SHOP = "https://www.etsy.com/shop/TideHours"
-# The committed list, as the owner gave it on 2026-11-13: station id ->
-# (listing id, title).
+# The committed list, as the owner gave it on 2026-11-13 and 2026-11-14:
+# station id -> (listing id, title).
 COMMITTED = {
     "8413320": ("4616234122", "2027 Tide Poster: Bar Harbor"),
     "8410140": ("4616223885", "2027 Tide Poster: Eastport"),
@@ -54,6 +54,9 @@ COMMITTED = {
     "8446121": ("4616224833", "2027 Tide Poster: Provincetown"),
     "9410230": ("4616225323", "2027 Tide Poster: La Jolla"),
     "9413450": ("4616225815", "2027 Tide Poster: Monterey"),
+    # 2026-11-14: San Francisco has no calendar; Half Moon Bay has one.
+    "9414290": ("4617418953", "2027 Tide Poster: San Francisco"),
+    "9414131": ("4617430354", "2027 Tide Poster: Half Moon Bay"),
 }
 ETSY_A = re.compile(r'<a\b[^>]*href="(https?://[^"]*etsy\.[^"]*)"[^>]*>', re.I)
 BLOCK = re.compile(r'<p class="poster"[^>]*>.*?</p>', re.S)
@@ -213,8 +216,11 @@ def test_the_committed_list_is_the_owners_posters() -> None:
         assert cat.station(station_id) is not None, station_id
         assert poster.year == 2027
         assert poster.url == f"https://www.etsy.com/listing/{COMMITTED[station_id][0]}"
-        # Each poster's town has a calendar, for the same station and place.
-        assert printables.place(poster.title) == printables.place(calendar_of[station_id].title), station_id
+        # A poster's town with a calendar has it for the same station and
+        # place; San Francisco has no calendar.
+        if station_id != "9414290":
+            assert printables.place(poster.title) == printables.place(calendar_of[station_id].title), station_id
+    assert "9414290" not in calendar_of
     # No listing is both a calendar and a poster.
     assert not {p.listing for p in listed.values()} & {c.listing for c in calendar_of.values()}
 

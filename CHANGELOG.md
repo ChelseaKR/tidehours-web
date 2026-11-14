@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- `/tide-gifts/` lists four more products: the made-to-order "Your Year In
+  Tides" print and "Beach Wedding Welcome Sign" under the custom prints,
+  and a new section, "Cross-stitch patterns", with the San Francisco and
+  Bar Harbor tide rings patterns. Each line ends with its listing's own
+  description. Made-to-order prints have no year, so from January 1, 2028
+  the page lists them alone instead of leaving (DECISIONS 0041).
 - A new page, `/tide-gifts/` ("Tide chart gifts and tide art prints"),
   lists every Tide Hours product the site links to, by kind and by town
   within a kind: the custom tide chart print (a link to the shop, while

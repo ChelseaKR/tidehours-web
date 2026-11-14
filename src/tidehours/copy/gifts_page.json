@@ -38,6 +38,11 @@
       "short": "tide blanket patterns",
       "text": "A printable color chart for a knitted or crocheted {year} tide blanket: one row for each day of the year at one town, its color set by that day's tidal range, like a temperature blanket."
     },
+    "stitch": {
+      "heading": "Cross-stitch patterns",
+      "short": "cross-stitch patterns",
+      "text": "Full cross stitches only, 2 strands: no backstitch, no half or quarter stitches. No fabric, thread or kit is shipped. There are no month marks, times or heights on it: it is a picture of the year, not a calendar or a tide table."
+    },
     "book": {
       "heading": "Printed tide tables",
       "short": "printed tide tables",

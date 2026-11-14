@@ -4,19 +4,24 @@ Hours product this build links to, by kind and, within a kind, by town.
 Two kinds come from the lists the station pages already use: the printable
 calendars (`copy/calendars.json`, 0035) and posters (`copy/posters.json`,
 0037), exactly as the station pages of this build show them. The rest come
-from `copy/gifts.json`: tide rings art prints and tide blanket patterns (one
-town each), moon phase calendars (no town) and printed tide tables on Amazon
-(one or more towns). Every entry there carries `live`, the date its listing
-was marked live; an entry without one stops the build, so a draft cannot be
-linked. The custom tide chart print is the print shop's own (0029): its
-section shows only when the shop address is set, and links to the shop.
+from `copy/gifts.json`: made-to-order custom prints (no town, no year),
+the winter solstice print, tide rings art prints, tide blanket patterns and
+cross-stitch patterns (one town each), moon phase calendars (no town) and
+printed tide tables on Amazon (one or more towns). Every entry there carries
+`live`, the date its listing was marked live; an entry without one stops the
+build, so a draft cannot be linked. A custom print or cross-stitch pattern
+also carries `about`, the listing's own approved words for it, shown after
+its link. The one-day custom tide chart print is the print shop's own
+(0029): its sentence shows only when the shop address is set, and links to
+the shop.
 
 Every link to Etsy or Amazon is plain, as on the station pages: exactly
 `https://www.etsy.com/listing/ID` or `https://www.amazon.com/dp/ASIN`,
 `rel="noopener"`, no slug, query string, tag or click event. No price,
 image, rating or claim, and no JSON-LD: nothing on this site is marked up
 as a product or an offer (0034). An entry leaves the page when its year is
-over by the build's date (UTC), as the calendars leave theirs; a town-bound
+over by the build's date (UTC), as the calendars leave theirs, or on its
+`until` day; a made-to-order print has no year; a town-bound
 entry shows only when its station has a page in the build. A build in which
 no entry of copy/gifts.json shows has no page and no footer link: the
 calendars, posters and custom print are listed elsewhere already.
@@ -31,9 +36,9 @@ import datetime as dt
 import json
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from zoneinfo import ZoneInfo
 
 from . import printables
@@ -49,7 +54,7 @@ PATH = "tide-gifts/"
 LIST = Path(__file__).parent / "copy" / "gifts.json"
 COPY = Path(__file__).parent / "copy" / "gifts_page.json"
 # The order of the sections on the page.
-ORDER = ("custom", "daylight", "rings", "posters", "calendars", "blanket", "book", "moon")
+ORDER = ("custom", "daylight", "rings", "posters", "calendars", "blanket", "stitch", "book", "moon")
 # The zone an entry's `until` date is read in: the shop's own.
 UNTIL_ZONE = ZoneInfo("America/Los_Angeles")
 # The kinds copy/gifts.json may list, with the keys an entry has and the
@@ -61,6 +66,10 @@ TITLES = {
     "moon": re.compile(r"(20[0-9]{2}) Moon Phase (?:Poster|Calendar): [A-Z][A-Za-z ]{0,38}[a-z]"),
     "book": BOOK_TITLE,
     "daylight": re.compile(r"(20[0-9]{2}) Winter Solstice Print: The Light Returns"),
+    "stitch": re.compile(rf"(20[0-9]{{2}}) Tide Rings Cross Stitch Pattern: {_PLACE}"),
+    # A made-to-order print has no year: its title is the listing's own name
+    # for it, in title case.
+    "custom": re.compile(r"[A-Z][A-Za-z' ]{2,48}[a-z]"),
 }
 KEYS = {
     "rings": {"kind", "listing", "year", "title", "station", "live"},
@@ -68,7 +77,13 @@ KEYS = {
     "moon": {"kind", "listing", "year", "title", "live"},
     "book": {"kind", "asin", "year", "title", "format", "towns", "live"},
     "daylight": {"kind", "listing", "year", "title", "live", "until"},
+    "stitch": {"kind", "listing", "year", "title", "station", "about", "live"},
+    "custom": {"kind", "listing", "title", "about", "live"},
 }
+# The kinds bound to one town's station, and the kinds whose line carries
+# `about`: one or two sentences of the listing's own approved description.
+TOWN_KINDS = ("rings", "blanket", "stitch")
+ABOUT = re.compile(r"[A-Z][^<>{}$%\u2605]{19,398}[.]")
 # Every kind may carry `until`: the first day, in UNTIL_ZONE, on which the
 # entry no longer shows. A made-to-order seasonal print must carry one.
 OPTIONAL = {"until"}
@@ -84,13 +99,14 @@ class Gift:
 
     kind: str
     ref: str  # the Etsy listing id, or the book's ASIN
-    year: int
+    year: int | None  # None for a made-to-order print, which no year ends
     title: str
     live: dt.date  # the day its listing was marked live
     station: str | None = None  # rings and blanket: the town's station
     towns: tuple[tuple[str, str], ...] = ()  # book: (name, station id), in the book's order
     format: str | None = None  # book: hardcover or paperback
     until: dt.date | None = None  # the first day (UNTIL_ZONE) it no longer shows
+    about: str = ""  # custom and stitch: the listing's own words for it
 
     @property
     def url(self) -> str:
@@ -113,21 +129,25 @@ def _gift(n: int, entry: Any) -> Gift:
     until = _date(where, "until", entry["until"]) if "until" in entry else None
     if until is not None and until <= live_on:
         raise ValueError(f"{where}: until {until} is not after live {live_on}")
-    year, title = entry["year"], entry["title"]
-    if type(year) is not int or not 2000 <= year <= 2099:
+    year, title = entry.get("year"), entry["title"]
+    if "year" in KEYS[kind] and (type(year) is not int or not 2000 <= year <= 2099):
         raise ValueError(f"{where}: {year!r} is not a year")
     named = TITLES[kind].fullmatch(title) if isinstance(title, str) else None
-    if named is None or named.group(1) != str(year) or CLAIMS.search(title):
+    dated = named is not None and (year is None or named.group(1) == str(year))
+    if named is None or not dated or CLAIMS.search(title):
         raise ValueError(f"{where}: {title!r} is not a {kind} title for {year}")
+    about = entry.get("about", "")
+    if "about" in KEYS[kind] and (not isinstance(about, str) or ABOUT.fullmatch(about) is None or CLAIMS.search(about)):
+        raise ValueError(f"{where}: about is one or two plain sentences, with no price or claim, not {about!r}")
     if kind == "book":
-        return _book(where, entry, year, title, live_on, until)
+        return _book(where, entry, cast(int, year), title, live_on, until)
     listing = entry["listing"]
     if not isinstance(listing, str) or not valid_listing(listing):
         raise ValueError(f"{where}: {listing!r} is not an Etsy listing id")
     station = entry.get("station")
-    if kind in ("rings", "blanket") and (not isinstance(station, str) or STATION_ID.fullmatch(station) is None):
+    if kind in TOWN_KINDS and (not isinstance(station, str) or STATION_ID.fullmatch(station) is None):
         raise ValueError(f"{where}: {station!r} is not a station id")
-    return Gift(kind, listing, year, title, live_on, station, until=until)
+    return Gift(kind, listing, year, title, live_on, station, until=until, about=about)
 
 
 def _date(where: str, key: str, value: Any) -> dt.date:
@@ -190,8 +210,9 @@ def until_day(now: dt.datetime) -> dt.date:
 def shown(gift: Gift, built: dt.date, today: dt.date | None = None) -> bool:
     """Whether the entry shows in a build of `built` (UTC): until its year
     is over, and, for an entry with `until`, while `today` (the build's
-    date in UNTIL_ZONE; `built` when not given) is before it."""
-    if gift.year < built.year:
+    date in UNTIL_ZONE; `built` when not given) is before it. A
+    made-to-order print has no year, so only `until` ends it."""
+    if gift.year is not None and gift.year < built.year:
         return False
     return gift.until is None or (today or built) < gift.until
 
@@ -210,6 +231,7 @@ class Entry:
     state: str | None = None
     tail: str = ""
     towns: tuple[tuple[str, str | None, str], ...] = ()  # (name, station page or None, text after it)
+    about: str = ""  # after the link: the listing's own words for it
 
 
 @dataclass(frozen=True)
@@ -219,6 +241,14 @@ class Section:
     text: str
     entries: tuple[Entry, ...] = ()
     link: dict[str, str] | None = None  # the custom print's shop link
+
+
+def line_text(entry: Entry) -> str:
+    """An entry's line as plain text, as the page shows it."""
+    town = f"{entry.town}{', ' + entry.state if entry.state else ''}: " if entry.town else ""
+    towns = "".join(name + after for name, _, after in entry.towns)
+    about = f". {entry.about}" if entry.about else ""
+    return f"{town}{entry.title}{entry.tail}{towns}{about}"
 
 
 def links_of(entry: Entry) -> list[tuple[str, str]]:
@@ -298,9 +328,10 @@ def sections(
     text = _copy()["sections"]
     found: dict[str, tuple[set[int], list[Entry]]] = {}
 
-    def add(kind: str, year: int, entry: Entry) -> None:
+    def add(kind: str, year: int | None, entry: Entry) -> None:
         years, entries = found.setdefault(kind, (set(), []))
-        years.add(year)
+        if year is not None:
+            years.add(year)
         entries.append(entry)
 
     for sid, c in calendar_of.items():
@@ -310,30 +341,36 @@ def sections(
     for g in listed:
         if g.kind == "book":
             add("book", g.year, _book_entry(g, stations, text["book"]))
-        elif g.kind in ("moon", "daylight"):
-            add(g.kind, g.year, Entry(g.ref, g.title, g.url))
+        elif g.kind in ("moon", "daylight", "custom"):
+            add(g.kind, g.year, Entry(g.ref, g.title, g.url, about=g.about))
         elif g.station is not None and g.station in stations:
-            add(g.kind, g.year, _town_entry(g.ref, g.title, g.url, stations[g.station]))
+            entry = _town_entry(g.ref, g.title, g.url, stations[g.station])
+            add(g.kind, g.year, replace(entry, about=g.about))
     out: list[Section] = []
     for key in ORDER:
         copy = text[key]
         if key == "custom":
-            if print_shop is not None:
-                link = {
-                    "url": print_shop["url"],
-                    "rel": print_shop["rel"],
-                    "text": copy["link"],
-                    "after": copy["after"],
-                }
-                out.append(Section(key, copy["heading"], copy["text"], link=link))
-            continue
-        if key not in found:
-            continue
-        years, entries = found[key]
-        ordered = _by_town(entries) if key not in ("moon", "book", "daylight") else tuple(entries)
-        text_ = _daylight_years(copy["text"], years) if key == "daylight" else copy["text"]
-        out.append(Section(key, _one_year(set(years), copy["heading"]), _one_year(set(years), text_), ordered))
+            custom = _custom_section(copy, print_shop, found.get(key, (set(), []))[1])
+            out += [custom] if custom else []
+        elif key in found:
+            years, entries = found[key]
+            ordered = tuple(entries) if key in ("moon", "book", "daylight") else _by_town(entries)
+            text_ = _daylight_years(copy["text"], years) if key == "daylight" else copy["text"]
+            out.append(Section(key, _one_year(set(years), copy["heading"]), _one_year(set(years), text_), ordered))
     return out
+
+
+def _custom_section(copy: dict[str, str], print_shop: dict[str, Any] | None, entries: list[Entry]) -> Section | None:
+    """The custom prints: the print shop's own made-to-order print, with its
+    sentence and the shop link, when that link is on (0029), then the
+    made-to-order prints of copy/gifts.json, in list order. None when there
+    is neither."""
+    link = None
+    if print_shop is not None:
+        link = {"url": print_shop["url"], "rel": print_shop["rel"], "text": copy["link"], "after": copy["after"]}
+    if link is None and not entries:
+        return None
+    return Section("custom", copy["heading"], copy["text"] if link else "", tuple(entries), link)
 
 
 def stores(secs: list[Section]) -> list[str]:

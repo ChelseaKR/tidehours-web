@@ -1,0 +1,14 @@
+{#- The page's dateModified and its schema.org nodes (schema.py,
+    docs/DECISIONS.md 0034). `dated` pages carry a dateModified that
+    site.write fills with the page's sitemap lastmod; a page that is in
+    neither the sitemap nor a daily-changing station page carries none.
+    No datePublished: no record of when each page first went live exists,
+    and a guessed date would be a value standing in for "unknown". -#}
+{% if dated is defined and dated %}
+<meta name="dateModified" content="{{ date_modified }}">
+{% endif %}
+{% if schema_nodes is defined %}
+{% for node in schema_nodes %}
+<script type="application/ld+json">{{ jsonld_dumps(node) }}</script>
+{% endfor %}
+{% endif %}

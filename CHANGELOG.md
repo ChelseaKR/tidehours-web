@@ -2,6 +2,106 @@
 
 ## 0.1.0 (unreleased)
 
+- A look of its own: a tide almanac on chart paper. Cream and navy, with
+  a navy night chart in dark mode; serif headings and tabular numbers; the
+  app icon's clock over a wave as the mark and `/favicon.svg`. High and low
+  rows carry up and down triangles, every chart names its datum (feet above
+  MLLW) with a dotted 0 ft line, and About gains "How to read a tide page",
+  linked from every footer. Titles, H1s, descriptions and URLs are
+  unchanged. The king-tide tables' rows are written without indentation,
+  which takes the English page from about 117 KB to 98 KB with the same
+  text (`docs/BRAND.md`).
+- The station pages of Bar Harbor, Eastport, Homer, Provincetown, La Jolla
+  and Monterey link to that town's printable 2027 year-of-tides poster in
+  the Tide Hours shop on Etsy, after the calendar sentence and by the same
+  rules; `src/tidehours/copy/posters.json` lists them. A new page,
+  `/tide-calendars/`, lists every calendar and poster the station pages
+  link to (28 towns, 34 listings), by state and town, each with a link to
+  its station page and to its listing. It is in the sitemap, and the footer
+  of every English page links to it. The page and the link exist only
+  while a station page shows a calendar or poster link. The privacy page
+  names the new page among the pages that link to Etsy. `check_site.py`
+  checks the poster sentence, the page and the footer link
+  (DECISIONS 0037).
+- Fewer highs and lows that NOAA does not list. NOAA lists a high and a
+  low less than two hours apart only when its own heights for them differ by
+  0.100 ft or more; the engine removed such a pair only under 0.06 ft. It
+  now also removes a pair less than 115 minutes and less than 0.095 ft
+  apart, unless one of its neighbors is that close too. At Port Townsend,
+  WA in 2027 the engine printed 12 tides NOAA does not list and now prints
+  none, with all 1,387 of NOAA's matched. Measured against 110,591 NOAA
+  tides at 178 stations: 610 fewer extra tides, and no NOAA tide newly left
+  out. Some remain, listed with their causes (DECISIONS 0036).
+- Station pages show sunrise, sunset, civil dawn and dusk, the moon's phase,
+  moonrise and moonset for both days on the page, in the station's own time
+  zone, and shade the night on the tide curve. All of it is computed at
+  build time (NOAA Solar Calculator equations, Meeus for the moon) and
+  checked against the U.S. Naval Observatory on 186 station-days at 22
+  stations, 7 in Alaska: every time within 2 minutes, nearly all within 1.
+  Days without one, as in Prudhoe Bay's polar night and midnight sun or a
+  day the moon does not rise, say so in words, never with a stand-in time
+  (DECISIONS 0019).
+- The station pages of Bar Harbor (8413320), Half Moon Bay (9414131) and
+  Garibaldi (9437540) link to that town's printable 2027 tide calendar in
+  the Tide Hours shop on Etsy: one sentence, one plain link,
+  `https://www.etsy.com/listing/ID`, until the calendar's year is over.
+  `src/tidehours/copy/calendars.json` lists them (station id, listing id,
+  year, title). The print shop's sentence on the About and king-tide pages
+  names the calendars, and the privacy page names the Etsy links the build
+  has. `check_site.py` allows that one link on those pages and checks the
+  privacy section (DECISIONS 0035).
+- Station pages carry a schema.org `Place` (the catalog's coordinates) and
+  a `Dataset` for the two days shown, with NOAA CO-OPS credited as the
+  source; the king-tide pages carry a `Dataset` for the season. Every page in the sitemap carries a
+  `dateModified` equal to its sitemap lastmod. The About page links
+  `/llms.txt` (DECISIONS 0034).
+- Subordinate station pages are indexed and in the sitemap: 2,022 of the
+  2,024, which takes the sitemap from 1,577 to 3,599 URLs. Each page now
+  says which reference station NOAA predicts it from, how far away, and
+  NOAA's published time and height corrections. The 2 whose corrections
+  leave every time and high tide as the reference's (Cabrillo Beach and
+  Great Diamond Island) stay noindex with a canonical link to the reference
+  station's page. `check_site.py` checks the noindex and the canonical of
+  every station page (DECISIONS 0033, superseding 0013's noindex).
+- A high or low in the first 30 minutes of a GMT year (7:00 to 7:30 PM
+  Eastern, 4:00 to 4:30 PM Pacific on New Year's Eve) now matches NOAA's
+  published one. NOAA finds it with the old year's lunar-node constants; the
+  engine used the new year's, which put Bar Harbor's 2028-01-01 00:09 GMT
+  low at 00:07 and 0.465 ft against NOAA's 0.377 ft. Measured at 18 stations
+  around the 2027 and 2028 new years; the tide curve is unchanged, as NOAA's
+  is (DECISIONS 0031).
+- A station's page can link to that station's printed tide-table booklet
+  on Amazon. `src/tidehours/copy/booklets.json` lists the booklets on sale
+  (station id, ASIN, year, title) and ships empty, which leaves the build
+  byte for byte as it was. A listed station's page carries one sentence with
+  one plain link, `https://www.amazon.com/dp/ASIN`, with no tag even when
+  the affiliate switch is on, until the booklet's year is over; the privacy
+  page says where it goes and the terms page names Amazon. `check_site.py`
+  allows that one link on that one page and nothing else (DECISIONS 0030).
+- A link to the Tide Hours print shop on Etsy, off by default. With the
+  repository variable `PRINT_SHOP_URL` set to the shop's address, the About
+  page and the English king-tide page each carry one sentence with one plain
+  link, the privacy page says where it goes, and the terms page names Etsy.
+  Unset, the build has no trace of it. `check_site.py --print-shop-url`
+  fails the build if the link is missing, repeated, on another page or not
+  the configured address (DECISIONS 0029).
+- King-tide calendars open with the answer: "When are the king tides in
+  Washington?", one line per month with the days and peak days. Their titles
+  and descriptions name the places people search (Seattle, Puget Sound, the
+  Oregon coast, San Francisco, San Diego). The king-tide pages define "king
+  tide" as a popular, non-scientific name and link the three calendars
+  under the lead, as does the home page. The sitemap's `lastmod` is now the
+  date a page last changed, not the build date (DECISIONS 0028).
+- The king-tide page's title names Washington, Oregon and California in
+  full, and its description leads with the next dates and names Seattle,
+  Puget Sound and the Oregon coast, the words people search with
+  (DECISIONS 0025).
+- Winter king-tide calendars by month for Washington, Oregon and California
+  (`/king-tides/washington/`, `/king-tides/oregon/`,
+  `/king-tides/california/`): each place's runs of predicted king tides from
+  November 2026 to February 2027, with dates, Pacific times and heights above
+  MLLW and MHHW. Linked from the king-tide pages, the three state pages and
+  king-tide and nearby station pages (DECISIONS 0024).
 - Region pages that shared a label now say which part they are, from
   NOAA's coordinates: "Outer Coast (north)" and "(south)" in Maine and South
   Carolina, "Gulf Coast (north)" and "(south)" in Florida and "Delaware River
@@ -26,6 +126,10 @@
   "Stations without a state". Names no longer repeat their state ("Apra
   Harbor, Guam", not "Apra Harbor, Guam, GU"). Old region pages send visitors
   to the new ones (DECISIONS 0018).
+- Region pages that list only one or two stations (66 of 370, about 130
+  words each, the same list their state page shows) carry noindex and are
+  left out of the sitemap and lastmod.json. They keep their URLs and links;
+  station and state pages are unchanged (DECISIONS 0022).
 - The 12 U.S. Virgin Islands stations that NOAA codes PR (Cruz Bay, Magens
   Bay, Salt River Bay and others) are listed under the U.S. Virgin Islands,
   in America/St_Thomas, instead of on the Puerto Rico page. Station URLs are

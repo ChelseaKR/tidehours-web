@@ -16,6 +16,7 @@ import numpy as np
 
 from .engine import HarmonicPredictor, Offsets, Predictor, SubordinatePredictor, YearCache
 from .names import fixed_name
+from .subordinate import is_twin
 from .tidetype import TideType, tide_type
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
@@ -246,6 +247,10 @@ class Station:
     filed_by: str | None = None
     noaa_state: str = ""  # NOAA's code, as in the bundle
     noaa_region: str | None = None  # NOAA's region name, before REGION_CORRECTIONS
+    # The reference station's id when NOAA's corrections leave every time and
+    # every high-tide height as the reference's (subordinate.is_twin): the
+    # page is then a copy of the reference's page (DECISIONS 0033).
+    twin_of: str | None = None
 
     @property
     def is_subordinate(self) -> bool:
@@ -328,7 +333,9 @@ def file_state(row: dict[str, Any], ref_state: str) -> tuple[str, str | None]:
     return "", None
 
 
-def _station(row: dict[str, Any], ref: str | None, noaa_region: str | None, ref_state: str) -> Station:
+def _station(
+    row: dict[str, Any], ref: str | None, noaa_region: str | None, ref_state: str, twin_of: str | None = None
+) -> Station:
     filed_state, filed = file_state(row, ref_state)
     region = REGION_CORRECTIONS.get(row["id"], noaa_region)
     tz = TZ_CORRECTIONS.get(row["id"], row["tz"])
@@ -336,7 +343,7 @@ def _station(row: dict[str, Any], ref: str | None, noaa_region: str | None, ref_
         tz = ALEUTIAN_TZ
     code, tz = territory(filed_state, tz, region)
     name = fixed_name(row["id"], tidy_name(row["n"]))  # NOAA's name, corrected (DECISIONS 0020)
-    return Station(row["id"], name, code, row["la"], row["lo"], tz, ref, region, filed, row["st"], noaa_region)
+    return Station(row["id"], name, code, row["la"], row["lo"], tz, ref, region, filed, row["st"], noaa_region, twin_of)
 
 
 def _compounds(raw: dict[str, Any]) -> dict[str, list[tuple[str, int]]]:
@@ -385,8 +392,9 @@ def load(
         if s["ref"] not in harmonic or s["k"] not in ("R", "F") or s.get("hh") is None or s.get("hl") is None:
             skipped.append(s["id"])
             continue
-        offsets[s["id"]] = Offsets(s["ref"], s["k"], float(s["th"]), float(s["tl"]), float(s["hh"]), float(s["hl"]))
-        stations.append(_station(s, s["ref"], regions.get(s["id"]), ref_state[s["ref"]]))
+        o = offsets[s["id"]] = Offsets(s["ref"], s["k"], float(s["th"]), float(s["tl"]), float(s["hh"]), float(s["hl"]))
+        twin = s["ref"] if is_twin(o) else None
+        stations.append(_station(s, s["ref"], regions.get(s["id"]), ref_state[s["ref"]], twin))
     by_id: dict[str, Station] = {}
     for st in stations:
         by_id.setdefault(st.id, st)

@@ -1,0 +1,7444 @@
+{
+ "retrieved": "2026-11-12",
+ "source": "U.S. Naval Observatory Astronomical Applications Department, one-day rise, set and transit data (rstt/oneday, dst=false)",
+ "stations": {
+  "1612340": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "10:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:12"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:12"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:35"
+      },
+      {
+       "phen": "Set",
+       "time": "17:55"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:18"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:30"
+      },
+      {
+       "phen": "Set",
+       "time": "15:38"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:14"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:16"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:08"
+      },
+      {
+       "phen": "Set",
+       "time": "18:10"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:15"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "04:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:02"
+      },
+      {
+       "phen": "Rise",
+       "time": "18:03"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:24"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:48"
+      },
+      {
+       "phen": "Set",
+       "time": "17:48"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:12"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:36"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:42"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:40"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:05"
+      },
+      {
+       "phen": "Set",
+       "time": "17:55"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:19"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "06:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "00:06"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:03"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:19"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:41"
+      },
+      {
+       "phen": "Set",
+       "time": "18:41"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:03"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "14:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "21:39"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:26"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:50"
+      },
+      {
+       "phen": "Set",
+       "time": "19:16"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:41"
+      }
+     ],
+     "tz": -10.0
+    }
+   },
+   "label": "Honolulu, HI",
+   "lat": 21.30333,
+   "lon": -157.86453
+  },
+  "1630000": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "06:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "59%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:52"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:54"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:15"
+      },
+      {
+       "phen": "Set",
+       "time": "17:54"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:16"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "06:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "18%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "02:36"
+      },
+      {
+       "phen": "Set",
+       "time": "15:00"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:55"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:17"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:15"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "17:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "05:58"
+      },
+      {
+       "phen": "Set",
+       "time": "17:38"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:56"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:18"
+      },
+      {
+       "phen": "Set",
+       "time": "17:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:14"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 25,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "00:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "05:38"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:20"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:02"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:25"
+      },
+      {
+       "phen": "Set",
+       "time": "17:51"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:14"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 24,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "87%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:02"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:59"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:22"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 16,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "02:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "33%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:24"
+      },
+      {
+       "phen": "Set",
+       "time": "23:48"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:09"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:30"
+      },
+      {
+       "phen": "Set",
+       "time": "18:32"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:53"
+      }
+     ],
+     "tz": 10.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 19,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "10:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "96%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:28"
+      },
+      {
+       "phen": "Rise",
+       "time": "20:41"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:32"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:55"
+      },
+      {
+       "phen": "Set",
+       "time": "18:51"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:14"
+      }
+     ],
+     "tz": 10.0
+    }
+   },
+   "label": "Apra Harbor, Guam",
+   "lat": 13.44339,
+   "lon": 144.65636
+  },
+  "1770000": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "09:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "00:31"
+      },
+      {
+       "phen": "Set",
+       "time": "12:13"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:25"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:48"
+      },
+      {
+       "phen": "Set",
+       "time": "18:25"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:47"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "20:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "11%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:16"
+      },
+      {
+       "phen": "Set",
+       "time": "15:46"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:24"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:46"
+      },
+      {
+       "phen": "Set",
+       "time": "18:27"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:49"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "20:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "05:56"
+      },
+      {
+       "phen": "Set",
+       "time": "19:13"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:45"
+      },
+      {
+       "phen": "Set",
+       "time": "18:28"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:51"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "03:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "05:41"
+      },
+      {
+       "phen": "Rise",
+       "time": "19:16"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:21"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:44"
+      },
+      {
+       "phen": "Set",
+       "time": "18:35"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:59"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "14:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:21"
+      },
+      {
+       "phen": "Rise",
+       "time": "16:50"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:28"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:52"
+      },
+      {
+       "phen": "Set",
+       "time": "18:50"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:14"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "05:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "42%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "12:16"
+      },
+      {
+       "phen": "Set",
+       "time": "23:42"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:05"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:26"
+      },
+      {
+       "phen": "Set",
+       "time": "18:38"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:59"
+      }
+     ],
+     "tz": -11.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "13:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:59"
+      },
+      {
+       "phen": "Rise",
+       "time": "20:39"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:46"
+      },
+      {
+       "phen": "Set",
+       "time": "18:03"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:26"
+      }
+     ],
+     "tz": -11.0
+    }
+   },
+   "label": "Pago Pago Harbor, Tutuila Island",
+   "lat": -14.28,
+   "lon": -170.69
+  },
+  "1890000": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "08:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "60%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:48"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:54"
+      },
+      {
+       "phen": "Set",
+       "time": "18:20"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:43"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 2,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "08:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "18%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:03"
+      },
+      {
+       "phen": "Set",
+       "time": "15:30"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:33"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:56"
+      },
+      {
+       "phen": "Set",
+       "time": "18:18"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:41"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "19:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "06:36"
+      },
+      {
+       "phen": "Set",
+       "time": "17:57"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:35"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "18:17"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:40"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 25,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "02:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:17"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:37"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:43"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:06"
+      },
+      {
+       "phen": "Set",
+       "time": "18:14"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:37"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 24,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "13:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "87%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:54"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:20"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:58"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:22"
+      },
+      {
+       "phen": "Set",
+       "time": "18:20"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:44"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 16,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "04:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "32%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:40"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:41"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:03"
+      },
+      {
+       "phen": "Set",
+       "time": "19:03"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:25"
+      }
+     ],
+     "tz": 12.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 19,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "12:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "96%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:46"
+      },
+      {
+       "phen": "Rise",
+       "time": "21:22"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:52"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:16"
+      },
+      {
+       "phen": "Set",
+       "time": "19:34"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:58"
+      }
+     ],
+     "tz": 12.0
+    }
+   },
+   "label": "Wake Island (U.S.)",
+   "lat": 19.29056,
+   "lon": 166.6175
+  },
+  "8410140": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:50"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:33"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:36"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:06"
+      },
+      {
+       "phen": "Set",
+       "time": "16:16"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:47"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "02:14"
+      },
+      {
+       "phen": "Set",
+       "time": "14:17"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:41"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:12"
+      },
+      {
+       "phen": "Set",
+       "time": "16:11"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:42"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "06:53"
+      },
+      {
+       "phen": "Set",
+       "time": "15:49"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:46"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:17"
+      },
+      {
+       "phen": "Set",
+       "time": "16:06"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:37"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:29"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:05"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "15:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:24"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "13:15"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:29"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:03"
+      },
+      {
+       "phen": "Set",
+       "time": "15:49"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:23"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:02"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:28"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:13"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:43"
+      },
+      {
+       "phen": "Set",
+       "time": "18:32"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:02"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:49"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "04:04"
+      },
+      {
+       "phen": "Rise",
+       "time": "04:42"
+      },
+      {
+       "phen": "Set",
+       "time": "20:18"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:55"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Eastport, ME",
+   "lat": 44.90461,
+   "lon": -66.98289
+  },
+  "8443970": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:59"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:57"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:48"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:18"
+      },
+      {
+       "phen": "Set",
+       "time": "16:37"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:07"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "02:31"
+      },
+      {
+       "phen": "Set",
+       "time": "14:35"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:23"
+      },
+      {
+       "phen": "Set",
+       "time": "16:33"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:02"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "16:15"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:58"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:28"
+      },
+      {
+       "phen": "Set",
+       "time": "16:28"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:58"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:59"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:57"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:46"
+      },
+      {
+       "phen": "Set",
+       "time": "16:16"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:46"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:28"
+      },
+      {
+       "phen": "Rise",
+       "time": "13:42"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:38"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:10"
+      },
+      {
+       "phen": "Set",
+       "time": "16:15"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:47"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:56"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:30"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "18:49"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:17"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:28"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "04:33"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:07"
+      },
+      {
+       "phen": "Set",
+       "time": "20:25"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:59"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Boston, MA",
+   "lat": 42.35389,
+   "lon": -71.05028
+  },
+  "8518750": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:14"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:58"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:26"
+      },
+      {
+       "phen": "Set",
+       "time": "16:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:21"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "02:43"
+      },
+      {
+       "phen": "Set",
+       "time": "14:48"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:02"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:31"
+      },
+      {
+       "phen": "Set",
+       "time": "16:48"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:16"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:07"
+      },
+      {
+       "phen": "Set",
+       "time": "16:33"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:36"
+      },
+      {
+       "phen": "Set",
+       "time": "16:43"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:12"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:05"
+      },
+      {
+       "phen": "Rise",
+       "time": "16:16"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:53"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:02"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:35"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:00"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:46"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:17"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:03"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:14"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:15"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:42"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:10"
+      },
+      {
+       "phen": "Set",
+       "time": "19:02"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:29"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:32"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:36"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "04:52"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:25"
+      },
+      {
+       "phen": "Set",
+       "time": "20:31"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:04"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "New York (The Battery), NY",
+   "lat": 40.70055,
+   "lon": -74.01417
+  },
+  "8665530": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:12"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:56"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:12"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:38"
+      },
+      {
+       "phen": "Set",
+       "time": "17:29"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:54"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:07"
+      },
+      {
+       "phen": "Set",
+       "time": "15:15"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:41"
+      },
+      {
+       "phen": "Set",
+       "time": "17:25"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:51"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:10"
+      },
+      {
+       "phen": "Set",
+       "time": "17:21"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:19"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:45"
+      },
+      {
+       "phen": "Set",
+       "time": "17:22"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:48"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:04"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:07"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "17:15"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:41"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:36"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:50"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:51"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:18"
+      },
+      {
+       "phen": "Set",
+       "time": "17:18"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:45"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:11"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:07"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:31"
+      },
+      {
+       "phen": "Set",
+       "time": "19:27"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:51"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:19"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:41"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:43"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:12"
+      },
+      {
+       "phen": "Set",
+       "time": "20:31"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:00"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Charleston (Customhouse Wharf), SC",
+   "lat": 32.78083,
+   "lon": -79.92361
+  },
+  "8724580": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:04"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:11"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:34"
+      },
+      {
+       "phen": "Set",
+       "time": "17:47"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:11"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:14"
+      },
+      {
+       "phen": "Set",
+       "time": "15:26"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:13"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "17:45"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:08"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "02:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "06:58"
+      },
+      {
+       "phen": "Set",
+       "time": "17:49"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:43"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:06"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "09:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:50"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:38"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:25"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:49"
+      },
+      {
+       "phen": "Set",
+       "time": "17:38"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:03"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "20:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:24"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:18"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:42"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:07"
+      },
+      {
+       "phen": "Set",
+       "time": "17:44"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:09"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "00:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:39"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:37"
+      },
+      {
+       "phen": "Set",
+       "time": "19:36"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:58"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:45"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:32"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:14"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "20:19"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:45"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Key West, FL",
+   "lat": 24.5557,
+   "lon": -81.8079
+  },
+  "8729840": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "14:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "51%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:37"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:31"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:39"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:03"
+      },
+      {
+       "phen": "Set",
+       "time": "17:01"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:26"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "02:37"
+      },
+      {
+       "phen": "Set",
+       "time": "14:46"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:42"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:07"
+      },
+      {
+       "phen": "Set",
+       "time": "16:58"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:23"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "06:34"
+      },
+      {
+       "phen": "Set",
+       "time": "16:57"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:45"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:10"
+      },
+      {
+       "phen": "Set",
+       "time": "16:55"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:20"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "08:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:28"
+      },
+      {
+       "phen": "Rise",
+       "time": "16:45"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:56"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:49"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:14"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "19:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:01"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:26"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:42"
+      },
+      {
+       "phen": "Set",
+       "time": "16:53"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:19"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "11:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "00:35"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:45"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:36"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "18:56"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:20"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "19:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:55"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:06"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:47"
+      },
+      {
+       "phen": "Set",
+       "time": "19:54"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:22"
+      }
+     ],
+     "tz": -5.0
+    }
+   },
+   "label": "Pensacola, FL",
+   "lat": 30.4044,
+   "lon": -87.2112
+  },
+  "8771450": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "14:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "51%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:06"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:32"
+      },
+      {
+       "phen": "Set",
+       "time": "17:33"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:57"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:09"
+      },
+      {
+       "phen": "Set",
+       "time": "15:17"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:11"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:35"
+      },
+      {
+       "phen": "Set",
+       "time": "17:30"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:55"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "01:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:03"
+      },
+      {
+       "phen": "Set",
+       "time": "17:31"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:13"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:38"
+      },
+      {
+       "phen": "Set",
+       "time": "17:27"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:52"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "08:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:20"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:25"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:50"
+      },
+      {
+       "phen": "Set",
+       "time": "17:21"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:47"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "19:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:30"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:01"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:43"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:09"
+      },
+      {
+       "phen": "Set",
+       "time": "17:25"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:52"
+      }
+     ],
+     "tz": -6.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "11:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:03"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:30"
+      },
+      {
+       "phen": "Set",
+       "time": "19:27"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:51"
+      }
+     ],
+     "tz": -5.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "19:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:29"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:35"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:20"
+      },
+      {
+       "phen": "Set",
+       "time": "20:22"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:49"
+      }
+     ],
+     "tz": -5.0
+    }
+   },
+   "label": "Galveston, Galveston Channel, TX",
+   "lat": 29.31,
+   "lon": -94.7933
+  },
+  "9414290": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "12:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:18"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:44"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:35"
+      },
+      {
+       "phen": "Set",
+       "time": "17:11"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:38"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:05"
+      },
+      {
+       "phen": "Set",
+       "time": "15:06"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:12"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:40"
+      },
+      {
+       "phen": "Set",
+       "time": "17:07"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:34"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:21"
+      },
+      {
+       "phen": "Set",
+       "time": "17:01"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:44"
+      },
+      {
+       "phen": "Set",
+       "time": "17:03"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:31"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "06:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:19"
+      },
+      {
+       "phen": "Rise",
+       "time": "16:48"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "16:53"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:22"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "17:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:50"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:30"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:52"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:54"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:24"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "09:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "40%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:26"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:47"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:56"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:23"
+      },
+      {
+       "phen": "Set",
+       "time": "19:16"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:42"
+      }
+     ],
+     "tz": -7.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "17:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:03"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:46"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:17"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:48"
+      },
+      {
+       "phen": "Set",
+       "time": "20:35"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:07"
+      }
+     ],
+     "tz": -7.0
+    }
+   },
+   "label": "San Francisco (Golden Gate), CA",
+   "lat": 37.80631,
+   "lon": -122.46589
+  },
+  "9447130": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "12:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "13:45"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:21"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:54"
+      },
+      {
+       "phen": "Set",
+       "time": "16:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:24"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:07"
+      },
+      {
+       "phen": "Set",
+       "time": "14:59"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:27"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "16:46"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:18"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "23:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:56"
+      },
+      {
+       "phen": "Set",
+       "time": "16:24"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:33"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:06"
+      },
+      {
+       "phen": "Set",
+       "time": "16:40"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:13"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "06:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:00"
+      },
+      {
+       "phen": "Rise",
+       "time": "16:05"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:28"
+      },
+      {
+       "phen": "Set",
+       "time": "16:24"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:59"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "17:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "05:26"
+      },
+      {
+       "phen": "Rise",
+       "time": "13:51"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:19"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:55"
+      },
+      {
+       "phen": "Set",
+       "time": "16:20"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:56"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "09:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "40%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "02:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:03"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:54"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:24"
+      },
+      {
+       "phen": "Set",
+       "time": "19:13"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:44"
+      }
+     ],
+     "tz": -7.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "17:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:30"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:13"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "04:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:12"
+      },
+      {
+       "phen": "Set",
+       "time": "21:11"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:52"
+      }
+     ],
+     "tz": -7.0
+    }
+   },
+   "label": "Seattle (Madison St.), Elliott Bay, WA",
+   "lat": 47.60264,
+   "lon": -122.33931
+  },
+  "9451600": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "14:17"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:38"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:32"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:13"
+      },
+      {
+       "phen": "Set",
+       "time": "16:16"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:57"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:06"
+      },
+      {
+       "phen": "Set",
+       "time": "14:43"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:40"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:07"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:49"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "08:47"
+      },
+      {
+       "phen": "Set",
+       "time": "15:18"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:48"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:31"
+      },
+      {
+       "phen": "Set",
+       "time": "15:59"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:42"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "09:03"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:49"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:02"
+      },
+      {
+       "phen": "Set",
+       "time": "15:33"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:19"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:21"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:42"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:49"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:39"
+      },
+      {
+       "phen": "Set",
+       "time": "15:21"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:10"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:14"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:44"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:42"
+      },
+      {
+       "phen": "Rise",
+       "time": "07:20"
+      },
+      {
+       "phen": "Set",
+       "time": "19:03"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:41"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:33"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:47"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "02:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "04:06"
+      },
+      {
+       "phen": "Set",
+       "time": "22:00"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "23:09"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Sitka, AK",
+   "lat": 57.05106,
+   "lon": -135.34412
+  },
+  "9455920": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "15:42"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:16"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:41"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:28"
+      },
+      {
+       "phen": "Set",
+       "time": "16:57"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:44"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "04:10"
+      },
+      {
+       "phen": "Set",
+       "time": "15:36"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:51"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:39"
+      },
+      {
+       "phen": "Set",
+       "time": "16:46"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:35"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:32"
+      },
+      {
+       "phen": "Set",
+       "time": "15:32"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:00"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:50"
+      },
+      {
+       "phen": "Set",
+       "time": "16:36"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:25"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "11:04"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:49"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:34"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:30"
+      },
+      {
+       "phen": "Set",
+       "time": "16:02"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:58"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:11"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:53"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:12"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:14"
+      },
+      {
+       "phen": "Set",
+       "time": "15:41"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:44"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "05:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:39"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:37"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:20"
+      },
+      {
+       "phen": "Set",
+       "time": "19:59"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:42"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "01:10"
+      },
+      {
+       "phen": "Set",
+       "time": "06:58"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Rise",
+       "time": "04:20"
+      },
+      {
+       "phen": "Set",
+       "time": "23:43"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Anchorage, Knik Arm, AK",
+   "lat": 61.2375,
+   "lon": -149.89039
+  },
+  "9461380": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "10:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "15:41"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:06"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:42"
+      },
+      {
+       "phen": "Set",
+       "time": "18:18"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:53"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "04:57"
+      },
+      {
+       "phen": "Set",
+       "time": "16:35"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:13"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:49"
+      },
+      {
+       "phen": "Set",
+       "time": "18:11"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:47"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:05"
+      },
+      {
+       "phen": "Set",
+       "time": "17:43"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:56"
+      },
+      {
+       "phen": "Set",
+       "time": "18:04"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:41"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "04:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "10:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:23"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:43"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:22"
+      },
+      {
+       "phen": "Set",
+       "time": "17:45"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:23"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:39"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:10"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:11"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:52"
+      },
+      {
+       "phen": "Set",
+       "time": "17:38"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:19"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "07:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:20"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:29"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:03"
+      },
+      {
+       "phen": "Set",
+       "time": "20:50"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:23"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "15:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "00:49"
+      },
+      {
+       "phen": "Set",
+       "time": "08:58"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:39"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:27"
+      },
+      {
+       "phen": "Set",
+       "time": "23:10"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "23:58"
+      }
+     ],
+     "tz": -9.0
+    }
+   },
+   "label": "Sweeper Cove, Kuluk Bay, Adak Island, AK",
+   "lat": 51.86064,
+   "lon": -176.63758
+  },
+  "9468756": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "17:11"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:58"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:54"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:48"
+      },
+      {
+       "phen": "Set",
+       "time": "17:41"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:35"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "05:19"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:05"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:02"
+      },
+      {
+       "phen": "Set",
+       "time": "17:28"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:24"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "12:39"
+      },
+      {
+       "phen": "Set",
+       "time": "15:33"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:17"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:15"
+      },
+      {
+       "phen": "Set",
+       "time": "17:15"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:13"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "14:05"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:04"
+      },
+      {
+       "phen": "Set",
+       "time": "16:32"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:40"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "10:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:41"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:40"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:03"
+      },
+      {
+       "phen": "Set",
+       "time": "15:57"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:20"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "08:07"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:36"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:24"
+      },
+      {
+       "phen": "Set",
+       "time": "21:00"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:48"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "02:56"
+      },
+      {
+       "phen": "Set",
+       "time": "07:22"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:47"
+      },
+      {
+       "phen": "Rise",
+       "time": "04:20"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Nome, AK",
+   "lat": 64.49461,
+   "lon": -165.43964
+  },
+  "9491094": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "17:41"
+      },
+      {
+       "phen": "Rise",
+       "time": "23:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:01"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:05"
+      },
+      {
+       "phen": "Set",
+       "time": "17:13"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:17"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "05:17"
+      },
+      {
+       "phen": "Set",
+       "time": "16:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:22"
+      },
+      {
+       "phen": "Set",
+       "time": "16:57"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:04"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:28"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:39"
+      },
+      {
+       "phen": "Set",
+       "time": "16:41"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:51"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "14:00"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:17"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:47"
+      },
+      {
+       "phen": "Set",
+       "time": "15:39"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:09"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "11:36"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "11:10"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:40"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "08:01"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:26"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:20"
+      },
+      {
+       "phen": "Set",
+       "time": "20:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "21:47"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "04:16"
+      },
+      {
+       "phen": "Set",
+       "time": "05:52"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "02:58"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Red Dog Dock, AK",
+   "lat": 67.57581,
+   "lon": -164.06439
+  },
+  "9497645": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "11:28",
+      "year": 2026
+     },
+     "curphase": "Third Quarter",
+     "fracillum": "50%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "17:34"
+      },
+      {
+       "phen": "Rise",
+       "time": "21:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:14"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:31"
+      },
+      {
+       "phen": "Set",
+       "time": "15:43"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "17:00"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "04:14"
+      },
+      {
+       "phen": "Set",
+       "time": "15:10"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:53"
+      },
+      {
+       "phen": "Set",
+       "time": "15:21"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:43"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "22:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:47"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:16"
+      },
+      {
+       "phen": "Set",
+       "time": "14:58"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:28"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-16": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "44%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "16:03"
+      },
+      {
+       "phen": "Set",
+       "time": "21:46"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:04"
+      },
+      {
+       "phen": "Set",
+       "time": "14:13"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:01"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-17": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "54%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "15:25"
+      },
+      {
+       "phen": "Set",
+       "time": "23:54"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:12"
+      },
+      {
+       "phen": "Set",
+       "time": "14:05"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:58"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-18": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "64%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "14:57"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:24"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:21"
+      },
+      {
+       "phen": "Set",
+       "time": "13:57"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:54"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-19": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "73%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "01:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:31"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:28"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:30"
+      },
+      {
+       "phen": "Set",
+       "time": "13:48"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:51"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-20": {
+     "closestphase": {
+      "day": 17,
+      "month": 11,
+      "phase": "First Quarter",
+      "time": "02:48",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "82%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:54"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:04"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:32"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:41"
+      },
+      {
+       "phen": "Set",
+       "time": "13:38"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:47"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-21": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "90%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "13:31"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:36"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:54"
+      },
+      {
+       "phen": "Set",
+       "time": "13:26"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:44"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-22": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "96%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:55"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:30"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:39"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:11"
+      },
+      {
+       "phen": "Set",
+       "time": "13:09"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:40"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-23": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "11:52"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:43"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:37"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "05:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "12:55"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:47"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:34"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "10:31"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:58"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "14:47"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-17": {
+     "closestphase": {
+      "day": 15,
+      "month": 1,
+      "phase": "First Quarter",
+      "time": "11:34",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "72%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "08:14"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:11"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "15:59"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-18": {
+     "closestphase": {
+      "day": 15,
+      "month": 1,
+      "phase": "First Quarter",
+      "time": "11:34",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "81%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "09:14"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:08"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:03"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-19": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "90%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "10:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:04"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:32"
+      },
+      {
+       "phen": "Set",
+       "time": "13:39"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:07"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-20": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "96%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "11:25"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "10:01"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:17"
+      },
+      {
+       "phen": "Set",
+       "time": "13:54"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:11"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-21": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "99%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "12:31"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:05"
+      },
+      {
+       "phen": "Set",
+       "time": "14:07"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:15"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-22": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:39"
+      },
+      {
+       "phen": "Rise",
+       "time": "14:48"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:54"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:55"
+      },
+      {
+       "phen": "Set",
+       "time": "14:17"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:19"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-23": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "97%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "11:15"
+      },
+      {
+       "phen": "Rise",
+       "time": "18:09"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:50"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:46"
+      },
+      {
+       "phen": "Set",
+       "time": "14:26"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:23"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-24": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "92%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "10:37"
+      },
+      {
+       "phen": "Rise",
+       "time": "20:35"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:47"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:38"
+      },
+      {
+       "phen": "Set",
+       "time": "14:35"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:27"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-01-25": {
+     "closestphase": {
+      "day": 22,
+      "month": 1,
+      "phase": "Full Moon",
+      "time": "03:17",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "85%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "10:09"
+      },
+      {
+       "phen": "Rise",
+       "time": "22:46"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:43"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:31"
+      },
+      {
+       "phen": "Set",
+       "time": "14:43"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "16:31"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "08:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "06:56"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "07:19"
+      },
+      {
+       "phen": "Rise",
+       "time": "08:21"
+      },
+      {
+       "phen": "Set",
+       "time": "19:48"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "20:50"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-09": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "15%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "04:45"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:21"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-10": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "24%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "05:48"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:29"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:12"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-11": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "35%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "06:47"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:38"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:02"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-12": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "46%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "05:30"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:17"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:50"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:50"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-13": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "57%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:44"
+      },
+      {
+       "phen": "Rise",
+       "time": "12:50"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:03"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:37"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-14": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "68%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:14"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:00"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:22"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:18"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-15": {
+     "closestphase": {
+      "day": 12,
+      "month": 5,
+      "phase": "First Quarter",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "78%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:48"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:05"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "01:50"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-05-16": {
+     "closestphase": {
+      "day": 20,
+      "month": 5,
+      "phase": "Full Moon",
+      "time": "02:59",
+      "year": 2027
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "86%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "03:22"
+      },
+      {
+       "phen": "Rise",
+       "time": "19:13"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "01:51"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "16:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Object continuously below the Horizon",
+       "time": null
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "01:56"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-28": {
+     "closestphase": {
+      "day": 26,
+      "month": 7,
+      "phase": "Last Quarter",
+      "time": "08:55",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "28%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "21:49"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "02:01"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-29": {
+     "closestphase": {
+      "day": 26,
+      "month": 7,
+      "phase": "Last Quarter",
+      "time": "08:55",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "18%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "22:52"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:53"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:10"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-30": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "10%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "23:56"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:39"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-07-31": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "4%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "01:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "02:55"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-08-01": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Object continuously above the Horizon",
+       "time": null
+      },
+      {
+       "phen": "Lower Transit",
+       "time": "01:00"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:55"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:07"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-08-02": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "00:24"
+      },
+      {
+       "phen": "Rise",
+       "time": "04:01"
+      },
+      {
+       "phen": "Set",
+       "time": "23:23"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:45"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:17"
+      }
+     ],
+     "tz": -8.0
+    },
+    "2027-08-03": {
+     "closestphase": {
+      "day": 2,
+      "month": 8,
+      "phase": "New Moon",
+      "time": "02:05",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "3%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "07:00"
+      },
+      {
+       "phen": "Set",
+       "time": "22:50"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Object continuously above the Twilight Limit",
+       "time": null
+      },
+      {
+       "phen": "Set",
+       "time": "00:35"
+      },
+      {
+       "phen": "Rise",
+       "time": "03:26"
+      }
+     ],
+     "tz": -8.0
+    }
+   },
+   "label": "Prudhoe Bay, AK",
+   "lat": 70.41139,
+   "lon": -148.53167
+  },
+  "9751639": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:43"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:19"
+      },
+      {
+       "phen": "Set",
+       "time": "17:47"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:09"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:04"
+      },
+      {
+       "phen": "Set",
+       "time": "15:19"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:58"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:21"
+      },
+      {
+       "phen": "Set",
+       "time": "17:45"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:08"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "06:36"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:00"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:23"
+      },
+      {
+       "phen": "Set",
+       "time": "17:44"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:07"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "10:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:25"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:43"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:31"
+      },
+      {
+       "phen": "Set",
+       "time": "17:42"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:05"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "21:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "91%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:01"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:22"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:47"
+      },
+      {
+       "phen": "Set",
+       "time": "17:49"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:13"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:44"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:29"
+      },
+      {
+       "phen": "Set",
+       "time": "18:29"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:51"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:48"
+      },
+      {
+       "phen": "Rise",
+       "time": "21:12"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:20"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:45"
+      },
+      {
+       "phen": "Set",
+       "time": "18:58"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:23"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Charlotte Amalie, St. Thomas Island, VI",
+   "lat": 18.33058,
+   "lon": -64.92581
+  },
+  "9759110": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "16:28",
+      "year": 2026
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "52%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "12:52"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:05"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:27"
+      },
+      {
+       "phen": "Set",
+       "time": "17:56"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:18"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "13%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "03:13"
+      },
+      {
+       "phen": "Set",
+       "time": "15:28"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:07"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:29"
+      },
+      {
+       "phen": "Set",
+       "time": "17:54"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:17"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 9,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "03:02",
+      "year": 2026
+     },
+     "curphase": "New Moon",
+     "fracillum": "0%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "06:44"
+      },
+      {
+       "phen": "Set",
+       "time": "18:02"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:31"
+      },
+      {
+       "phen": "Set",
+       "time": "17:53"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:16"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "10:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "06:33"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:53"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:39"
+      },
+      {
+       "phen": "Set",
+       "time": "17:51"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:14"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "21:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "91%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "04:09"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:32"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:31"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:55"
+      },
+      {
+       "phen": "Set",
+       "time": "17:58"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:22"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "12:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "39%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:53"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:16"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:37"
+      },
+      {
+       "phen": "Set",
+       "time": "18:38"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:00"
+      }
+     ],
+     "tz": -4.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "20:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "94%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "07:57"
+      },
+      {
+       "phen": "Rise",
+       "time": "21:20"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "05:30"
+      },
+      {
+       "phen": "Rise",
+       "time": "05:54"
+      },
+      {
+       "phen": "Set",
+       "time": "19:06"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:30"
+      }
+     ],
+     "tz": -4.0
+    }
+   },
+   "label": "Magueyes Island, PR",
+   "lat": 17.97011,
+   "lon": -67.04639
+  },
+  "TWC2309": {
+   "days": {
+    "2026-11-01": {
+     "closestphase": {
+      "day": 1,
+      "month": 11,
+      "phase": "Last Quarter",
+      "time": "10:28",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "49%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "00:03"
+      },
+      {
+       "phen": "Set",
+       "time": "16:22"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:45"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:21"
+      },
+      {
+       "phen": "Set",
+       "time": "18:52"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:29"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-05": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waning Crescent",
+     "fracillum": "12%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "05:37"
+      },
+      {
+       "phen": "Set",
+       "time": "17:11"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:52"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:29"
+      },
+      {
+       "phen": "Set",
+       "time": "18:45"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:22"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-09": {
+     "closestphase": {
+      "day": 8,
+      "month": 11,
+      "phase": "New Moon",
+      "time": "21:02",
+      "year": 2026
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "1%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "10:50"
+      },
+      {
+       "phen": "Set",
+       "time": "18:15"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "08:59"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:36"
+      },
+      {
+       "phen": "Set",
+       "time": "18:38"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "19:16"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-11-24": {
+     "closestphase": {
+      "day": 24,
+      "month": 11,
+      "phase": "Full Moon",
+      "time": "04:53",
+      "year": 2026
+     },
+     "curphase": "Full Moon",
+     "fracillum": "100%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "11:01"
+      },
+      {
+       "phen": "Rise",
+       "time": "17:55"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:23"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:03"
+      },
+      {
+       "phen": "Set",
+       "time": "18:18"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:58"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2026-12-21": {
+     "closestphase": {
+      "day": 23,
+      "month": 12,
+      "phase": "Full Moon",
+      "time": "15:28",
+      "year": 2026
+     },
+     "curphase": "Waxing Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "08:24"
+      },
+      {
+       "phen": "Rise",
+       "time": "15:43"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:52"
+      },
+      {
+       "phen": "Rise",
+       "time": "10:34"
+      },
+      {
+       "phen": "Set",
+       "time": "18:11"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "18:52"
+      }
+     ],
+     "tz": -10.0
+    },
+    "2027-03-14": {
+     "closestphase": {
+      "day": 15,
+      "month": 3,
+      "phase": "First Quarter",
+      "time": "07:25",
+      "year": 2027
+     },
+     "curphase": "Waxing Crescent",
+     "fracillum": "41%",
+     "moondata": [
+      {
+       "phen": "Set",
+       "time": "05:08"
+      },
+      {
+       "phen": "Rise",
+       "time": "11:52"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "09:06"
+      },
+      {
+       "phen": "Rise",
+       "time": "09:40"
+      },
+      {
+       "phen": "Set",
+       "time": "21:27"
+      },
+      {
+       "phen": "End Civil Twilight",
+       "time": "22:01"
+      }
+     ],
+     "tz": -9.0
+    },
+    "2027-06-21": {
+     "closestphase": {
+      "day": 18,
+      "month": 6,
+      "phase": "Full Moon",
+      "time": "15:44",
+      "year": 2027
+     },
+     "curphase": "Waning Gibbous",
+     "fracillum": "93%",
+     "moondata": [
+      {
+       "phen": "Rise",
+       "time": "01:31"
+      },
+      {
+       "phen": "Set",
+       "time": "09:33"
+      }
+     ],
+     "sundata": [
+      {
+       "phen": "End Civil Twilight",
+       "time": "00:42"
+      },
+      {
+       "phen": "Begin Civil Twilight",
+       "time": "06:09"
+      },
+      {
+       "phen": "Rise",
+       "time": "06:59"
+      },
+      {
+       "phen": "Set",
+       "time": "23:52"
+      }
+     ],
+     "tz": -9.0
+    }
+   },
+   "label": "Alcan Harbor, Shemya Island",
+   "lat": 52.7167,
+   "lon": 174.0667
+  }
+ }
+}

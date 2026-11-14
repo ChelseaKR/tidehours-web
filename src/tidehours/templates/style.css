@@ -35,6 +35,7 @@
   --foot-link: #f7f3e8;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", P052, Georgia, serif;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --night: #e9ecf0;    /* chart shading where the sun is down */
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
@@ -62,6 +63,7 @@
     --foot-bg: #060e18;
     --foot-fg: #e8edf2;
     --foot-link: #9fcdf3;
+    --night: #060e18;
   }
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -170,6 +172,8 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; fon
 .tide-chart .grid { stroke: var(--grid); stroke-width: 1; }
 .tide-chart .grid.datum { stroke: var(--datum); stroke-width: 1.5; stroke-dasharray: 2 3; }
 .tide-chart .tick { stroke: var(--grid); stroke-width: 1; }
+.tide-chart .night { fill: var(--night); }
+.sky { margin: 0.4rem 0 0; }
 .chart-box { display: grid; grid-template-columns: 2.6rem 1fr; }
 .chart-box .tide-chart { grid-column: 2; }
 .ax-y { grid-column: 1; grid-row: 1; position: relative; }
@@ -182,10 +186,10 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; fon
 .tide-chart .dot-L { fill: var(--low); }
 figcaption { font-size: 0.875rem; color: var(--muted); margin-top: 0.3rem; }
 
-ul.states, ul.stations, ul.near { list-style: none; padding: 0; margin: 0; display: grid; gap: 0 1.25rem; grid-template-columns: 1fr; }
-ul.states li, ul.stations li, ul.near li { padding-block: 0.45rem; border-bottom: 1px solid var(--line); }
+ul.states, ul.stations, ul.near, ul.printables { list-style: none; padding: 0; margin: 0; display: grid; gap: 0 1.25rem; grid-template-columns: 1fr; }
+ul.states li, ul.stations li, ul.near li, ul.printables li { padding-block: 0.45rem; border-bottom: 1px solid var(--line); }
 ul.states li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
-ul.states a, ul.stations a, ul.near a { display: inline-block; min-height: 24px; }
+ul.states a, ul.stations a, ul.near a, ul.printables a { display: inline-block; min-height: 24px; }
 ul.states a { font-weight: 500; }
 ul.states .count { white-space: nowrap; }
 ul.derived { padding-inline-start: 1.1rem; }
@@ -208,8 +212,7 @@ summary { cursor: pointer; color: var(--link); }
 .site-footer a { color: var(--foot-link); }
 .site-footer a:focus-visible, .site-footer button:focus-visible { outline-color: var(--foot-fg); }
 .site-footer h2 { font-size: 1.1rem; margin-top: 1rem; }
-.site-footer .foot-links { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; list-style: none; margin: 1rem 0 0; padding: 0.8rem 0 0; border-top: 1px solid color-mix(in srgb, var(--foot-fg) 30%, transparent); }
-.site-footer .foot-links a { display: inline-block; padding-block: 0.3rem; }
+.site-footer .foot-read { margin: 1rem 0 0; padding: 0.8rem 0 0; border-top: 1px solid color-mix(in srgb, var(--foot-fg) 30%, transparent); }
 .soon { font-weight: 600; }
 .button { display: inline-block; background: var(--brand); color: var(--on-brand); padding: 0.6rem 1.1rem; border-radius: 0.4rem; text-decoration: none; font-weight: 600; }
 .site-footer .button { background: var(--foot-fg); color: var(--foot-bg); }

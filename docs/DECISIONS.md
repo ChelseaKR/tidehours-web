@@ -6,8 +6,8 @@ decision made while carrying them out, and can be changed.
 ## 0001: A website for Tide Hours at tidehours.com (owner, 2026-10-31)
 
 Tide Hours gets its own site at tidehours.com. The owner checked the
-trademark search and is buying the domain. This repository is private until
-the owner says otherwise.
+trademark search and is buying the domain. This repository was private until
+the owner made it public on 2026-11-12.
 
 The product split:
 
@@ -85,6 +85,9 @@ pair 99 minutes apart and 0.07 ft).
 **For the app:** the app shows these stands today. Porting `drop_stands`
 to TideCore is a recommended follow-up, so the app and the site agree
 everywhere.
+
+Update, 2026-11-11: the app made this change in ChelseaKR/tide-hours#2, so
+the site and the app no longer differ here.
 
 ## 0005: States, regions and stations NOAA lists without a state
 
@@ -278,6 +281,9 @@ When to widen: when the indexed pages earn impressions for four straight
 weeks without a sitewide drop, allow subordinate pages back, a state or a
 named list at a time, and re-measure. Allowing a page back is a code change
 that adds it to the sitemap and `lastmod.json`, so IndexNow announces it.
+
+Superseded on 2026-11-12 by 0033: subordinate pages are indexed, except
+the two whose corrections make them copies of their reference station's.
 
 ## 0014: Each harmonic station's type of tide, from its own constants (2026-11-04)
 
@@ -552,6 +558,100 @@ The data files are not edited. The same rules belong in the app's pipeline
 (ChelseaKR/tide-hours, `pipeline/build_bundle.py`); until then this is a
 difference between the site and the app.
 
+## 0019: Sunrise, sunset, twilight and the moon on station pages, computed (2026-11-05, finished 2026-11-12)
+
+Each station page's two days (today and tomorrow, as now; DECISIONS 0001's
+free-web line is unchanged) carry one line: sunrise and sunset, civil dawn
+and dusk, the moon's phase with the share of it lit, and moonrise and
+moonset, all in the station's own time zone. For example: "Sunrise 6:40 AM,
+sunset 5:07 PM. Civil dawn 6:12 AM, civil dusk 5:34 PM. Moon: waning
+crescent, 12% lit at noon. Moonrise 3:06 AM, moonset 3:06 PM." The day's
+tide curve shades the hours the sun is down (`aria-hidden`, like the rest of
+the drawing; the line carries the facts).
+
+**Computed, not fetched (0002).** `src/tidehours/sky.py` has no data file and
+makes no request. Sunrise and sunset use NOAA's Solar Calculator equations
+(NOAA GML, after Meeus) at the station's latitude and longitude, with the
+sun's center at -0.833 degrees, the U.S. Naval Observatory's definition;
+civil dawn and dusk are the sun's center at -6 degrees, also USNO's. The
+altitude is sampled every minute from the station's local midnight to the
+next, in its IANA zone, so a daylight saving day has 23 or 25 hours, and
+each crossing is interpolated between two samples. The moon uses the main
+terms of Meeus chapter 47 and the phase angle of chapter 48. The share lit is
+at local noon. The phase name follows USNO's convention: new or full moon
+when the share rounds to 0% or 100%, a quarter at 50%, otherwise waxing or
+waning, crescent or gibbous. A primary phase whose instant falls on the day
+is named with its local time ("full moon at 6:53 AM"). Moonrise and moonset
+turn the same series into right ascension and declination, take the
+station's local sidereal time (Meeus 12.4), and put the moon's center at a
+geocentric altitude of 0.7275 times its horizontal parallax less 0.5667
+degrees (Meeus 15): the upper limb on the horizon after refraction, as USNO
+defines them. A subordinate station uses its own position, not its
+reference station's.
+
+**Absence is words.** A day the sun does not rise says "The sun does not
+rise on this day (polar night)." A day it does not set says "The sun does
+not set on this day (midnight sun)." A day with only one of them names the
+missing one ("No sunrise on this day."). The same holds for civil twilight
+("It does not get darker than civil twilight on this day." or "No civil
+twilight on this day: the sun stays more than 6° below the horizon.") and
+for the moon, which skips a moonrise or a moonset about once a month
+everywhere ("No moonrise on this day.", "The moon is up all day.", "The
+moon does not rise on this day."). No page ever shows a stand-in time. At
+Prudhoe Bay (9497645) the sun stays down from November 23 to January 18 and
+up from May 15 to July 28 in the fixture years.
+
+**Checked.** `tests/fixtures/usno-sky-2026.json` holds USNO's
+`api/rstt/oneday` answers for 186 station-days: 22 stations covering every
+time zone in the catalog and latitudes from Pago Pago (14°S) to Prudhoe Bay
+(70°N), 7 of them in Alaska (Guam, Pago Pago, Wake, Adak, Shemya across the
+date line, Puerto Rico, the Virgin Islands, Hawaii, the Arctic), on 7 dates
+(both ends of US daylight saving time, a new moon, a full moon, both
+solstices), plus 32 days at Prudhoe Bay on both edges of polar night and the
+midnight sun. Fetched by hand with `scripts/fetch_sky.py` (aa.usno.navy.mil
+has no robots.txt, 404 on 2026-11-05 and 2026-11-12; requests a second
+apart, with `ID=` and a User-Agent that name the site). First fetched
+2026-11-05 with sunrise and sunset only; fetched again 2026-11-12 for
+twilight and the moon, when every earlier value came back the same except
+Shemya's two summer-time days, which moved with 0018's zone change.
+Measured on 2026-11-12: all 350 sunrises and sunsets are within 2 minutes
+of USNO's (348 within 1; the two are grazing days at Prudhoe Bay); all 334
+civil dawns and dusks and all 310 moonrises and moonsets are within 1
+minute; the days without one are exactly USNO's; and the phase name, the
+share lit and the 55 primary phases on those days match. `tests/test_sky.py`
+holds 2 minutes for every time. On a daylight saving day USNO's day (24
+hours at the noon offset) and the station's (23 or 25) differ by an hour,
+so the moon test compares where they overlap. `scripts/check_site.py`
+recomputes each station page's line for both of its days and fails the
+build if it is missing, different, or shows "00:00"; negative controls in
+`tests/test_sky.py` remove the line, replace polar night with a "00:00"
+sunrise, and move a sunrise, a civil dusk, a moonrise and the moon's phase,
+and assert the check fails each time. USNO is a test oracle only: its values
+are not shown on the site or redistributed.
+
+**Not checked against "12:00 AM".** A real sunset or moonrise can fall at
+12:00 AM, so the gate does not ban that text; it compares every line with
+the computed one instead, which catches a stand-in time.
+
+**Time zones.** Times use `Station.tz`, so they follow whatever zone the
+catalog gives a station, including 0018's `America/Adak` for the western
+Aleutians.
+
+**Reuse.** `sky.sun_times(lat, lon, tz, date)` returns the day's sunrise and
+the sunset after it as POSIX seconds, or None, the same contract as
+`lowtides.sun_times` on the `feat/low-tides` branch (DECISIONS 0021 there),
+which carries its own copy of the solar equations because this module was
+not on `main` yet. Once both merge, low-tides should call this one and drop
+its copy, so the site has one sun.
+
+**Differences from the app.** The app (ChelseaKR/tide-hours) does not show the
+sun or moon yet. When its 7-day view adds them, it should port this method
+and the same fixture, or record a difference here.
+
+**Not done.** Nautical and astronomical twilight, the moon's transit, a
+tide-movement line ("Rising until 12:30 PM"), and anything beyond the two
+days on the page.
+
 ## 0020: Correct NOAA's station names for display, and fit titles in 60 characters (owner, 2026-11-05)
 
 (0019 is reserved for another branch.) An audit of every station page
@@ -601,6 +701,40 @@ The state that a name ends in ("Bladensburg, Md.") is still handled by 0018.
 The same corrections belong in the app's pipeline (ChelseaKR/tide-hours);
 until then this is a difference between the site and the app.
 
+## 0022: Region pages of one or two stations are noindex (2026-11-05)
+
+Measured 2026-11-05 with Search Console URL Inspection
+(growth/indexing-gaps-2026-11-05.md): 11 of 14 well-known harmonic stations
+(San Francisco, the Battery, San Diego, Seattle, Honolulu and others) were
+still unknown to Google five days after the domain went live, and Google
+reaches station pages through state and region pages. Meanwhile some region
+pages carry about 130 words: `/states/md/tred-avon-river/` and
+`/states/pa/schuylkill-river-pennsylvania/` each list two stations. A region page is
+a heading and a list of its stations, and its state page shows the same
+heading and the same list, so a one- or two-station region page is a
+near-empty copy of part of its state page. On the full catalog, with the
+stations filed by 0018, 66 of the 370 region pages list one or two
+stations (127 of 446 before 0018).
+
+So `site.region_indexable` asks for at least `site.REGION_MIN_STATIONS`
+(3) stations. A smaller region page is still built at its URL, linked from
+its state page and followed, with its own canonical, but carries
+`noindex,follow` and is left out of the sitemap and `lastmod.json`, so
+IndexNow (0011) does not announce it. `scripts/check_site.py` fails the
+build if a region page's noindex does not match the rule.
+
+What does not change: every station page keeps its own rule (0013), so a
+harmonic station in a small region is still indexed and is linked from its
+state page. State pages stay indexed, including the shortest territory
+pages (`/states/as/`, `/states/gu/`, `/states/dc/`): the home page links
+only state pages, so a state page is the one path to its stations, and
+American Samoa has no region page at all. No template changes.
+
+When to revisit: when region pages are filed differently, the count
+changes on its own. If a small
+region page starts earning impressions anyway, or the station pages are
+indexed well, lower the threshold and re-measure.
+
 ## 0023: Tell apart the region pages that 0020 left with one label (owner, 2026-11-05)
 
 (0021 and 0022 are reserved for other branches.) 0020 renamed region labels
@@ -636,3 +770,1235 @@ data supports it:
 
 `tests/test_names.py` checks that no two region pages in a state share a
 label or a title, and that without `tell_apart` the four pairs come back.
+
+## 0024: A winter king-tide calendar for each state, by month (2026-11-05)
+
+People plan king-tide visits by month and place ("Washington king tides
+December 2026"). The king-tide page lists each station's whole year, and its
+summary shows only the runs within 30 days (0015), so on November 5 nothing
+on the site named the January or February dates in one place.
+
+**Pages.** `/king-tides/washington/`, `/king-tides/oregon/` and
+`/king-tides/california/`, in English (the Spanish king-tide page links to
+them, marked as English). Each lists, for November 2026 through February
+2027 (`kingtides.CALENDAR_FIRST` and `CALENDAR_LAST`), the runs from 0006
+whose highest tide falls in that month, filed under that month: place,
+days, highest tide with its Pacific time, height above MLLW and height above
+MHHW, with the MHHW epoch from the committed datums (1983–2001 for all 31).
+The runs are the same objects as on the king-tide page, so the two cannot
+disagree; nothing is copied from another site and nothing is new data.
+
+**Absence.** A month in which no station in the state has a run is still
+listed and says in words that no run of the year's highest tides peaks then,
+and that this is not a prediction of no high tides (California's February
+2027). A month in which some stations have none says the others' high tides
+are predicted, but lower than the peak of each of their runs on the page.
+The count is of stations, not runs: some Washington stations have two
+December runs.
+
+**Pinned, not rolled.** Like 0006, the window is a constant edited once a
+season; no run is hidden or marked as past by the build date, so the pages
+change only when the data does. Runs that have ended stay listed under their
+month.
+
+**Links.** The king-tide pages (under each state's heading), the WA, OR and
+CA state pages (always, not only in season), each king-tide station's page,
+and each station page that shows a nearby king-tide station's run (0015).
+Region and home pages are unchanged. Structured data is a plain `WebPage`
+about the state; no `Event` markup, because a predicted tide has no
+organizer, place or tickets and the rich result would overstate it.
+
+**Checked.** `scripts/check_site.py` recomputes each state's calendar and
+compares every row (`data-kt-cal`), the list of months, and the sentence for
+each empty month; `tests/test_king_calendar.py` checks Seattle's February run
+against Washington Sea Grant's table and California's peaks against the
+Coastal Commission's dates, with a negative control for the check.
+
+**For the app:** nothing changes.
+
+## 0025: Name the states in full in the king-tide page's title (2026-11-07)
+
+(0019 and 0021 are reserved for other branches.) Search Console for
+sc-domain:tidehours.com, Oct 10 to Nov 7, 2026 (data from Nov 3 on): 289
+impressions, 0 clicks, average position 33.6. The English king-tide page had
+84 of 306 page impressions at an average position of 8.1, the only page with
+real volume on Google's first page. Its queries name a month or a place in
+full and ask when: "king tides november 2026", "when are the king tides this
+year", "king tides oregon 2026 schedule", "king tides puget sound 2026",
+"king tides seattle 2026", "washington state king tides 2026". The title said
+"WA, OR and CA", and the description led with "West Coast" and "Bellingham to
+San Diego".
+
+- **Title (in season):** "King tides {months}: Washington, Oregon and
+  California" (54 characters for "November 2026", under 0020's 60), in place
+  of "King tides {months}: WA, OR and CA dates and times". The months still
+  come from 0015, and `scripts/check_site.py` still checks them.
+- **Title (out of season):** "King tides 2026–27: Washington, Oregon and
+  California dates".
+- **Description (in season):** answer first: "The next West Coast king tides
+  are {range}: the peak day, local time and height at {count} NOAA stations,
+  from Seattle and Puget Sound to the Oregon coast and San Diego." Seattle,
+  Tacoma, Olympia and five Oregon coast stations are on the page, so each
+  name is something the page has.
+- **Not changed:** the Spanish page (no Spanish queries yet), the H1 and
+  body (the dates already lead, 0015), and station and region titles. Station
+  pages averaged position 40 to 100, beyond Google's second page, where a
+  title cannot earn a click; their fix is time and links, not copy.
+
+At position 8 an 84-impression sample would expect about one to three
+clicks, so 0 clicks is weak evidence on its own. Recheck the page's
+click-through rate after the Nov 23 run.
+
+**For the app:** nothing changes.
+
+## 0028: King-tide pages answer the winter searches first; sitemap lastmod is the date a page changed (2026-11-09)
+
+(0026 and 0027 are reserved for other branches.) Search Console for
+sc-domain:tidehours.com, Aug 10 to Nov 7, 2026 (data from Nov 3 on): the
+English king-tide page had 112 impressions, 1 click, average position 8.3,
+the only page with real volume. Its named queries ask when, by month or
+place: "king tides november 2026", "when are the king tides this year",
+"king tides oregon 2026 schedule", "king tides puget sound 2026", "king
+tides washington coast 2026", "washington state king tides 2026", "king
+tides december 2026", "king tides seattle 2026". The three state calendars
+(0024) had no impressions yet. Every sitemap `lastmod` was the build date, so
+the king-tide pages claimed a change every day though their HTML had not
+changed.
+
+- **State calendars, title and description:** named for the places on
+  them that people search ("Washington king tides 2026–27: Seattle, Puget
+  Sound, coast"; "Oregon king tides 2026–27: coast schedule by month,
+  Nov–Feb"; "California king tides 2026–27: San Francisco to San Diego"),
+  from `kingtides.CALENDAR_SEARCH`. Every place named is a king-tide
+  station's place or its catalog region (Puget Sound is Seattle's, Tacoma's
+  and Olympia's region; San Francisco Bay is Golden Gate's, Alameda's and
+  Redwood City's), checked by `tests/test_king_calendar.py`, with a
+  negative control. Titles stay within 60 characters (0020).
+- **Answer first:** each calendar opens with "When are the king tides in
+  {state}?", one line per month: the days, the peak days and how many
+  stations, from the same `CalendarMonth.span` the month's sentence uses,
+  so the two cannot disagree. A month without a run says so in words. Still
+  pinned to the season, never rolled by the build date (0024).
+- **Definition:** the king-tide pages (English and Spanish) say that "king
+  tide" is a popular, non-scientific name, as NOAA does, give NOAA's reason
+  for higher tides, say what it means on the page, and say it does not
+  forecast storms, waves or flooding.
+- **Links:** the king-tide pages link the three calendars right under the
+  lead, and the home page's king-tide paragraph links them too.
+- **No region pages.** Puget Sound and San Francisco Bay have three
+  king-tide stations each, all already on their state's calendar; a page of
+  its own would repeat those rows (0022's thin-page concern). The titles and
+  descriptions name them instead.
+- **Sitemap lastmod:** `publish.yml` saves the live `sitemap.xml` and
+  `lastmod.json` before the build, and `tidehours --previous` keeps a page's
+  live `lastmod` when its SHA-256 matches the live one (0011); a changed or
+  new page gets the build date. If either file is missing or unreadable, or a
+  date is later than the build, every page gets the build date, as before.
+  Station pages still change daily (today's tides), so they still carry the
+  build date.
+
+Not changed: the king-tide page's title and description (0025), the Spanish
+title, URLs, and the app.
+
+**For the app:** nothing changes.
+
+## 0029: A link to the Tide Hours print shop on Etsy, off by default (2026-11-10)
+
+(0026 and 0027 are reserved for other branches.) On 2026-11-10 the owner
+opened an Etsy shop, TideHours, with one listing: a made-to-order print of
+the tide at one place on one day, drawn by this site's engine. Each print's
+footer names tidehours.com. The owner asked for a link back from the site.
+The site's traffic is small (0028: the English king-tide page is the only
+page with real volume), so this is a courtesy to a reader who wants the
+print, not a traffic plan.
+
+**The switch.** `Config.print_shop_url` (`--print-shop-url`, the repository
+variable `PRINT_SHOP_URL`). Empty, the default, means off, and off leaves no
+trace: no link, no section, and the privacy and terms pages as they were.
+The value must be an Etsy shop's own address
+(`https://www.etsy.com/shop/Name`): no listing, query string or tracking
+parameter. A listing address changes when a listing is renewed or replaced;
+the shop's does not.
+
+**On.** The About page and the English king-tide page each end with a
+"Prints" section of one sentence and one link (`rel="noopener"`). The copy
+is in `src/tidehours/copy/print_shop.json`. The Spanish king-tide page has no
+link, because the sentence has had no native-Spanish review. Station, state
+and region pages have none: they are a reference, and 3,700 links to a shop
+would read as an ad on every page. The privacy page says where the link goes
+and that this site sends nothing to Etsy; the terms page adds Etsy to the
+names and trademarks.
+
+**Not an affiliate link.** The shop is Tide Hours' own. There is no tag, no
+click event and no `sponsored` rel, and the sentence states no price and
+makes no claim (a test refuses the same words 0016 refuses). The privacy
+page's "no ads" sentence is unchanged: this is the site naming its own
+print, as it names its own app.
+
+**Checked.** `scripts/check_site.py --print-shop-url` fails the build if,
+with no address, "etsy" appears in any page, the sitemap, robots.txt,
+lastmod.json or llms.txt; or if, with one, either page lacks the link, has
+it twice, or has another address or rel, or any other page links to or
+mentions Etsy (the privacy and terms pages may name it). `publish.yml`
+passes the same variable to the build and the check.
+`tests/test_print_shop.py` covers both states and has negative controls for
+each rule, each asserting the sabotage changed the build.
+
+**What it changes for the print test.** Views that arrive from this site
+count toward Etsy's view total, so the 2027-01-15 read of the listing is no
+longer a read of Etsy's search alone.
+
+**Reversible.** Yes: empty the variable and the next build has no link. To
+remove the code, drop `printshop.py`, the copy file, the template and its
+two includes, the privacy and terms lines, and the check.
+
+**For the app:** nothing changes.
+
+## 0030: A station page links to its own printed booklet on Amazon (2026-11-10)
+
+(0026 and 0027 are reserved for other branches.) On 2026-11-10 the owner
+published printed 2027 tide-table booklets through Amazon KDP under the
+author name Tide Hours, one station each, computed by this site's engine:
+Bar Harbor (station 8413320) and Half Moon Bay (9414131) are in Amazon's
+review, and Garibaldi (9437540) and Brewster Flats (8447241) follow. The
+reader of a station's page is the reader that station's booklet is for, so
+the page says the booklet exists. None is on sale yet, so the list ships
+empty.
+
+**The list.** `src/tidehours/copy/booklets.json` maps a station id to its
+booklet's ASIN, year and title. It ships empty, and empty leaves no trace:
+the full build with the pinned clock is byte for byte the build before this
+change (3,761 files compared, with the switches off and with all of them
+on). There is no repository variable. An entry is added by a pull request
+when a booklet is live, so an ASIN is reviewed like code and the same list
+is what `check_site.py` reads. `--booklets FILE` on the build and on
+`check_site.py` names another list; it is for tests.
+
+**What the list refuses.** An ASIN that is not ten characters of "B0" and
+eight capitals or digits, or an ISBN-10 whose check digit is right (a KDP
+paperback has one or the other), matched in full, so a whole address, a
+tag or a trailing space stops the build. A year that is not a whole number
+from 2000 to 2099. A title that is not "YEAR Tide Tables: Place" with the
+entry's own year. Any other key. One ASIN under two stations. A station id
+the catalog does not have.
+
+**The title is the booklet's own.** The first proposal was to build the
+link text from the station's name ("Bar Harbor Tide Tables 2027"). The
+titles the owner approved for the covers are "2027 Tide Tables: Bar Harbor",
+"2027 Tide Tables: Half Moon Bay" and so on, and this site's names for two
+of the stations are "Pillar Point Harbor, Half Moon Bay, CA" and "Sesuit
+Harbor, East Dennis, MA" (the Brewster Flats booklet). A title built from
+the station's name would be one no booklet has, so each entry carries the
+title printed on its cover, and its shape is checked.
+
+**The link.** Exactly `https://www.amazon.com/dp/ASIN`, with nothing after
+it: no Associates tag, no query string, no tracking parameter, no click
+event, `rel="noopener"` as in 0029. This is Tide Hours linking to its own
+book, not an affiliate link, and it stays untagged when the affiliate switch
+(0016) is on. Whether the Associates Operating Agreement asks for anything
+when a site in the program also links to its own book without a tag was not
+read for this change; that is with the owner.
+
+**Where.** Only on that station's own page: one sentence with one link,
+after the tide tables and the paragraph about the app and NOAA's own
+predictions, before the type of tide, the nearby stations and the closing
+notes. "A printed 2027 tide table for this station is sold on Amazon as
+2027 Tide Tables: Bar Harbor." with the title as the link. It states no
+price and makes no claim (a test refuses the words 0029 refuses). Not on
+state, region, home or king-tide pages, and not in the page's title,
+description or JSON-LD, the sitemap, robots.txt or llms.txt. `lastmod.json`
+changes only in that page's fingerprint.
+
+**When it leaves.** The link shows while the first day on the page, which
+is the station's own date when the site was built, is in the booklet's year
+or earlier. A 2027 booklet shows from the day it is listed until
+December 31, 2027 at the station, and the build of January 1, 2028 has no
+trace of it, with nobody editing a file. The entry can be removed whenever.
+
+**Privacy and terms.** While at least one page in the build shows a link,
+the privacy page has a "Booklet links" section (`/privacy/#booklets`) that
+says Tide Hours publishes the booklet, that the link is plain, where it
+goes and that this site sends nothing to Amazon; and the terms page names
+Amazon among the trademarks, once, whether or not the affiliate switch is
+also on. The sentence for every earlier combination of switches is
+unchanged. The privacy page's "no ads" sentence is unchanged, as in 0029:
+this is the site naming its own book.
+
+**What changed in 0016's check.** Before: with no tag, "amazon" appears
+nowhere; with one, an Amazon link appears only on the English king-tide
+page. Now `check_site.py` reads the list, works out from each listed
+station page's own date which pages are due the sentence, checks that
+sentence by itself, takes it out of the page, and runs 0016's rules,
+unchanged, on everything that is left. With no booklet listed the only
+difference is that llms.txt joins the files that may never mention Amazon.
+With one listed, the build fails if a due page has no sentence or two; if
+the sentence has more than one link, an address that is not exactly the
+booklet's, a rel other than `noopener` or a click event; if it sits before
+the tide tables or after the closing notes; if a sentence is on any page
+that is not due one, which covers a booklet whose year is over; or if
+Amazon is linked or named anywhere else. With no tag, the privacy and terms
+pages may name Amazon in words while a link shows, never with a link.
+
+**Analytics.** The link has no event of its own. If the GA4 property's
+Enhanced measurement counts outbound clicks, Google Analytics records a
+click on any link that leaves the site, with its address; that is a
+setting in the property, not in this repository, and it is with the owner
+to check.
+
+**What it changes elsewhere.** Listing a booklet, or its year ending,
+changes that station's page and the privacy and terms pages, so their
+sitemap `lastmod` moves and IndexNow announces them (0011, 0028); that is
+expected.
+
+**Tests.** `tests/test_station_booklets.py`: the empty list leaves no
+trace; one booklet changes that page, privacy, terms and their
+fingerprints and nothing else; bad entries are refused; the link leaves at
+the year's end by the station's date; the affiliate switch and a booklet
+together pass; and a negative control for each rule above, each asserting
+the sabotage changed the build. `tests/test_site.py` builds California
+with an empty list, so its tests do not change when a California booklet is
+listed.
+
+**Reversible.** Yes: empty the list and the next build has no link. To
+remove the code, drop `booklets.py`, the two copy files, the template and
+its include, the privacy and terms lines, and the check.
+
+**For the app:** nothing changes.
+
+## 0031: Highs and lows keep a year's constants for 30 minutes into the next (2026-11-10)
+
+**What was wrong.** The engine picks each instant's lunar-node constants (f
+and V0 + u) by its GMT year, as the app does, so its curve steps at 00:00
+GMT on January 1 and it found every high and low on that stepped curve.
+NOAA's published highs and lows do not all step there. At Bar Harbor
+(8413320) NOAA's low on 2028-01-01 is at 00:09 GMT and 0.377 ft; the engine
+said 00:07 and 0.465 ft. No test looked at this hour: the fixtures were
+November 2026 and June 2031.
+
+**Measured (2026-11-10).** 20 requests to NOAA's predictions API, each for
+two days, two seconds apart (`scripts/fetch_golden.py --year-boundary`,
+`tests/fixtures/golden-year-boundary.json`): the highs and lows at 18
+stations, the 6-minute heights at one, and Bar Harbor's highs and lows
+again, asked for from January 1. The stations were chosen with
+the engine: harmonic stations with a high or low near 00:00 GMT on
+2028-01-01 or 2027-01-01, spread over the first hour, where the two years'
+constants give heights at least 0.04 ft apart. Each row is NOAA's tide
+nearest midnight, where each year's constants, held, put that tide (minutes
+after 00:00 GMT), and how far each is from NOAA's height.
+
+2028-01-01:
+
+| Station | NOAA (GMT) | Old year puts it at | and is off by | New year puts it at | and is off by | NOAA's is |
+|---|---|---|---|---|---|---|
+| Wauna, OR 9439099 | 23:55 H 6.820 ft | -4.94 min | +0.003 ft | -4.24 min | -0.107 ft | old |
+| Popokamute, AK 9466057 | 00:02 H 5.444 ft | +2.39 min | +0.001 ft | +0.02 min | +0.188 ft | old |
+| Bar Harbor, ME 8413320 | 00:09 L 0.377 ft | +8.86 min | +0.001 ft | +7.18 min | +0.088 ft | old |
+| Oceanville, ME 8414249 | 00:25 L -0.251 ft | +24.96 min | -0.007 ft | +22.63 min | +0.130 ft | old |
+| Fire Island, AK 9455912 | 00:26 L 5.634 ft | +25.88 min | -0.004 ft | +25.37 min | -0.273 ft | old |
+| Wells, ME 8419317 | 00:29 L 0.125 ft | +29.17 min | -0.000 ft | +27.15 min | +0.072 ft | old |
+| Kodiak, Womens Bay, AK 9457292 | 00:30 H 8.700 ft | +29.96 min | -0.001 ft | +30.71 min | -0.073 ft | old |
+| Ouzinkie, AK 9457287 | 00:31 H 8.136 ft | +30.28 min | +0.061 ft | +31.04 min | +0.003 ft | new |
+| Milbridge, ME 8412581 | 00:30 L 0.647 ft | +30.44 min | -0.040 ft | +29.45 min | +0.006 ft | new |
+| New Haven, CT 8465705 | 00:31 L 0.164 ft | +31.64 min | -0.059 ft | +30.69 min | -0.000 ft | new |
+| Pettegrove Point, ME 8410834 | 00:34 L 0.866 ft | +35.27 min | -0.237 ft | +34.09 min | +0.005 ft | new |
+| Birch Islands, ME 8410875 (subordinate) | 01:33 L 0.461 ft | +93.00 min | -0.005 ft | +91.63 min | +0.104 ft | old |
+
+2027-01-01:
+
+| Station | NOAA (GMT) | Old year puts it at | and is off by | New year puts it at | and is off by | NOAA's is |
+|---|---|---|---|---|---|---|
+| Anchor Point, AK 9455606 | 00:02 L 3.252 ft | +1.87 min | -0.003 ft | -1.22 min | -0.179 ft | old |
+| Port Angeles, WA 9444090 | 00:19 L 1.763 ft | +18.88 min | +0.007 ft | +16.40 min | -0.117 ft | old |
+| Lomavik, AK 9466328 | 00:28 L 0.162 ft | +28.52 min | -0.001 ft | +25.75 min | -0.146 ft | old |
+| Dolgoi Harbor, AK 9459758 | 00:32 L 1.561 ft | +33.77 min | +0.067 ft | +31.72 min | +0.005 ft | new |
+| Platinum, AK 9465396 | 00:35 H 8.262 ft | +36.17 min | -0.227 ft | +35.42 min | -0.009 ft | new |
+| Goodnews Bay, AK 9465438 | 01:01 H 8.317 ft | +61.68 min | -0.210 ft | +60.96 min | +0.009 ft | new |
+
+Three rows measured earlier the same day and not in the fixture agree:
+Eastport (8410140) 2028-01-01 00:20 L 0.615 ft is the old year's (-0.007
+ft), and Anchorage (9455920) 00:37 L 5.904 ft and 06:05 H 27.812 ft are the
+new year's. Every other tide in the two days at the 18 stations, 108 of
+them, is the year's own to 0.010 ft: all of December 31 the old year's,
+all from 05:54 GMT on January 1 the new year's.
+
+**The rule that fits every row.** A high or low that the old year's
+constants put before 00:30 GMT on January 1 is published with the old
+year's constants. Otherwise it is published with the new year's. What
+decides is where the old year's constants put the tide, not where the new
+year's do and not NOAA's printed minute: Kodiak, Womens Bay (old year
+00:29.96, new year 00:30.71) is the old year's, and Milbridge (old year
+00:30.44, new year 00:29.45) is the new year's, though NOAA prints both at
+00:30. The cutoff is between 29.96 and 30.28 minutes in 2028 and between
+28.52 and 33.77 in 2027; 30 minutes is the one round number in both.
+
+Also measured:
+
+- **Before midnight.** No tide before 00:00 GMT uses the next year's
+  constants (Wauna, five minutes before; every December 31 tide).
+- **NOAA's curve is different.** NOAA's 6-minute heights at Fire Island,
+  AK follow the old year's constants through 23:54 and the new year's from
+  00:00 on, each to 0.007 ft. Its own curve reads 5.37 ft where its
+  published 00:26 low says 5.634 ft. So NOAA's curve steps at midnight, as
+  this engine's does, and only its list of highs and lows runs on.
+- **Subordinate stations follow the reference's tide.** Birch Islands'
+  01:33 low, 93 minutes after midnight, is the old year's: it is Eastport's
+  00:20 low moved 73 minutes.
+- **The answer does not depend on the request.** Bar Harbor asked for from
+  January 1 gives the same 00:09 low, 0.377 ft, as asked for from December
+  31.
+
+**What changed.** `engine.py`, highs and lows only. `raw_events` finds
+them year by year, each year's constants held from 30 minutes after its
+start to 30 minutes after its end (`YEAR_CARRY`, `tide_year`), on a curve
+with no step in it. At the hand-over (00:30 GMT) the two years can
+disagree on whether the tide is rising (`_hand_over`):
+
+- The old year has just passed a high or low and the new year has not
+  reached it (Kodiak): the old year's stands, and the new year's copy of
+  the same tide, which follows within the stand rule's 120 minutes and 0.06
+  ft (0004), is left out.
+- The new year has passed it and the old year has not reached it
+  (Milbridge): neither finds it, so it is put at 00:30 with the new year's
+  height there. NOAA prints that low at 00:30, half a minute after the new
+  year's own 00:29.45.
+
+`heights`, `height` and `curve` are unchanged: they step at 00:00 GMT, as
+NOAA's 6-minute heights do. So for up to 30 minutes a year a high or low
+can sit off the drawn curve by the size of the step (0.08 ft at Bar Harbor,
+0.27 ft at Fire Island), as NOAA's does. Subordinate stations needed no
+change: they take the reference station's highs and lows.
+
+Finding highs and lows on a curve without a step also removes what the
+step made. At Hanbury Point, WA on 2028-01-01 the old engine listed a
+"low" of 6.148 ft followed by a "high" of 6.062 ft, one from each year's
+constants; now the old year's 0.018 ft pair is a stand and is dropped.
+
+**How much.** Over the ten new years 2026 to 2035 at the 1,232 harmonic
+stations, 1,055 of 12,320 station-years change. In 1,053 one tide changes:
+274 by 0.05 ft or more, 98 by 0.10 ft or more, the largest 0.27 ft. In the
+other two (Hanbury Point and Telegraph Bay, WA, 2028) the pair above is no
+longer listed. The changed tides are between 10 minutes before and 47
+minutes after midnight, except 12 flat tides in Florida, Alabama,
+Mississippi and Louisiana that the two years' constants put 22 minutes to
+three hours apart, where the old year's is now the one kept (South Pass,
+LA 2035: two minutes before midnight, not 51 after). A build on New Year's
+Eve 2026 changes a row in the tide table of 147 station pages, and moves a
+chart coordinate by half a unit or less on 879 more. The pinned build that
+`make verify` makes (2026-11-01) is byte for byte the same, so no page's
+HTML changes today.
+
+**Tests.** `tests/test_golden.py`: each of the 18 stations passes the
+existing comparison (3 minutes, 0.05 ft, same count) over its two days,
+and its tide nearest midnight is within a minute and 0.02 ft of NOAA's,
+which tells the two years apart at every station. Negative controls set
+the carry to 0 (10 stations miss, Bar Harbor by 0.088 ft), 29.9 minutes
+(Kodiak misses), 30.5 (Ouzinkie and Milbridge miss) and 60 (six of the
+seven new-year stations miss). The 6-minute heights pin the curve to the
+calendar year. On the engine before this change the tests of the 10
+stations whose tide NOAA takes from the old year fail. No existing test
+changed, no tolerance was loosened, and nothing was added to
+`KNOWN_DIVERGENCES`: no divergence remains in the fixture.
+
+**Not known.**
+
+- Whether the cutoff is exactly 30 minutes, and whether a tide at 00:30:00
+  itself is the old year's. Kodiak is 2.3 seconds inside it.
+- Whether NOAA prints a tide the hand-over puts at 00:30 at that minute.
+  It does at Milbridge, but there the new year's own low is only half a
+  minute earlier. Kings Point, NY (8516945) on 2028-01-01 would settle it
+  and narrow the cutoff: the old year puts the low at 00:30.21 and the new
+  year at 00:27.40, 0.068 ft apart. The rule says NOAA's is the new year's,
+  and the engine prints it at 00:30; NOAA prints 00:27 or 00:30. One
+  request (add the station to `YEAR_BOUNDARY`); the 20 allowed for this
+  measurement were used before the station was noticed.
+- What NOAA publishes where the two years put one flat tide more than 30
+  minutes apart on either side of 00:30 (12 station-years in ten above).
+  The engine keeps one tide, never two or none; NOAA was not asked.
+- Why NOAA does it. One mechanism reproduces every row, Milbridge's
+  printed minute included: a search for changes of sign in the rate on
+  6-minute steps, with a year's constants used through the 00:30 step.
+  That is what `raw_events` now does, but it is a fit to what NOAA
+  publishes at two new years, not NOAA's description. A third
+  (2029-01-01) would be a cheap check: the same script with a new list of
+  stations.
+
+**For the app.** TideCore still finds highs and lows on the stepped
+curve, so on New Year's Eve (the 30 minutes from 7:00 PM Eastern, 4:00 PM
+Pacific, 3:00 PM Alaska, 2:00 PM Hawaii) the app can show a tide a few
+minutes and up to 0.27 ft from NOAA's and from this site. To stay in step,
+`HarmonicPredictor.events` in `Prediction.swift` would have to:
+
+1. Evaluate dh/dt and the height in the search with one year's constants
+   held, the year of `t - 1800 s`, not each instant's own year; and split
+   the search at `yearStart(Y) + 1800 s`, so no 6-minute step or bisection
+   straddles two years.
+2. At each split point inside the range, or less than two hours before its
+   start, compare the sign of dh/dt there under the old year's and the new
+   year's constants. If they agree, do nothing. If they differ, take the
+   new year's first high or low after the split point: when it is less
+   than 120 minutes later and less than 0.06 ft from the new year's height
+   at the split point, drop it (the old year already found that tide);
+   otherwise add an event at the split point with the new year's height
+   there, a low if the old year's curve was falling and a high if rising.
+3. Leave `height(at:)` and the curve alone: they change constants at 00:00
+   GMT, as NOAA's do.
+4. Copy `tests/fixtures/golden-year-boundary.json` into TideCore's
+   fixtures and assert the 18 tides nearest midnight to a minute and 0.02
+   ft. The subordinate predictor needs no change.
+
+The app is not changed here. Until it is, this is the second stated
+difference between the site and the app, after 0004.
+
+Update, 2026-11-11: the app made the same change the same day
+(ChelseaKR/tide-hours DECISIONS 0006, #16); both engines give the same
+highs and lows at the fixture's 18 stations and on three ordinary days at
+three more, so
+the site and the app no longer differ here.
+
+## 0032: Station, state and region pages answer first (2026-11-12)
+
+Search Console, 28 days to 2026-11-11 (876 impressions, 2 clicks): 557
+impressions went to station pages, at a weighted position of 58. Of the 280
+station impressions that came with a query, people typed the town, beach or
+water body with "tides" (129), "tide chart" (47), "high tide" (32), "tide
+schedule" (15), "tide table" (9), "tide times" (8) and "low tide" (7). They
+named the place as NOAA's station name starts ("nantasket beach ma", "hull
+tide chart", "duxbury tides", "high tide in ocean city md"). Pages are not
+yet on page 1 or 2, so this is for the click once they are.
+
+- **Station titles** (amends 0020's tiers; the 60-character fit stays): the
+  longest of "{name} tides today: high and low tide chart", "{name} tides
+  today: high and low", "{name} tides today" and "{name} tides" that fits
+  (`site.station_title`). The name stays first because NOAA's names already
+  start with the town or beach. The brand is left to `og:site_name`. Every
+  indexed title now fits in 60 characters (four did not), and no two
+  stations share one.
+- **Station H1 and first screen:** the H1 is "{name} tides today". Then
+  two plain questions, "When is high tide at {name} today?" and the same for
+  low tide. Each lists today's and tomorrow's times in local time with
+  heights, by date. The page's script adds "Today" or "Tomorrow" and hides a
+  day that has passed, as it does for the day tables (0002). A day without a
+  high or a low says so.
+- **Meta description:** generated per station from the same numbers, in
+  155 characters at most (`site.station_description`). Both days when they
+  fit, else today's with a pointer to tomorrow, else today's alone. Dates,
+  not "today", so it is true whenever it is read. The king-tide sentence is
+  added only when it fits.
+- **Nearby:** other stations in the same state within 25 miles, nearest
+  first, at most 6, with distances (`site.neighbors`). A station with none
+  shows no list. Before, every page listed the 6 nearest stations at any
+  distance, across state lines.
+- **State and region pages:** the title is "{state} tides today: tide times
+  at {n} stations" and "{region}, {state} tides today: tide times", each
+  fit to 60 characters. One line of lead, then the list. The king-tide
+  callout moves below the list.
+
+- **Searched names** (`copy/place_names.json`, `site.place_name`): five
+  stations are searched by a name their page did not carry. Their title, H1
+  and questions lead with that name, then the station: "Maui (Kahului,
+  HI)", "Oʻahu (Honolulu, HI)", "Kauaʻi (Nāwiliwili, HI)", "St. Simons
+  Island (St. Simons Light, GA)" and "OCMD, Ocean City (Fishing Pier), MD".
+  Each entry names the Search Console query it comes from and what ties
+  the name to the station (NOAA's region, or the station's own name). Like
+  names.py, each entry is pinned to the station's current display name and
+  stops applying when NOAA renames the station.
+
+Other station names are not split into "town, then station". The catalog
+has no town field, and guessing one from the name would be wrong for names
+like "Sesuit Harbor, East Dennis".
+
+## 0033: Index the subordinate station pages, except the twins (2026-11-12)
+
+Supersedes 0013's noindex on subordinate station pages. (0026 and 0027 are
+reserved for other branches.) 0013 held the 2,024 subordinate pages back on
+2026-11-03 because each "is close to a copy of another page here". Measured
+on a full build for 2026-11-12, that is true of two of them and not of the
+other 2,022:
+
+- **The answer differs.** A subordinate page's highs and lows are its
+  reference's moved by NOAA's published minutes and scaled or shifted by its
+  height corrections, so the table rows differ from the reference page's on
+  2,023 of the 2,024 pages. Ano Nuevo Island, CA against San Francisco
+  (Golden Gate): high 12:51 AM 3.9 ft against 2:15 AM 4.6 ft, and no row in
+  common over the two days. Sebastian, FL against Government Cut, Miami:
+  high 11:48 AM 0.4 ft against 10:16 AM 2.8 ft. Long Beach, Inner Harbor,
+  CA against Los Angeles (4 and 5 minutes later, x0.96) still differs in
+  every row.
+- **The rest of the page is its own.** Name, title, description, region,
+  breadcrumbs, coordinates, NOAA's own predictions link and nearby list are
+  the station's. Over the 2,022 pages, a median 40% of a page's text lines
+  (at least 19%) appear nowhere on its reference station's page, curves and
+  scripts left out.
+- **New on each page:** a "How this station is predicted" section that
+  names the reference station (linked), its distance, and NOAA's published
+  corrections in words ("high tide 1 h 24 min earlier, low tide 1 h 4 min
+  earlier; heights 0.7 ft lower at high tide and 0.1 ft lower at low tide").
+  That is data the reference page does not carry for this station in that
+  form, and it says plainly how the numbers are made.
+
+**Twins.** A subordinate station is a twin when both time corrections round
+to 0 minutes and the high-tide height is unchanged (x1.00, or 0.0 ft), so
+every time and every high tide on its page is its reference's, every day
+(`subordinate.is_twin`, `Station.twin_of`). Two are:
+
+- Cabrillo Beach, CA (9410650) from Los Angeles (Outer Harbor) (9410660):
+  0 min, 0 min, x1.00, x1.00. Its table rows are the reference's byte for
+  byte.
+- Great Diamond Island, ME (8417988) from Portland (8418150): 0 min, 0 min,
+  x1.00, x1.03; only the lows' heights can differ, by 3%.
+
+A twin's page is still built, linked from its state, region and reference
+pages and followed, but carries `noindex,follow`, a canonical link (and
+`og:url`) to its reference station's page, and a sentence saying why; it is
+left out of the sitemap and `lastmod.json`. Windham Bay, AK (9451962) has
+0-minute times but highs 1.1 ft lower than Juneau's, so it is not a twin.
+
+**Counts.** Station pages in the sitemap go from 1,232 to 3,254; the
+sitemap from 1,577 to 3,599 URLs (the full pinned build); noindex pages from
+2,177 to 155 (the 2 twins, the small region pages of 0022 and the moved
+region stubs of 0017 and 0018).
+
+**IndexNow.** `lastmod.json` holds only indexable pages, and today's tides
+change every station page daily, so a normal day now announces about 3,254
+station pages instead of about 1,232, under the 10,000 per request limit
+(0011). The first deploy announces the 2,022 newly listed pages within that
+count.
+
+**The risk 0013 named.** Trout Truck lost about 97% of its impressions in
+one re-rank on 2026-10-22, with a young domain of near-identical template
+pages the leading explanation. This change roughly doubles the indexable
+station pages on a domain under two weeks old. Two things make it a
+smaller bet than 0013 feared: the pages are not near-identical in what a
+searcher came for (the numbers differ on every indexed page), and 66
+subordinate pages already drew 90 of 306 impressions while noindex
+(growth/th-noindex-links-audit-2026-11-07.md), with 22 of them at a page-one
+average position. A later read (growth/th-seo-competitors-2026-11-12.md,
+876 impressions to 2026-11-12) found the noindex subordinate pages earning
+284 impressions at an average position of 52.5, against 273 at 63.8 for the
+indexed harmonic pages, and 25 subordinate pages with 3 or more impressions:
+Nantasket Beach (20), Sebastian (13), Hull (9), Kemp Channel Viaduct (8, at
+position 6), Bush Point (4, at position 14) and Norfolk (6, at position 23)
+among them. Google already wants these pages, by name. A smaller step was
+weighed: index only those 25 and 0013's five named places. It was not
+chosen because the test that matters, whether a page has its own answer,
+holds for 2,022 pages, not 30, and a named list would hold back pages on a
+rule they pass. That list stays the fallback. To watch: total impressions and indexed-page count in
+Search Console for four weeks after the deploy. If impressions fall
+sitewide by half or more for a week, revert this change (`site.indexable`
+is still the one place) and re-measure.
+
+**Checked.** `scripts/check_site.py` fails the build if a twin's page lacks
+noindex or its canonical to the reference, or any other station page has
+noindex or a canonical other than its own URL. `tests/test_site.py`: an
+indexed subordinate page's answer lines differ from its reference's; a
+negative control that Cabrillo Beach stays noindex with Los Angeles as its
+canonical, with its rows equal to Los Angeles's, and that a 1% change to
+its high-tide ratio ends the twin; the sitemap holds every station page but
+the twins (3,254 over the catalog).
+
+## 0034: Structured data restates the page; dateModified is the sitemap lastmod (2026-11-12)
+
+(0032 and 0033 are reserved for other branches.) Machine-readable facts for
+search engines and AI answer engines, held to what the page already shows.
+
+**Emitted** (`src/tidehours/schema.py`, `templates/_jsonld.html.jinja`):
+
+- **Station pages:** a `Place` (the page's station name, `geo` with the
+  catalog's latitude and longitude, `containedInPlace` the state the site
+  lists it under) and a `Dataset` for the two days on the page:
+  `temporalCoverage` those two dates, `isBasedOn` NOAA's prediction page
+  for the station, `creditText` "Source: NOAA CO-OPS station <id>,
+  predictions computed by Tide Hours on <build date>", and a description
+  that says MLLW, local time, predictions not observations, not for
+  navigation and not a NOAA product. The existing `WebPage` and
+  `BreadcrumbList` nodes are unchanged. A station without a usable position
+  gets no `Place` and no `spatialCoverage`. A station NOAA lists without a
+  state, or filed under its reference station's state (0018), claims no
+  `containedInPlace`, because the listing says nothing about where it is.
+- **King-tide pages (English and Spanish):** a `Dataset` for the season's
+  window (`temporalCoverage`), Washington, Oregon and California, named and
+  described by the page's own heading and lead, based on NOAA CO-OPS data.
+- **Every page in the sitemap, and every station page:** `<meta
+  name="dateModified">`, and the same date on each JSON-LD `dateModified`.
+  It is the page's sitemap `lastmod` (0028), never the clock: the page is
+  rendered with a placeholder, its fingerprint for `lastmod.json` is taken
+  then, and `site.write` puts the decided date in. So an unchanged page
+  keeps its date and its fingerprint. A noindex page that is not a station
+  page has no lastmod, so it carries no date. The first deploy with this
+  change alters every page's HTML once, so every page gets that day's date
+  and IndexNow announces every page once.
+- **`/llms.txt`** (#20) now links the state and territory index, and the
+  About page links `/llms.txt`; no other page does.
+
+**NOAA is the creator of the source data, not of the predictions.** Tide
+Hours computes them and is not a NOAA product, so each `Dataset`'s
+`creator` is Tide Hours. On a station page, `isBasedOn` is a NOAA CO-OPS
+`Dataset` whose creator is NOAA CO-OPS and whose `license` is NOAA's
+public-domain statement (disclaimers.html).
+
+**Never emitted:** `Event`, `Product`, `Offer`, reviews or ratings (nothing
+here is sold, scheduled or rated); a `SearchAction` (the site has no
+search); a `license` on Tide Hours' own predictions (an owner decision);
+an `FAQPage` (the king-tide pages do have "What is a king tide?", but with
+the affiliate and print-shop switches on, the English page is within about a
+kilobyte of check_site's 120,000-byte limit, and the question and answer
+would repeat 760 bytes the page already shows; no other page has a question
+with its answer under it); `datePublished` (no record of when each page
+first went live exists, and a guessed date would be a value standing in for
+"unknown"); a `BreadcrumbList` for a one-item trail (state pages, as #13
+decided).
+
+**Validated** by `tests/test_jsonld.py`, stdlib only: every block parses
+with `json`, and every type and property is in a table checked against
+schema.org's vocabulary file (release 30.1): the type exists and each
+property's `domainIncludes` covers it or a supertype. Forbidden types fail
+the test. JSON-LD is written compactly (`schema.dumps`) to save page bytes.
+
+**For the app:** nothing changes.
+
+## 0035: A station page links to its own printable calendar on Etsy (owner, 2026-11-12)
+
+(0032 to 0034 are reserved for other branches.) The Tide Hours shop on
+Etsy (0029) now sells printable 2027 tide calendars, one town each,
+computed by this site's engine: Bar Harbor (station 8413320), Half Moon Bay
+(9414131) and Garibaldi (9437540). On 2026-11-12 the owner gave the three
+listing ids from her live listings, approved the wording below, and asked
+for each station's page to link to its own calendar, as 0030 does for the
+printed booklets. The listings were not fetched for this change.
+
+**The list.** `src/tidehours/copy/calendars.json` maps a station id to its
+calendar's Etsy listing id, year and title, as `booklets.json` does (0030).
+It ships with the three entries the owner gave. There is no repository
+variable: an entry is added by a pull request when a listing is live, and
+the same list is what `check_site.py` reads. `--calendars FILE` on the
+build and on `check_site.py` names another list; it is for tests. An empty
+list leaves the build byte for byte as it is without this change, apart
+from the print shop's sentence below.
+
+**What the list refuses.** A listing id that is not digits only (six to
+fifteen, no leading zero), matched in full, so a slug
+(`4614956632/2027-tide-calendar-bar-harbor`), a whole address, a query
+string or a trailing space stops the build. A year that is not a whole
+number from 2000 to 2099. A title that is not "YEAR Tide Calendar: Place"
+with the entry's own year, or that carries one of the words 0030 refuses.
+Any other key. One listing under two stations. A station id the catalog
+does not have.
+
+**The link.** Exactly `https://www.etsy.com/listing/ID`, with nothing after
+the id: no slug (Etsy's own links add one, and it changes when a listing is
+renamed), no query string, no tracking parameter, no click event,
+`rel="noopener"` as in 0029. The shop is Tide Hours' own, so this is not an
+affiliate link.
+
+**Where.** Only on that station's own page, one sentence with one link, in
+the place 0030 gives the booklet sentence (after the tide tables and the
+paragraph about the app, before the type of tide, the nearby stations and
+the closing notes), and after the booklet sentence when a station has both:
+"A printable 2027 tide calendar for this station is in the Tide Hours shop
+on Etsy: 2027 Tide Calendar: Bar Harbor." with the title as the link. No
+price, no image, no claim. Not on state, region, home or king-tide pages,
+and not in the page's title, description or JSON-LD, the sitemap,
+robots.txt or llms.txt. The site has no Spanish station pages, so there is
+no Spanish sentence, as in 0030; the Spanish king-tide page still has no
+Etsy link (0029).
+
+**When it leaves.** As 0030: the link shows while the first day on the page,
+the station's own date when the site was built, is in the calendar's year
+or earlier. The 2027 calendars leave the three pages with the build of
+January 1, 2028, with nobody editing a file.
+
+**The print shop's sentence.** With the print shop on (0029), the About and
+English king-tide pages now say: "Tide Hours also sells a made-to-order
+print of the tide at one place on one day, and printable 2027 tide
+calendars for a few towns, all drawn from the same predictions as this
+site. They are in the Tide Hours shop on Etsy." (owner's wording,
+2026-11-12). The year is in the copy file, not computed; it needs an edit
+when the calendars change year.
+
+**Privacy and terms.** The privacy page's section on the Etsy links
+(`/privacy/#shop`) says what the build shows, and `calendars.notice` picks
+it, as `booklets.notice` does for 0030's section:
+
+- No Etsy link: no section, as before.
+- The print shop only (no calendar link shows, for example in 2028): 0029's
+  sentence, unchanged, under "Shop link".
+- The print shop and a calendar link, as the site is published: "The About
+  and king tides pages, and the station pages of towns with a printable
+  calendar, link to the Tide Hours shop on Etsy. This site sends nothing to
+  Etsy. The link takes you to Etsy, where Etsy's own privacy policy
+  applies." (owner's wording, 2026-11-12), under "Shop links".
+- A calendar link with the print shop off: "The station pages of towns
+  with a printable calendar link to that calendar in the Tide Hours shop
+  on Etsy." and the same two sentences after it. This one is a build
+  decision: it says nothing about the About and king-tide pages, which then
+  have no link.
+
+The terms page names Etsy among the trademarks, once, while any Etsy link
+shows. The "no ads" sentence is unchanged, as in 0029 and 0030.
+
+**What changed in 0029's check.** As 0030 did for 0016's: `check_site.py`
+reads the list, works out from each listed station page's own date which
+pages are due the sentence, checks that sentence by itself, takes it out of
+the page, and runs 0029's Etsy rules, unchanged, on everything that is
+left. The build fails if a due page has no sentence or two; if the sentence
+has more than one link, an address that is not exactly the listing's, a rel
+other than `noopener` or a click event; if it sits before the tide tables,
+after the closing notes or before the booklet sentence; if a sentence is on
+any page that is not due one, which covers a calendar whose year is over;
+or if Etsy is linked or named anywhere else (with no shop address, the
+privacy and terms pages may name Etsy in words while a calendar link shows,
+never with a link). New: the privacy page's section must be exactly the one
+`calendars.notice` gives for the build, so a section that names pages with
+no link, or leaves out pages with one, fails.
+
+**Accessibility sample.** `scripts/site_sample.py` adds the station pages
+of the booklet and calendar lists to the pages `make site-checks` audits,
+so the sentence is checked by axe and pa11y.
+
+**Analytics.** As 0030: the link has no event of its own. Whether GA4's
+Enhanced measurement records outbound clicks is a setting in the property,
+with the owner.
+
+**What it changes elsewhere.** The three station pages and the privacy page
+change (the terms page already names Etsy while the print shop is on), and
+with them their sitemap `lastmod`, so IndexNow announces them (0011, 0028).
+So do the About and king-tide pages, for the print shop's sentence. Views
+that arrive from these links count toward the listings' Etsy views.
+
+**Tests.** `tests/test_station_calendars.py`: the committed list is the
+owner's three; bad entries are refused (a letter, a slug, a URL, a query
+string, a bad title, a claim word, a duplicate listing, an unknown
+station); the empty list leaves no trace; one calendar changes that page,
+privacy, terms and their fingerprints and nothing else; the three committed
+calendars show on their three pages only, with the exact sentence and
+address, and leave on January 1, 2028; the privacy section in each of the
+four cases; the print shop's sentence; the booklet sentence first when both
+show; and a negative control for each rule above, each asserting the
+sabotage changed the build. `tests/test_site.py` builds California with an
+empty calendar list, so its tests stay about the site without one.
+
+**Reversible.** Yes: empty the list and the next build has no calendar
+link. To remove the code, drop `calendars.py`, the two copy files, the
+template and its include, the privacy notice's calendar cases, the terms
+condition, the sample line and the check, and put back 0029's sentence in
+`copy/print_shop.json`.
+
+**For the app:** nothing changes.
+
+Update, 2026-11-12 (evening): six more calendars went on sale and are added
+to `copy/calendars.json` at the owner's request: La Jolla (9410230), Monterey
+(9413450), Hull (8444351), St. Simons Island (8677344), Ocean City (8570283)
+and Westport (9441102), with the listing ids the owner gave. Nothing else changes;
+the sentence, the checks and the 2028 removal apply to all nine.
+
+Update, 2026-11-12 (night): three more, Eastport (8410140), Brewster Flats
+(Sesuit Harbor, 8447241) and New Smyrna Beach (8721164), bring the list to
+twelve, with the listing ids the owner gave.
+
+Update, 2026-11-13: sixteen more calendars went on sale and are added at the
+owner's request, bringing the list to twenty-eight: Plymouth (8446493),
+Portsmouth (Fort Point, 8423898), Kennebunkport (8418911), Portland (8418150),
+Fort Bragg (Noyo Harbor, 9417426), Olympia (Olympia Shoal, 9446807),
+Newburyport (8440466), Duxbury (8446166), Provincetown (8446121),
+St. Augustine (St. Augustine Beach, 8720587), Hatteras Island (Cape Hatteras
+Fishing Pier, 8654400), Seward (9455090), Gloucester (8441841), La Push
+(9442396), Hood Canal (Union, 9445478) and Homer (9455558). Each link goes on
+the page of the station its calendar is computed from. Nothing else changes.
+
+## 0036: Near stands: fewer highs and lows NOAA does not list (2026-11-12)
+
+**What was wrong.** The site's standard is that it shows no tide NOAA does
+not list. The stand rule of 0004 removes a high and a low less than 120
+minutes and less than 0.06 ft apart. Checks for the print shop found tides
+it leaves in that NOAA leaves out: at Port Townsend, WA (9444900) in 2027
+all 1,387 of NOAA's tides matched and the engine printed 12 more, six
+pairs 90 to 114 minutes and 0.061 to 0.092 ft apart. The 0.06 ft came from
+one month at 14 small-range stations (0004), where no pair NOAA omitted
+was taller than 0.07 ft.
+
+**Measured (2026-11-12).** NOAA's lists for 178 stations, 110,591 tides
+(some days are in two lists): the golden fixtures, the lists saved by the
+print shop's checks (43 station-years of 2027 and 52 months and days),
+and 40 new requests to NOAA's predictions API, one at a time, two
+seconds apart, none repeated, at 33 stations: 2027 at 31 stations picked
+with the engine for near stands (Puget Sound and the San Juans, the Gulf
+of Mexico, the Caribbean, San Francisco Bay, Alaska, and the double tides
+of Maine, Cape Cod, Narragansett Bay and the East River), and nine shorter
+ones. NOAA's public pages do not state a rule for predictions; the one
+number found is in its hydrographic survey specifications (April 2017,
+4.3.2), for tabulating observed tides: successive tides are tabulated only
+when "greater than 2.0 hours apart in time and 0.030 meters different in
+elevation".
+
+What NOAA's own lists show:
+
+- **In NOAA's own heights the line is 0.100 ft.** NOAA lists 257 pairs of
+  a high and a low less than 120 minutes apart by its own printed times
+  (65 in its to-the-minute lists at harmonic stations, 84 in its
+  6-minute-grid lists, 108 at subordinate stations). The smallest
+  difference between the two printed heights is 0.100 ft, four times; none
+  is 0.099 ft or less. Subordinate stations follow the same line in their
+  own times and heights, not their reference station's.
+- **On the engine's heights the line is blurred by a few thousandths of a
+  foot.** In NOAA's to-the-minute lists at harmonic stations the engine
+  puts 1,077 pairs under 118 minutes apart. Under 0.09 ft, NOAA lists both
+  tides of one pair in 919 (in a flat run of five tides at Magueyes Island,
+  PR). From 0.09 to 0.0984 ft, of 2 in 25: both at Friday Harbor, WA,
+  0.0977 and 0.0978 ft here and 0.101 and 0.103 ft in NOAA's heights. From
+  0.0984 ft up, of 61 in 133; it omits both tides of two (Woods Hole, MA,
+  0.0991 ft here, and Bangor, below) and one tide of the other 70, each
+  time where that tide is also in a second, flatter pair.
+- **The two hours are blurred by a minute or two.** NOAA lists pairs the
+  engine puts 118.5 minutes apart (Point Au Fer, LA, subordinate, 0.071
+  ft), 119.3 (Friday Harbor, 2027-03-17, 0.062 ft), 119.4 and 120.0 (Vaca
+  Key, FL), and omits pairs the engine puts 119.3 (Port San Luis, CA,
+  2027-03-15, 0.064 ft), 120.3 (Christiansted, VI), 121.8 (Captiva, FL)
+  and 126.1 (Charlotte Amalie, VI) minutes apart. No line on the engine's
+  clock separates them.
+- **Three tides in question.** Where a high, a low and a high (or a low, a
+  high and a low) are each under two hours and 0.10 ft from the next, NOAA
+  lists one of the outer two. Which one was not found: it lists the later
+  one in most cases (Vineyard Haven, MA six times of six; Vaca Key 11
+  times) and the earlier one in others (Cape Cod Canal five times of seven,
+  Levelock, AK four of four), and neither "flattest pair first", "first
+  pair first" nor "shortest pair first" fits them all. A search for sign
+  changes on a coarser grid (steps of 6 to 120 minutes, offsets every 6
+  minutes) does not either.
+- **NOAA has two answers for some stations.** Asked for all of 2027 at
+  Vineyard Haven, Edgartown, Rumford, Providence, Worlds Fair Marina,
+  Harlem River and Port St. Joe, NOAA answers with every time on a
+  6-minute mark and a few tides its shorter answer does not have (two lows
+  in a row at Rumford on 2027-07-12). Asked for nine days at Rumford or a
+  month at Vineyard Haven and Edgartown, it answers to the minute, as it
+  does for a year at the other 66 stations asked for a year. The site
+  shows a week, and the print shop's order check asks for a day, so the
+  to-the-minute answer is the one this decision follows; both were counted.
+
+The cases that started this, each a pair the engine printed and NOAA
+omits (times GMT, as the engine has them):
+
+| Station | Day | The pair | Minutes apart | Feet apart | The 0.06 ft rule missed it on | Now |
+|---|---|---|---|---|---|---|
+| Port Townsend, WA 9444900 | 2027-01-18 | H 11:10 7.646, L 12:51 7.554 | 100.8 | 0.092 | height | removed |
+| Port Townsend | 2027-03-30 | L 14:22 6.473, H 16:16 6.554 | 113.6 | 0.081 | height | removed |
+| Port Townsend | 2027-04-28 | L 14:07 5.848, H 15:46 5.915 | 99.8 | 0.067 | height | removed |
+| Port Townsend | 2027-07-28 | H 22:44 6.867, L 00:20 6.799 | 95.5 | 0.068 | height | removed |
+| Port Townsend | 2027-10-08 | L 02:23 6.119, H 04:07 6.208 | 104.3 | 0.089 | height | removed |
+| Port Townsend | 2027-11-06 | L 02:02 5.807, H 03:33 5.868 | 90.2 | 0.061 | height | removed |
+| Rumford, RI 8453433 | 2027-07-17 | L 05:00 1.186, H 06:05 1.248 | 64.6 | 0.062 | height | removed |
+| Redhook Bay, VI 9751540 (subordinate) | 2026-01-08 | L 00:58 0.237, H 02:52 0.304 | 114.5 | 0.067 | height | removed |
+| Port San Luis, CA 9412110 | 2027-03-15 | H 00:44 2.743, L 02:43 2.679 | 119.3 | 0.064 | height | printed: inside the time margin |
+| Anna Maria Key, FL 8726243 (subordinate) | 2026-01-18 | H 18:42 1.116, L 20:29 1.018 | 106.4 | 0.098 | height | printed: inside the height margin |
+| Captiva, FL 8725383 | 2027-10-05 | H 23:01 1.888, L 01:03 1.857 | 121.8 | 0.032 | time | printed: over two hours on the engine's clock |
+| Christiansted, VI 9751364 | 2024-09-20 | L 21:25 0.642, H 23:25 0.655 | 120.3 | 0.014 | time | printed: over two hours on the engine's clock |
+| Bangor, ME 8414612 | 2027-08-13 | L 13:34 10.447, H 14:32 10.568 | 57.8 | 0.121 | height | printed: not explained |
+
+**The rule.** NOAA's own: a high and a low less than two hours apart are
+listed only when NOAA's heights for them differ by 0.100 ft or more. That
+is one rule, and it does not fit the engine as it stands, because the
+engine's times and heights are not NOAA's to the last digit: with 120
+minutes and 0.10 ft the engine removes tides NOAA lists (six at Friday
+Harbor alone). So the engine takes the part of it that removes no tide
+NOAA lists anywhere it was tested: after the stands of 0004, a **near
+stand** is removed, a high and a low less than 115 minutes and less than
+0.095 ft apart, unless the tide before the pair or the tide after it is
+itself within 120 minutes and 0.10 ft of its neighbor in the pair. The
+margins are five minutes under NOAA's two hours and 0.005 ft under its
+0.100 ft; the closest pairs NOAA lists are 118.5 minutes and 0.0977 ft
+apart here. Where a neighbor is that close, three tides are in question
+and all three stay, as before.
+
+**What changed.** `engine.py`: `drop_stands` runs 0004's rule unchanged
+and then `_drop_near_stands` (`NEAR_STAND_MINUTES`, `NEAR_STAND_FEET`,
+`NOAA_STAND_FEET`). `STAND_MARGIN`, the time read on each side of a window
+so that an answer does not depend on where the window starts, goes from
+three hours to six: the pair, the pair beside it, and the pair that could
+remove that one. Harmonic and subordinate stations both go through
+`drop_stands`, so both change; a subordinate pair is judged in its own
+times and heights, as NOAA's are. `raw_events`, the curve and the year
+boundary (0031) are untouched.
+
+**How much.** Against every list on hand, 316 lists at 178 stations,
+110,591 NOAA tides: the engine printed 1,194 tides NOAA does not list and
+now prints 584; NOAA's tides it does not print are the same 375 before and
+after (271 at Port of West Sacramento, below), and none is newly left
+out.
+
+| NOAA's lists | Lists | Stations | NOAA tides | Extra before | Extra now | NOAA tides not printed, before and now |
+|---|---|---|---|---|---|---|
+| To the minute, harmonic | 222 | 125 | 84,394 | 314 | 102 | 32 |
+| 6-minute grid (a year at seven stations) | 7 | 7 | 9,548 | 438 | 152 | 72 |
+| Subordinate | 86 | 48 | 15,238 | 156 | 50 | 0 |
+| Port of West Sacramento, CA | 1 | 1 | 1,411 | 286 | 280 | 271 |
+
+Over all of 2027 at all 3,256 stations the engine printed 4,377,685 highs
+and lows; 1,549 fewer now, at 146 stations (61 harmonic, 85 subordinate:
+50 in Alaska, 34 in Florida, 34 in Washington, 8 in California, 7 in
+Louisiana, 5 in Hawaii, 4 in Massachusetts, 2 in Rhode Island, 1 each in
+Maine and the Virgin Islands), and none added. Most: Vineyard Haven and
+Edgartown (104 each), Port St. Joe (58), Mangrove Point (46). In the nine
+days around the pinned build (2026-11-01) 38 tides at 18 stations go. The
+twelve stations with a printed calendar or booklet (0030, 0035) do not
+change in 2027: not one tide.
+
+**What is left**, in NOAA's to-the-minute and subordinate lists (152
+tides):
+
+- Pairs inside the margins: from 115 minutes up or from 0.095 ft up on the
+  engine's numbers, which NOAA omits (Port San Luis, Anna Maria Key, two
+  pairs at Friday Harbor).
+- Pairs the engine puts just over two hours apart, 120.3 to 126.1 minutes,
+  all very flat, which NOAA omits (Captiva, Christiansted, Charlotte Amalie,
+  Corpus Christi). 0004 recorded these.
+- Three tides in question, where the engine keeps all three, or keeps the
+  other one of the outer two (Vineyard Haven, Vaca Key, Woods Hole, Cape
+  Cod Canal, Galveston). Where it keeps the other one, a NOAA tide is not
+  printed: the 32 above, all there before this change.
+- Reference wiggles of 0.0024 ft or less that NOAA's subordinate lists do
+  not show (Skan Bay, AK 12 tides, Christmas Bay, TX 6): whether such a
+  wiggle exists at all turns on the fourth decimal of the reference curve.
+- Bangor, ME, 2027-08-13: a low and a high 57.8 minutes and 0.121 ft
+  apart, which NOAA omits, though it lists a pair 52.9 minutes and 0.102
+  ft apart there on 2027-09-11. Not explained.
+
+**Tests.** `tests/fixtures/extra-tides/`: eight of NOAA's answers, byte
+for byte, with their SHA-256 in docs/DATA.md and in the test. In
+`tests/test_golden.py`: Port Townsend's 2027 (1,387 tides), Rumford's nine
+days and Redhook Bay's three now pass the accuracy gate whole (3 minutes,
+0.05 ft, the same count); every tide still printed that NOAA does not list
+is named with its cause (22, from 68 before); the two NOAA tides not
+printed are the same two as before. Negative controls, each asserting
+first that the sabotage changed the output: 0.08 and 0.09 ft leave Port
+Townsend pairs; 0.10 ft removes the pair NOAA lists at Friday Harbor on
+2027-12-29; 0.125 ft removes ten of NOAA's tides at Vineyard Haven; 110
+minutes leaves pairs at Port Townsend and Redhook Bay; 120 minutes removes
+the pair NOAA lists at Friday Harbor on 2027-03-17; 150 minutes, one rule
+of 120 minutes and 0.095 or 0.10 ft, any height under two hours, 0.095 ft
+at any spacing, and no guard each remove tides NOAA lists. On the engine
+before this change 18 tests fail. One line of `KNOWN_DIVERGENCES` goes:
+the Redhook Bay pair of 2026-11-06 is no longer printed. No tolerance was
+loosened.
+
+**Not known.**
+
+- Whether NOAA's line is 0.100 ft or 0.030 m (0.0984 ft). No listed pair
+  is printed 0.099 ft apart; about three would be expected if the line
+  were 0.0984 ft.
+- Which of the two outer tides NOAA lists when three are in question, and
+  so how to remove the 32 NOAA tides the engine does not print.
+- Why NOAA omits the Bangor pair of 2027-08-13.
+- Why NOAA answers a year's request at seven stations on a 6-minute grid,
+  and what rule that answer follows: it lists two lows in a row, which
+  removing pairs cannot produce. Where the two answers differ, the engine
+  now agrees with the to-the-minute one more often than with the other.
+- Port of West Sacramento, CA (9416131): the engine's highs and lows are a
+  median 18 minutes from NOAA's and 271 of NOAA's 1,411 have no engine tide
+  within 45 minutes. This is not a stand; it was found here and not looked
+  into.
+- NOAA was asked about 2027 almost everywhere. Other years are only the
+  saved lists and the fixtures (a day to a month each, 1946 to 2035, most
+  of them November 2026), which agree.
+
+**For the app.** TideCore has `dropStands` from 0004 (tide-hours #2) and
+nothing for near stands, so the app shows the 1,549 tides in 2027 that the
+site no longer does. To stay in step, in `Prediction.swift`:
+
+1. After `dropStands` has removed every high/low pair less than 120
+   minutes and less than 0.06 ft apart, flattest first, repeat until none
+   is found: among adjacent pairs of a high and a low (either order) that
+   are less than 115 minutes apart (strictly) and less than 0.095 ft apart
+   (strictly), skip any pair where the event before it and the pair's
+   first event are of different kinds, less than 120 minutes apart and
+   less than 0.10 ft apart, or the pair's second event and the event after
+   it are; of the pairs not skipped, remove the one with the smallest
+   height difference, both events.
+2. Read six hours of events on each side of the window before removing
+   anything, not three (`STAND_MARGIN`), and for a subordinate station six
+   hours plus the larger time offset plus 30 minutes, as now.
+3. Apply it to subordinate stations after the offsets, to the sorted list,
+   exactly as `dropStands` is applied.
+4. Copy `tests/fixtures/extra-tides/` and assert the same lists: no extra
+   tide at Port Townsend in 2027, four at Friday Harbor, and the named
+   ones elsewhere.
+
+The app is not changed here. Until it is, this is a stated difference
+between the site and the app.
+
+**Reversible.** Yes: set `NEAR_STAND_MINUTES` to 0 and the engine is 0004's
+again (with the wider margin, which removes nothing by itself).
+
+## 0037: Station pages link to their posters, and one page lists every calendar and poster (2026-11-13)
+
+The Tide Hours shop on Etsy (0029) now also sells printable year-of-tides
+posters, one town each, as digital downloads: Bar Harbor (station 8413320),
+Eastport (8410140), Homer (9455558), Provincetown (8446121), La Jolla
+(9410230) and Monterey (9413450). On 2026-11-13 the owner gave the six
+listing ids from her live listings and asked for two things, to send more
+of the site's readers to the listings: each of those station pages links
+to its poster, as 0035 does for the calendars, and one page lists every
+calendar and poster. The site had no such page. The listings were not
+fetched for this change. The wording below is this change's, for the owner
+to approve before it is merged.
+
+**The poster list.** `src/tidehours/copy/posters.json` maps a station id to
+its poster's Etsy listing id, year and title, as `calendars.json` does
+(0035), and refuses what that list refuses: a listing id that is not digits
+only, a year that is not a whole number from 2000 to 2099, a title that is
+not "YEAR Tide Poster: Place" with the entry's own year or that carries one
+of the words 0030 refuses, any other key, one listing under two stations,
+and a station the catalog does not have. New: a listing that is also in the
+calendar list stops the build. Each poster is listed under the station its
+town's calendar is listed under; each of the six towns has exactly one
+station in `calendars.json`. `--posters FILE` on the build and on
+`check_site.py` names another list; it is for tests. There is no repository
+variable.
+
+**The poster sentence.** On that station's own page, right after the
+calendar sentence (0035): "A printable 2027 year-of-tides poster for this
+station is in the Tide Hours shop on Etsy: 2027 Tide Poster: Bar Harbor."
+with the title as the link. The link is exactly
+`https://www.etsy.com/listing/ID` with `rel="noopener"`, as in 0035: no
+slug, no query string, no parameter of any kind, no click event, no price,
+no image, no claim. It leaves with the build of January 1, 2028, as the
+calendars do.
+
+**The page.** `tide-calendars/` ("Printable 2027 tide calendars and
+posters"), from `printables.py`, `copy/printables.json` and
+`templates/printables.html.jinja`. It is built from the two lists and
+nothing else: every town whose station page shows a calendar or poster
+link in this build, under its state's name, states and towns in
+alphabetical order. A town's name links to its station page, and after it
+come the same links the station page carries, the calendar first:
+"Bar Harbor: 2027 Tide Calendar: Bar Harbor, 2027 Tide Poster: Bar
+Harbor". Above the list, two paragraphs: "Tide Hours sells printable 2027
+tide calendars and year-of-tides posters, one town each, as digital
+downloads in the Tide Hours shop on Etsy." and "They are listed here by
+state. Each town's name links to its tide times on this site, and each
+calendar or poster links to its listing on Etsy." The description is
+"Printable 2027 tide calendars and posters from Tide Hours, one town each,
+listed by state, with links to each town's tide times and its Etsy
+listing." As published it lists 28 towns in 11 states and 34 listings.
+
+- No price, image, claim, count or shop link on it, and no JSON-LD: nothing
+  on this site is marked up as a product or an offer (0034).
+- It is an indexed page: in the sitemap and `lastmod.json`, with the
+  `dateModified` every sitemap page has. It is not in `llms.txt`, which
+  still says nothing about Etsy (0029).
+- The words follow what the build has, as the privacy section does in
+  0035: with calendars only, "Printable 2027 tide calendars" and "each
+  calendar"; with posters only, "Printable 2027 tide posters" and "each
+  poster"; with calendars and posters of more than one year, no year. As
+  published it is always the first form. The address stays
+  `tide-calendars/` in each case.
+- A build whose station pages show no calendar or poster link has no such
+  page and no link to one. So the page leaves with the links on January 1,
+  2028, and an empty pair of lists leaves no trace.
+
+**The footer.** While the page exists, the footer of every English page,
+the 404 page included, links to it after Privacy, Terms and About: "Tide
+calendars and posters" ("Tide calendars" or "Tide posters" when the build
+has one kind). The header's three links are unchanged. The Spanish
+king-tide page's footer does not link to it: the page is in English and the
+label has had no native-Spanish review (0029). 0029 kept shop links off
+station, state and region pages because 3,700 links to a shop would read as
+an ad on every page. This is one link to a page of this site, among the
+footer's other page links, and no page links to Etsy that did not before
+except the new one; it is still a pointer to things for sale on every page,
+and the owner asked for it.
+
+**What it changes in 0035.** "Only on that station's own page" now reads:
+on that station's own page and on `tide-calendars/`. The privacy page's
+section on the Etsy links (`/privacy/#shop`) is now picked by
+`printables.notice`, which replaces `calendars.notice`, and its sentences
+name the new page, so the two sentences the owner worded on 2026-11-12
+change:
+
+- No Etsy link: no section, as before.
+- The print shop only (for example in 2028): 0029's sentence, unchanged.
+- The print shop and a calendar or poster link, as the site is published:
+  "The About and king tides pages, the tide calendars and posters page,
+  and the station pages of towns with a printable calendar or poster, link
+  to the Tide Hours shop on Etsy. This site sends nothing to Etsy. The
+  link takes you to Etsy, where Etsy's own privacy policy applies."
+- A calendar or poster link with the print shop off: "The tide calendars
+  and posters page, and the station pages of towns with a printable
+  calendar or poster, link to those calendars and posters in the Tide
+  Hours shop on Etsy." and the same two sentences after it.
+
+In the last two, a build with one kind names that kind only ("the tide
+calendars page", "a printable calendar"). The last two sentences of each
+are 0035's, word for word. The terms page names Etsy among the trademarks
+as before. The print shop's sentence on the About and king-tide pages
+(0035) is not changed: it still says "printable 2027 tide calendars for a
+few towns" and does not name the posters or link the new page.
+
+**Checked.** `check_site.py` reads the poster list as it reads the calendar
+list, works out from each listed station page's own date which pages are
+due the poster sentence, checks that sentence by 0035's rules (exactly one,
+one link, exactly the listing's address, `rel="noopener"`, no click event,
+between the tide tables and the closing notes, after the booklet and
+calendar sentences), and takes it out before 0029's Etsy rules run on the
+rest. New, `check_printables`: while any page is due a calendar or poster
+sentence, `tide-calendars/` exists; its title, heading and two paragraphs
+are exactly `printables.py`'s for those sentences; its towns are exactly
+the due ones, in order, each with its station page's address and name and
+each listing's exact address and title; it has one Etsy link for each
+listing and no other, each `rel="noopener"` with no click event; and Etsy
+is not in its JSON-LD. That page is the one page left out of 0029's rules.
+Every page with `lang="en"` links to it exactly once and the Spanish page
+not at all; with no sentence due there is no such page and no link to it
+anywhere. The privacy section must be exactly `printables.notice`'s.
+`check_page`'s rules (the required statements, the size limit, no broken
+internal link) apply to the page as to any other.
+
+**Accessibility sample.** `scripts/site_sample.py` adds the page, when the
+build has it, and the station pages of the poster list to the pages
+`make site-checks` audits. The page is a heading, two paragraphs, and a
+heading and a list for each state. The list is styled as the station
+lists are, in one column at every width: three selectors in `style.css`
+gain `ul.printables`. It adds no script.
+
+**Analytics.** None added. As in 0030 and 0035 the links have no event of
+their own; whether GA4's Enhanced measurement records outbound clicks is a
+setting in the property, with the owner.
+
+**What it changes elsewhere.** The footer link changes the HTML of every
+English page once, so the build that first carries it gives every page
+that build's sitemap `lastmod`, and IndexNow announces the state, region,
+king-tide and other pages that otherwise change rarely, along with the
+station pages it announces every day (0011, 0028). The six station pages
+gain the poster sentence, and the sitemap gains one URL. Views that arrive
+from these links count toward the listings' Etsy views (0029).
+
+**Tests.** `tests/test_station_posters.py`: the committed list is the
+owner's six, each under its calendar's station, no listing in both lists;
+bad entries are refused; the empty list leaves no trace; one poster puts
+one link on its page and on the list page; the sentence after the calendar
+sentence; the 2028 removal; and a negative control for each rule of the
+sentence. `tests/test_printables.py`: the published page, word for word,
+with its 28 towns and 34 listings in order, each town's links the same as
+its station page's; the sitemap; the footer of every English page and not
+the Spanish one; the words for each kind; no page and no link with nothing
+to list or in 2028; the accessibility sample; and 21 negative controls for
+`check_printables`. Each negative control asserts first that its sabotage
+changed the build. `tests/test_station_calendars.py` now expects the list
+page and the footer link wherever a calendar shows, and the new privacy
+sentences. `tests/test_site.py` builds with an empty poster list too.
+
+**Not checked.**
+
+- The listings themselves: the ids are the owner's, and Etsy was not
+  asked. The year, 2027, and the link text "2027 Tide Poster: Place" are
+  this change's, written to match the calendars'; they were not read from
+  the listings, whose own titles may differ.
+- `make site-checks` (axe-core and pa11y) was not run on the machine this
+  was written on; it runs on the pull request.
+
+**Reversible.** Yes: empty `posters.json` and the next build has no poster
+sentence; empty both lists and it has no list page and no footer link. To
+remove the code, drop `posters.py`, `printables.py`, their three copy
+files and two templates, the two includes, the footer link, the sample
+lines and the checks, and put back `calendars.notice` and the two privacy
+sentences in `copy/calendar_link.json` from 0035.
+
+**For the app:** nothing changes.

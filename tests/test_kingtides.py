@@ -13,6 +13,7 @@ import pytest
 
 from tidehours import kingtides as kt
 from tidehours.catalog import DATA_DIR, Catalog, load
+from tidehours.ktformat import fmt_feet
 
 NOAA_PAGE = json.loads((Path(__file__).parent / "fixtures/king-tides-noaa-2026-27.json").read_text(encoding="utf-8"))
 
@@ -164,3 +165,30 @@ def test_upcoming_runs_and_their_months(seasons: list[kt.StationSeason]) -> None
     assert ktformat.fmt_months([(2026, 12), (2027, 1)], "es", c["es"]) == "diciembre de 2026 y enero de 2027"
     with pytest.raises(ValueError, match="no months"):
         ktformat.fmt_months([], "en", c["en"])
+
+
+GARIBALDI_MHHW = 8.32  # 9437540, NOAA 1983-2001 epoch
+
+
+@pytest.mark.parametrize(
+    ("height", "above", "shown"),
+    [
+        # Garibaldi, Dec 24, 2026: NOAA's 10.379 is 2.059 above MHHW, +2.1.
+        (10.379, 2.059, "+2.1 ft"),
+        # This site's engine gives 10.369 that day: 2.049, +2.0. The 0.01 ft
+        # between the two is inside DECISIONS 0006's tolerance.
+        (10.369, 2.049, "+2.0 ft"),
+        # Rounding the height to 10.37 first made this 2.05 (2.0499... as a
+        # float) and showed +2.0; the true 2.054 is +2.1.
+        (10.374, 2.054, "+2.1 ft"),
+        (10.32, 2.0, "+2.0 ft"),
+        (8.32, 0.0, "+0.0 ft"),
+    ],
+)
+def test_above_mhhw_rounds_once(height: float, above: float, shown: str) -> None:
+    """Above MHHW is the unrounded height minus MHHW, rounded once for
+    display like every other height on the page."""
+    season = kt.StationSeason("OR", "9437540", "Garibaldi (Tillamook Bay)", "Garibaldi", GARIBALDI_MHHW, [])
+    value = season.above_mhhw(kt.Day("2026-12-24", "12:11", height))
+    assert value == above
+    assert fmt_feet(value, "en", {"ft": "ft"}, True) == shown

@@ -9,6 +9,9 @@ data change is always reviewed with this file.
 - `src/tidehours/data/regions.json`: NOAA's region name for 3,461 tide prediction stations, from `mdapi/prod/webapi/tidepredstations.json`, field `region`. Retrieved 2026-10-31. 32 catalog stations are not in that list and are shown as "without a region". sha256 `31c8443054aedbc7c2ff560da71fe6639fe0ef0a3ea70668d8a9ec77dbaf11c4`
 - `src/tidehours/data/datums.json`: MHHW above MLLW for the 31 king-tide stations, from `mdapi/prod/webapi/stations/{id}/datums.json`. Retrieved 2026-10-31. sha256 `de62c86f7454b45370b85a2c317adad5ee4cb67507247d214c7beef3d4d351c0`
 
+Sunrise, sunset and the moon's phase need no data file: `src/tidehours/sky.py`
+computes them from published equations (DECISIONS 0019).
+
 All of it is U.S. Government work in the public domain
 (https://tidesandcurrents.noaa.gov/disclaimers.html). The site credits NOAA
 on every page and says it is not a NOAA product.
@@ -33,3 +36,50 @@ on every page and says it is not a NOAA product.
   chelseakr.com king-tides page (ChelseaKR/personal-site
   `src/content/kingTides.data.json` at `6ae96ab`), built from NOAA's
   published high/low predictions and datums.
+- `tests/fixtures/golden-year-boundary.json`: NOAA's highs and lows on
+  December 31 and January 1 (GMT) at 18 stations with a high or low near
+  00:00 GMT on 2028-01-01 (12 stations, one of them subordinate) or
+  2027-01-01 (6), chosen with the engine so the tides are spread from 5
+  minutes before midnight to 61 after; NOAA's 6-minute heights at Fire
+  Island, AK from 22:00 to 02:00 around 2028-01-01; and Bar Harbor's highs
+  and lows asked for from January 1 on. `scripts/fetch_golden.py
+  --year-boundary`, 20 requests. Retrieved 2026-11-10 (DECISIONS 0031).
+  sha256 `aaaeac5bfda88237e6e2547fda681b6430c41b1bd9b7645fd0bb54bead9ad7a8`
+- `tests/fixtures/usno-sky-2026.json`: the U.S. Naval Observatory's sunrise,
+  sunset, civil twilight, moonrise, moonset, moon phase, share lit and
+  nearest primary phase (`api/rstt/oneday`) for 186 station-days: 22
+  stations on 7 dates plus 32 days at Prudhoe Bay around polar night and the
+  midnight sun. Retrieved 2026-11-12 with `scripts/fetch_sky.py`, 186
+  requests (DECISIONS 0019). U.S. Government work; used as a test oracle
+  only, not shown on the site.
+  sha256 `d5f3a9347d750e2ff6b5033a157e31fa1c5be6b3a507355da03825d19b825cbb`
+- `tests/fixtures/extra-tides/`: NOAA's highs and lows exactly as its API
+  sent them, byte for byte (`api/prod/datagetter`, product=predictions,
+  interval=hilo, datum MLLW, GMT, feet, format=json), for stations and days
+  where the engine printed highs and lows NOAA does not list (DECISIONS
+  0036). One request each, two seconds apart, no retries. Retrieved
+  2026-11-12. The file name is the station and the first and last day asked
+  for.
+  - `9444900-2027-01-01-2027-12-31.json`, Port Townsend, WA, 1,387 tides:
+    sha256 `a7184cdf2d7ecdb1ef6e048c55a79a186b96e97242f6abf4f91be78df0c6d5a5`
+  - `9449880-2027-01-01-2027-12-31.json`, Friday Harbor, WA, 1,271 tides:
+    sha256 `b3a19248cddcec6ac09bf6941f652b1c17fd5d9a875bd9c3a54bd1d2e4eb7633`
+  - `8448157-2027-05-04-2027-06-01.json`, Vineyard Haven, MA, 128 tides:
+    sha256 `0b77e37ddfdb2e99ec619dea21aed5c574ecf6c68bc6428853294a0ccebe6325`
+  - `8453433-2027-07-11-2027-07-19.json`, Rumford, RI, 34 tides:
+    sha256 `e55bd7b02c0e638d404662455a3612c90e5e9e32712d40e1ae9f477b7203f08d`
+  - `9751540-2026-01-07-2026-01-09.json`, Redhook Bay, VI (subordinate), 8
+    tides: sha256 `76070b9e0ea03905969e7f45b61f31bb0f09332c7b52bc198071580ed6bd4ce4`
+  - `9412110-2027-03-14-2027-03-16.json`, Port San Luis, CA, 9 tides:
+    sha256 `0019b1a76bfd3bba9df8422787b12a515cbdc74716f7134639246764eb3f66bf`
+  - `8414612-2027-08-12-2027-08-15.json`, Bangor, ME, 15 tides:
+    sha256 `06ec2ce4c9787f784873d35c9afea608fee322c74e8cd275682625513cb0c4aa`
+  - `8726243-2026-01-17-2026-01-19.json`, Anna Maria Key, FL (subordinate),
+    8 tides: sha256 `4a148f9bfe3552aba54915a2febda14d1be4a1d6bd02eb257f3a69844b7d5749`
+
+  NOAA's answer for the same station and days is not always the same. A
+  request for a year at Vineyard Haven, Edgartown, Rumford, Providence,
+  Worlds Fair Marina, Harlem River and Port St. Joe comes back with every
+  time on a 6-minute mark and a few different tides; a request for a month
+  or less comes back to the minute, as every file here is. `tests/test_golden.py`
+  checks each file's SHA-256.

@@ -8,21 +8,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Tide Hours{% endblock %}</title>
 <meta name="description" content="{% block description %}{% endblock %}">
-<link rel="canonical" href="{{ base_url }}{{ canonical }}">
-{% if noindex is defined and noindex %}<meta name="robots" content="noindex,follow">
+{% set is_404 = not_found is defined and not_found %}
+{% if not is_404 %}<link rel="canonical" href="{{ base_url }}{{ canonical }}">
+{% endif %}
+{% if is_404 or (noindex is defined and noindex) %}<meta name="robots" content="noindex,follow">
 {% endif %}
 {% block alternates %}{% endblock %}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tide Hours">
 <meta property="og:title" content="{{ self.title() }}">
 <meta property="og:description" content="{{ self.description() }}">
-<meta property="og:url" content="{{ base_url }}{{ canonical }}">
+{% if not is_404 %}<meta property="og:url" content="{{ base_url }}{{ canonical }}">
+{% endif %}
 <meta name="theme-color" content="#f7f3e8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b1624" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/style.css">
 {% block jsonld %}{% endblock %}
 {% if ga4_measurement_id %}{% include "_ga4.html.jinja" %}{% endif %}
+{% include "_jsonld.html.jinja" %}
 </head>
 <body>
 <a class="skip" href="#main">{{ t.skip }}</a>
@@ -59,12 +63,8 @@
       {% endif %}
     </section>
     <p>{{ t.notice }} {{ t.credit }} <a href="https://tidesandcurrents.noaa.gov/">NOAA Tides and Currents</a></p>
-    <ul class="foot-links">
-      <li><a href="/about/#reading"{% if lang != "en" %} hreflang="en"{% endif %}>{{ "Cómo leer una página de mareas" if lang == "es" else "How to read a tide page" }}</a></li>
-      <li><a href="/about/">{{ t.about }}</a></li>
-      <li><a href="/privacy/">{{ t.privacy }}</a></li>
-      <li><a href="/terms/">{{ t.terms }}</a></li>
-    </ul>
+    <p class="foot-read"><a href="/about/#reading"{% if lang != "en" %} hreflang="en"{% endif %}>{{ "Cómo leer una página de mareas" if lang == "es" else "How to read a tide page" }}</a></p>
+    <p><a href="/privacy/">{{ t.privacy }}</a> · <a href="/terms/">{{ t.terms }}</a> · <a href="/about/">{{ t.about }}</a>{% if printables and lang == "en" %} · <a href="/{{ printables.path }}">{{ printables.label }}</a>{% endif %}</p>
     {% if ga4_measurement_id %}
     <div id="analytics-choice" hidden>
       <button type="button" id="analytics-opt-out" hidden>Opt out of analytics</button>

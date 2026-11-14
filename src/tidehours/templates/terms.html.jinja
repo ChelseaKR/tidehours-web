@@ -26,7 +26,8 @@
 <p>The Tide Hours iPhone app {% if app_store_url %}is{% else %}will be{% endif %} sold through Apple's App Store. Apple handles payment, refunds and the app license under its own terms. What this page says about the predictions applies to the app too.</p>
 
 <h2 id="trademarks">Names and trademarks</h2>
-<p>NOAA, other agency names, Apple{% if amazon_links %}, App Store and Amazon{% else %} and App Store{% endif %} are the names and trademarks of their owners. They appear here only to say where data comes from or where a link goes. Their owners do not sponsor or endorse this site.</p>
+{% set marks = ["Apple", "App Store"] + (["Amazon"] if amazon_links or booklet_links else []) + (["Etsy"] if print_shop or shop_links else []) %}
+<p>NOAA, other agency names, {{ marks[:-1] | join(", ") }} and {{ marks[-1] }} are the names and trademarks of their owners. They appear here only to say where data comes from or where a link goes. Their owners do not sponsor or endorse this site.</p>
 
 <h2 id="use">Using the site</h2>
 <p>You are welcome to read the site, link to it and share it. Please do not use it in a way that harms it or other people, such as automated requests heavy enough to slow it down.</p>

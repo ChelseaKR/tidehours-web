@@ -1,0 +1,9 @@
+{#- A subordinate station's own corrections (docs/DECISIONS.md 0033). Needs
+    station, reference, reference_listed, reference_km and offsets. -#}
+<section class="subordinate" aria-labelledby="offsets" data-reference="{{ reference.id }}">
+  <h2 id="offsets">How this station is predicted</h2>
+  <p>{{ station.display_name }} is a NOAA subordinate station of {% if reference_listed %}<a href="/stations/{{ reference.id }}/">{{ reference.display_name }}</a>{% else %}{{ reference.display_name }}{% endif %} (station {{ reference.id }}), {{ "%.0f"|format(reference_km * 0.621371) }} mi away. NOAA publishes the corrections from that station's highs and lows to this one's: high tide {{ minutes(offsets.high_time_minutes) }}, low tide {{ minutes(offsets.low_time_minutes) }}; heights {{ height_phrase(offsets.adjustment, offsets.high_height) }} at high tide and {{ height_phrase(offsets.adjustment, offsets.low_height) }} at low tide. The times and heights on this page are the reference station's predictions with these corrections applied.</p>
+  {% if station.twin_of %}
+  <p>With these corrections every time and every high-tide height here is the same as at {{ reference.display_name }}, so this page asks search engines to show that station's page instead.</p>
+  {% endif %}
+</section>

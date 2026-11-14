@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from .catalog import Catalog
@@ -185,7 +186,11 @@ class StationSeason:
     series: list[list[Day]]
 
     def above_mhhw(self, day: Day) -> float:
-        return round(day.height, 2) - self.mhhw_ft
+        """Feet above MHHW from the unrounded height, rounded once when shown,
+        like every other height. Heights carry 3 decimals and MHHW 2, so
+        round(..., 3) only drops float noise (10.374 - 8.32 is
+        2.0540000000000003), never a digit."""
+        return round(day.height - self.mhhw_ft, 3)
 
 
 def window(start: str = SEASON_START, days: int = SEASON_DAYS) -> tuple[str, str]:
@@ -279,3 +284,117 @@ def months(runs: list[Upcoming], today: dt.date) -> list[tuple[int, int]]:
 
 def today_on_coast(now: dt.datetime) -> dt.date:
     return now.astimezone(ZoneInfo(ZONE)).date()
+
+
+# The winter calendar pages, one per state (docs/DECISIONS.md 0024): each
+# station's runs (above) whose highest tide falls from November 1 through
+# the end of February, filed under the month of that highest tide. Pinned to
+# the season, like SEASON_START, so a new season is an edit here.
+CALENDAR_FIRST = "2026-11-01"
+CALENDAR_LAST = "2027-02-28"
+CALENDAR_STATES: dict[str, tuple[str, str]] = {
+    "WA": ("Washington", "washington"),
+    "OR": ("Oregon", "oregon"),
+    "CA": ("California", "california"),
+}
+
+
+# What each calendar page's title and description name, matched to the
+# searches the king-tide page gets ("king tides puget sound 2026", "king tides
+# oregon 2026 schedule", "king tides seattle 2026"; docs/DECISIONS.md 0028).
+# Every place named is a king-tide station's place or its catalog region,
+# which tests/test_king_calendar.py checks, so a title never names a place
+# the page has no dates for. Titles stay within 60 characters (0020).
+CALENDAR_SEARCH: dict[str, dict[str, Any]] = {
+    "WA": {
+        "title": "Washington king tides 2026–27: Seattle, Puget Sound, coast",
+        "where": "in Washington",
+        "places": ["Seattle", "Tacoma", "Olympia", "Puget Sound", "Neah Bay", "Willapa Bay"],
+    },
+    "OR": {
+        "title": "Oregon king tides 2026–27: coast schedule by month, Nov–Feb",
+        "where": "on the Oregon coast",
+        "places": ["Astoria", "Tillamook Bay", "Newport", "Coos Bay", "Port Orford"],
+    },
+    "CA": {
+        "title": "California king tides 2026–27: San Francisco to San Diego",
+        "where": "in California",
+        "places": ["Crescent City", "San Francisco Bay", "Monterey", "Los Angeles", "San Diego"],
+    },
+}
+
+
+def calendar_path(state: str) -> str:
+    return f"king-tides/{CALENDAR_STATES[state][1]}/"
+
+
+def calendar_path_for(state: str) -> str | None:
+    """A state page's calendar link: None for a state with no calendar."""
+    return calendar_path(state) if state in CALENDAR_STATES else None
+
+
+@dataclass(frozen=True)
+class CalendarMonth:
+    """One month of a state's calendar. `runs` reuses Upcoming for a
+    station's run (its stamp, dates and peak); an empty list means no run
+    among the year's highest peaks this month at that state's stations, and
+    the page says so in words."""
+
+    year: int
+    month: int
+    runs: list[Upcoming]
+
+    @property
+    def stations(self) -> int:
+        """How many stations have a run here; one can have two in a month."""
+        return len({u.season.id for u in self.runs})
+
+    @property
+    def span(self) -> tuple[str, str, str, str] | None:
+        """(first day, last day, earliest peak, latest peak) over the month's
+        runs, or None for a month with none: what the month's sentence and the
+        page's summary at the top both say, so the two cannot disagree."""
+        if not self.runs:
+            return None
+        peaks = [u.peak.date for u in self.runs]
+        return min(u.first for u in self.runs), max(u.last for u in self.runs), min(peaks), max(peaks)
+
+
+def calendar(
+    seasons: list[StationSeason], state: str, first: str = CALENDAR_FIRST, last: str = CALENDAR_LAST
+) -> list[CalendarMonth]:
+    """Every month from `first` through `last`, each with the state's runs
+    peaking in it, ordered by first day and then by the stations' order."""
+    if state not in CALENDAR_STATES:
+        raise ValueError(f"king tides: no calendar for {state}")
+    start, end = dt.date.fromisoformat(first), dt.date.fromisoformat(last)
+    if end < start:
+        raise ValueError(f"king tides: calendar ends {last} before it starts {first}")
+    order = {s.id: i for i, s in enumerate(seasons)}
+    by_month: dict[tuple[int, int], list[Upcoming]] = {}
+    y, m = start.year, start.month
+    while (y, m) <= (end.year, end.month):
+        by_month[(y, m)] = []
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    for s in seasons:
+        if s.state != state:
+            continue
+        for run in s.series:
+            peak = dt.date.fromisoformat(series_peak(run).date)
+            if start <= peak <= end:
+                by_month[(peak.year, peak.month)].append(Upcoming(s, run))
+    for runs in by_month.values():
+        runs.sort(key=lambda u: (u.first, order[u.season.id]))
+    return [CalendarMonth(y, m, runs) for (y, m), runs in by_month.items()]
+
+
+def epochs(seasons: list[StationSeason], datums: dict[str, str], state: str) -> list[str]:
+    """The tidal datum epochs of a state's king-tide stations' MHHW, for the
+    page to name. A station with no epoch is an error, never left out."""
+    out: set[str] = set()
+    for s in seasons:
+        if s.state == state:
+            if not datums.get(s.id):
+                raise ValueError(f"king tides: no datum epoch for {s.id}")
+            out.add(datums[s.id])
+    return sorted(out)

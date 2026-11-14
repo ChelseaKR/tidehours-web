@@ -1,0 +1,26 @@
+{% extends "base.html.jinja" %}
+{#-
+  Every printable calendar and poster this build links to, by state and
+  town (docs/DECISIONS.md 0037, printables.py). Built only when a station
+  page shows a calendar or poster link. Each town links to its station
+  page and, with the station page's own plain link (0035), to each of its
+  Etsy listings: no slug, no query string, no price, no claim, no image
+  and no click event.
+-#}
+{% block title %}{{ listing.title }} | Tide Hours{% endblock %}
+{% block description %}{{ listing.description }}{% endblock %}
+{% block content %}
+<h1>{{ listing.heading }}</h1>
+<p class="lead">{{ listing.intro }}</p>
+<p>{{ listing.how }}</p>
+{% for state in listing.states %}
+<section aria-labelledby="p-{{ state.code }}">
+  <h2 id="p-{{ state.code }}">{{ state.name }}</h2>
+  <ul class="printables">
+  {% for town in state.towns %}
+    <li data-printable="{{ town.station_id }}"><a href="/stations/{{ town.station_id }}/">{{ town.name }}</a>: {% for item in town.items %}<a href="{{ item.url }}" rel="{{ listing.rel }}">{{ item.title }}</a>{{ ", " if not loop.last }}{% endfor %}</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endblock %}

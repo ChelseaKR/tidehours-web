@@ -1,7 +1,7 @@
 {% extends "base.html.jinja" %}
 {% set today = days[0] %}
-{% block title %}{{ station_title(station.display_name) }}{% endblock %}
-{% block description %}Tide times for {{ station.display_name }} on {{ today.long_date }}: {{ today.summary() }}. Predictions from NOAA station {{ station.id }} data.{% if king_link and king_link.own %} King tides {{ fmt_range(king_link.up.first, king_link.up.last, "en", kc) }}.{% endif %}{% endblock %}
+{% block title %}{{ station_title(place) }}{% endblock %}
+{% block description %}{{ station_description(place, days, ("King tides " ~ fmt_range(king_link.up.first, king_link.up.last, "en", kc) ~ ".") if king_link and king_link.own else "") }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
   "@context": "https://schema.org",
@@ -24,9 +24,23 @@
     {% if region %}<li><a href="/{{ region.path }}">{{ region.name }}</a></li>{% endif %}
   </ol>
 </nav>
-<h1>{{ station.display_name }} tide times</h1>
-<p class="lead">Predicted high and low tides for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW).</p>
+<h1>{{ place }} tides today</h1>
 <p class="stale" id="stale" role="status" hidden></p>
+{#- The answer first (docs/DECISIONS.md 0032): each day's highs, then its
+    lows, by date. The script below adds "Today" or "Tomorrow" from the
+    station's own clock and hides a day that has passed. -#}
+<div class="answer">
+{% for kind in ("High", "Low") %}
+  <h2 id="q-{{ kind|lower }}">When is {{ kind|lower }} tide at {{ place }} today?</h2>
+  <ul class="answer-days">
+  {% for day in days %}
+    {% set these = day.events|selectattr("kind", "equalto", kind)|list %}
+    <li data-date="{{ day.date.isoformat() }}"><span class="day-label"></span>{{ day.date.strftime("%A") }}, {{ day.date|short_date }}: {% if these %}{% for e in these %}<strong><time datetime="{{ e.iso }}">{{ e.time }}</time></strong> ({{ e.height_ft }}){{ ", " if not loop.last }}{% endfor %}{% else %}no {{ kind|lower }} tide predicted{% endif %}</li>
+  {% endfor %}
+  </ul>
+{% endfor %}
+</div>
+<p class="lead">Predicted for NOAA station {{ station.id }}{% if region %}, {{ region.name }}{% endif %}. {% set zone = zone_label(station.tz) %}{% if zone == zone_unknown %}Times are local to the station{% else %}Times are {{ zone }}, local to the station{% endif %}; heights are feet above mean lower low water (MLLW). The tide chart and table for each day are below.</p>
 {% if station.filed_by == "reference" %}
 <p>NOAA's station list gives this station no state. It is listed under {{ state.name }}, the state of the reference station NOAA predicts it from.</p>
 {% elif station.filed_by in ("territory", "name") %}
@@ -49,6 +63,7 @@
   <p>The nearest station on the king-tide page is {{ u.season.place }}, {{ "%.0f"|format(king_link.km * 0.621371) }} mi away: its highest predicted tides of the season are {{ fmt_range(u.first, u.last, "en", kc) }}, highest on {{ fmt_date(u.peak.date, "en", kc) }} at {{ fmt_time(u.peak.time, "en") }}, {{ u.peak.height|feet }}. Those are that station's predictions, not this one's; the tides here can differ in time and height.</p>
   <p><a href="/king-tides/#station-{{ u.season.id }}">King tide dates and times at {{ u.season.place }}</a>.</p>
   {% endif %}
+  {% if king_calendar %}<p><a href="/{{ king_calendar[0] }}">{{ king_calendar[1] }} king tides by month, November to February</a>.</p>{% endif %}
 </section>
 {% endif %}
 
@@ -78,10 +93,11 @@
   {% else %}
   <p class="none">No high or low tide is predicted at this station on this day.</p>
   {% endif %}
+  <p class="sky" data-sky="{{ day.date.isoformat() }}"><span class="sun">{{ day.sun_text }} {{ day.civil_text }}</span> <span class="moon">{{ day.moon_text }} {{ day.moonrise_text }}</span></p>
   {% if day.svg %}
   <figure class="chart">
     {{ day.svg|safe }}
-    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}: {{ day.summary() }}.</figcaption>
+    <figcaption id="chart-title-{{ day.date.isoformat() }}">Predicted tide curve, {{ day.long_date }}{% if day.approximate %} (dashed: estimated between highs and lows){% endif %}{% if day.sun.dark %}, shaded where the sun is down{% endif %}: {{ day.summary() }}.</figcaption>
   </figure>
   {% else %}
   <p class="none">No tide curve can be drawn for this day.</p>
@@ -89,12 +105,33 @@
 </section>
 {% endfor %}
 
+{% if nearby %}
+<section aria-labelledby="near">
+  <h2 id="near">Nearby</h2>
+  <p>Tide times at other NOAA stations within {{ nearby_miles }} miles, nearest first:</p>
+  <ul class="near">
+  {% for s, km in nearby %}
+    <li><a href="/stations/{{ s.id }}/">{{ s.display_name }}</a> <span class="dist">{{ "%.0f"|format(km * 0.621371) if km * 0.621371 >= 1 else "under 1" }} mi</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 <section class="upsell" aria-labelledby="week">
   <h2 id="week">The rest of the week</h2>
   <p>The 7-day table, favorites, widgets and offline use are in the Tide Hours iPhone app.
   {% if app_store_url %}<a href="{{ app_store_url }}">Get Tide Hours on the App Store</a>.{% else %}<strong>Coming soon to the App Store.</strong>{% endif %}
   NOAA also publishes its own <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ station.id }}">predictions for station {{ station.id }}</a>.</p>
 </section>
+{% if booklet %}
+{% include "_booklet.html.jinja" %}
+{% endif %}
+{% if calendar %}
+{% include "_calendar.html.jinja" %}
+{% endif %}
+{% if poster %}
+{% include "_poster.html.jinja" %}
+{% endif %}
 
 {% if tide_type %}
 <section class="tide-type" aria-labelledby="type" data-tide-type="{{ tide_type.kind.key }}">
@@ -113,9 +150,11 @@
   {% else %}
   <p><a href="/king-tides/#station-{{ station.id }}">This season's king tide dates</a>.</p>
   {% endif %}
+  {% if king_calendar %}<p><a href="/{{ king_calendar[0] }}">{{ king_calendar[1] }} king tides by month, November to February</a>.</p>{% endif %}
 </section>
 {% endif %}
 
+{% if station.is_subordinate and reference %}{% include "_subordinate.html.jinja" %}{% endif %}
 {% if derived %}
 <section aria-labelledby="derived">
   <h2 id="derived">Stations predicted from this one</h2>
@@ -128,18 +167,9 @@
 </section>
 {% endif %}
 
-<section aria-labelledby="near">
-  <h2 id="near">Nearby stations</h2>
-  <ul class="near">
-  {% for s, km in nearby %}
-    <li><a href="/stations/{{ s.id }}/">{{ s.display_name }}</a> <span class="dist">{{ "%.0f"|format(km * 0.621371) }} mi</span></li>
-  {% endfor %}
-  </ul>
-</section>
-
 <section class="about-numbers" aria-labelledby="what">
   <h2 id="what">What these numbers are</h2>
-  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
+  <p>These are predicted astronomical tides, computed from NOAA CO-OPS harmonic constants{% if station.is_subordinate %} and the station's published offsets{% endif %} with the same method as the Tide Hours app. They are predictions, not observed water levels, and not for navigation. Wind, storms, river flow and air pressure can push the real water above or below them. Sunrise, sunset, twilight and the moon are computed for the station's position with NOAA's Solar Calculator equations and Jean Meeus's <cite>Astronomical Algorithms</cite>; hills and buildings can hide the real sunrise. Tide Hours is not a NOAA product and is not endorsed by NOAA. <a href="/about/">How the predictions are made and checked</a>.</p>
   <p class="meta">Station {{ station.id }} · {{ "%.4f"|format(station.lat) }}, {{ "%.4f"|format(station.lon) }} · NOAA data retrieved {{ retrieved }} · page built {{ built }} (UTC)</p>
 </section>
 {% endblock %}
@@ -204,6 +234,14 @@ var tidehoursDays = (function () {
     var day = result.days[i];
     if (day.label) s.querySelector(".day-label").textContent = day.label + ", ";
     if (day.hide) s.hidden = true;
+  });
+  var byDate = {};
+  result.days.forEach(function (d) { byDate[d.date] = d; });
+  Array.prototype.forEach.call(document.querySelectorAll(".answer li[data-date]"), function (li) {
+    var day = byDate[li.getAttribute("data-date")];
+    if (!day) return;
+    if (day.label) li.querySelector(".day-label").textContent = day.label + ", ";
+    if (day.hide) li.hidden = true;
   });
   if (result.message) {
     var box = document.getElementById("stale");

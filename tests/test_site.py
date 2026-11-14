@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import html as htmllib
 import importlib.util
 import json
 import re
@@ -19,9 +20,9 @@ from typing import Any
 import pytest
 
 from tidehours import catalog as catalog_mod
-from tidehours import cli, site, tidetype
+from tidehours import cli, site, sky, subordinate, tidetype
 from tidehours.catalog import Station, load, tidy_name
-from tidehours.days import feet, meters, no_negative_zero, station_day
+from tidehours.days import Day, Event, feet, meters, no_negative_zero, station_day
 
 NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
 
@@ -29,7 +30,22 @@ NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
 @pytest.fixture(scope="module")
 def built(tmp_path_factory: pytest.TempPathFactory) -> Path:
     out = tmp_path_factory.mktemp("site")
-    assert cli.main(["--out", str(out), "--now", NOW, "--states", "CA,HI,other"]) == 0
+    # Empty booklet, calendar and poster lists, so these tests stay about
+    # the site without them now that California calendars and posters are
+    # listed and when a California booklet is (docs/DECISIONS.md 0030, 0035
+    # and 0037; tests/test_station_booklets.py,
+    # tests/test_station_calendars.py, tests/test_station_posters.py and
+    # tests/test_printables.py cover listed ones).
+    lists = tmp_path_factory.mktemp("lists")
+    no_booklets = lists / "booklets.json"
+    no_booklets.write_text('{"booklets": {}}', encoding="utf-8")
+    no_calendars = lists / "calendars.json"
+    no_calendars.write_text('{"calendars": {}}', encoding="utf-8")
+    no_posters = lists / "posters.json"
+    no_posters.write_text('{"posters": {}}', encoding="utf-8")
+    args = ["--states", "CA,HI,other", "--booklets", str(no_booklets), "--calendars", str(no_calendars)]
+    args += ["--posters", str(no_posters)]
+    assert cli.main(["--out", str(out), "--now", NOW, *args]) == 0
     return out
 
 
@@ -60,7 +76,7 @@ def test_every_page_has_the_promises(built: Path) -> None:
 
 def test_station_pages(built: Path) -> None:
     sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
-    assert "San Francisco (Golden Gate), CA tide times" in sf and "SAN FRANCISCO" not in sf
+    assert "<h1>San Francisco (Golden Gate), CA tides today</h1>" in sf and "SAN FRANCISCO" not in sf
     assert "Sunday, November 1, 2026" in sf and "Monday, November 2, 2026" in sf
     assert sf.count('<svg class="tide-chart"') == 2
     assert "stroke-dasharray" not in sf
@@ -89,13 +105,38 @@ def test_indexes_sitemap_robots(built: Path) -> None:
         .getroot()
         .iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
     ]
-    noindex = [f for f in pages(built) if 'name="robots" content="noindex' in f.read_text(encoding="utf-8")]
+    # 404.html is noindex too, and is never in the sitemap (its own test, below).
+    noindex = [
+        f
+        for f in pages(built)
+        if f.name != "404.html" and 'name="robots" content="noindex' in f.read_text(encoding="utf-8")
+    ]
     stub = '<meta http-equiv="refresh"'
-    assert noindex and all(f.parts[-3] == "stations" or stub in f.read_text(encoding="utf-8") for f in noindex)
+    thin = {"/" + r.path for st in site.group(load().stations) for r in st.regions if not site.region_indexable(r)}
+    for f in noindex:
+        rel = "/" + f.parent.relative_to(built).as_posix() + "/"
+        assert f.parts[-3] == "stations" or stub in f.read_text(encoding="utf-8") or rel in thin, rel
+    assert any("/" + f.parent.relative_to(built).as_posix() + "/" in thin for f in noindex)  # DECISIONS 0022
     assert len(urls) == len(pages(built)) - 1 - len(noindex)  # every indexable page but 404.html
     assert "https://tidehours.com/es/king-tides/" in urls
     assert "Sitemap: https://tidehours.com/sitemap.xml" in (built / "robots.txt").read_text(encoding="utf-8")
     assert (built / "style.css").exists()
+
+
+def test_not_found_page_is_noindex_without_a_canonical(built: Path) -> None:
+    """CloudFront serves 404.html for every missing address, and S3 serves it
+    at /404.html with a 200: it asks not to be indexed and names no canonical
+    URL or og:url (it used to name https://tidehours.com/404, itself a
+    redirect to a 404). Every other page keeps its own canonical."""
+    nf = (built / "404.html").read_text(encoding="utf-8")
+    assert '<meta name="robots" content="noindex,follow">' in nf
+    assert 'rel="canonical"' not in nf and 'property="og:url"' not in nf
+    assert "https://tidehours.com/404" not in nf
+    home = (built / "index.html").read_text(encoding="utf-8")
+    assert '<link rel="canonical" href="https://tidehours.com/">' in home and "noindex" not in home
+    assert all(
+        f.read_text(encoding="utf-8").count('rel="canonical"') == 1 for f in pages(built) if f.name != "404.html"
+    )
 
 
 def test_king_tide_pages(built: Path) -> None:
@@ -383,10 +424,10 @@ def test_filed_stations_pages(tmp_path: Path) -> None:
     nc = (out / "states/nc/index.html").read_text(encoding="utf-8")
     assert 'href="/stations/TEC2789/"' in nc and 'href="/states/nc/outer-banks/"' in nc
     hatteras = (out / "stations/TEC2789/index.html").read_text(encoding="utf-8")
-    assert "Cape Hatteras, NC tide times" in hatteras
+    assert "<h1>Cape Hatteras, NC tides today</h1>" in hatteras
     assert "listed under North Carolina, the state of the reference station" in hatteras
     apra = (out / "stations/1630000/index.html").read_text(encoding="utf-8")
-    assert "<h1>Apra Harbor, Guam tide times</h1>" in apra and "where NOAA's station name places it" in apra
+    assert "<h1>Apra Harbor, Guam tides today</h1>" in apra and "where NOAA's station name places it" in apra
     assert 'href="/states/gu/guam/"' in apra and "Northern Marianas" not in apra
     tanapag = (out / "stations/1633227/index.html").read_text(encoding="utf-8")
     assert "codes this station GU. Tanapag Harbor is on Saipan" in tanapag
@@ -405,7 +446,12 @@ def test_filed_stations_pages(tmp_path: Path) -> None:
         stub = (out / old / "index.html").read_text(encoding="utf-8")
         assert f'<meta http-equiv="refresh" content="0; url=/{new}">' in stub, old
         assert 'content="noindex,follow"' in stub and f"listed under {where}" in stub, old
-        assert f"https://tidehours.com/{old}" not in sitemap and f"https://tidehours.com/{new}" in sitemap, old
+        assert f"https://tidehours.com/{old}" not in sitemap, old
+        # The new page is in the sitemap unless it is a thin region (DECISIONS 0022):
+        # Wake Island is one station, so its region page is noindex.
+        listed = f"https://tidehours.com/{new}" in sitemap
+        assert listed == (new != "states/um/wake-island/"), new
+        assert listed != ('content="noindex,follow"' in (out / new / "index.html").read_text(encoding="utf-8")), new
     # A region that split lists each part, with its stations, and sends no one
     # to just one of them (Midway is not Johnston Atoll; Guam is not the CNMI).
     for old, parts in [
@@ -479,27 +525,163 @@ def test_tidy_name() -> None:
     assert tidy_name("Seaside Heights, N.J.") == "Seaside Heights, N.J."
 
 
-def test_subordinate_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> None:
-    """DECISIONS 0013: a subordinate station's page is served and linked but
-    asks not to be indexed, and is in neither the sitemap nor lastmod.json
-    (so IndexNow never announces it); a harmonic station's page is indexed."""
-    robots = '<meta name="robots" content="noindex,follow">'
+ROBOTS = '<meta name="robots" content="noindex,follow">'
+ROWS = re.compile(r'<tr class="ev-[^"]+">.*?</tr>')
+# The subordinate stations whose NOAA corrections leave every time and every
+# high-tide height as their reference station's (DECISIONS 0033), from the
+# data retrieved 2026-10-24: Cabrillo Beach (0 min, 0 min, x1.00, x1.00 from
+# Los Angeles) and Great Diamond Island (0 min, 0 min, x1.00, x1.03 from
+# Portland, ME). Windham Bay (0 min, 0 min, -1.1 ft, -0.1 ft from Juneau) has
+# its own heights, so it is not one.
+TWINS = {"9410650": "9410660", "8417988": "8418150"}
+
+
+def _rows(root: Path, sid: str) -> list[str]:
+    return ROWS.findall((root / "stations" / sid / "index.html").read_text(encoding="utf-8"))
+
+
+def test_subordinate_pages_are_indexed_with_their_own_answers(built: Path) -> None:
+    """DECISIONS 0033 (superseding 0013's noindex): a subordinate station's
+    page is indexed, in the sitemap and lastmod.json, and its answer lines,
+    the highs and lows, differ from its reference station's page."""
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
     manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
-    sub = (built / "stations/9413878/index.html").read_text(encoding="utf-8")
-    assert robots in sub
-    assert "/stations/9413878/<" not in sitemap and "/stations/9413878/" not in manifest
+    sub = (built / "stations/9413878/index.html").read_text(encoding="utf-8")  # Ano Nuevo Island
+    assert "noindex" not in sub and 'rel="canonical" href="https://tidehours.com/stations/9413878/"' in sub
+    assert "https://tidehours.com/stations/9413878/</loc>" in sitemap and "/stations/9413878/" in manifest
+    rows, ref_rows = _rows(built, "9413878"), _rows(built, "9414290")
+    assert len(rows) >= 6 and len(ref_rows) >= 6 and not set(rows) & set(ref_rows)
+    # Its own line with NOAA's published corrections, its own coordinates.
+    text = " ".join(re.sub(r"<[^>]+>", " ", sub).split())
+    assert (
+        "Ano Nuevo Island, CA is a NOAA subordinate station of San Francisco (Golden Gate), CA (station 9414290)"
+        in text
+    )
+    assert "high tide 1 h 24 min earlier, low tide 1 h 4 min earlier; heights 0.7 ft lower at high tide" in text
+    assert "Station 9413878 · 37.1083, -122.3380" in sub
     sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
-    assert "noindex" not in sf
-    assert "https://tidehours.com/stations/9414290/</loc>" in sitemap and "/stations/9414290/" in manifest
-    # The reference page links each station predicted from it, with its time corrections.
+    assert "noindex" not in sf and 'class="subordinate"' not in sf
+    # The reference page still lists each station predicted from it.
     assert "Stations predicted from this one" in sf and 'href="/stations/9413878/"' in sf
     assert re.search(r"high tide (at the same time|\d+ (h|min)[^,]* (later|earlier))", sf)
+    # Every built subordinate page but a twin is indexed and differs from its reference.
     cat = load()
     for f in built.glob("stations/*/index.html"):
         s = cat.station(f.parent.name)
         assert s is not None
-        assert (robots in f.read_text(encoding="utf-8")) == s.is_subordinate == (not site.indexable(s)), s.id
+        html = f.read_text(encoding="utf-8")
+        assert (ROBOTS in html) == (s.id in TWINS) == (not site.indexable(s)), s.id
+        if s.is_subordinate and s.id not in TWINS and (built / "stations" / str(s.reference_id)).exists():
+            assert _rows(built, s.id) != _rows(built, str(s.reference_id)), s.id
+
+
+def test_a_twin_stays_noindex_with_its_reference_as_canonical(built: Path) -> None:
+    """Negative control for DECISIONS 0033: Cabrillo Beach's corrections are
+    0 min and x1.00, so its answer lines are Los Angeles's, byte for byte;
+    its page carries noindex, a canonical to Los Angeles, and is out of the
+    sitemap and lastmod.json."""
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+    twin = (built / "stations/9410650/index.html").read_text(encoding="utf-8")
+    assert _rows(built, "9410650") == _rows(built, "9410660") != []  # a true copy of the answer
+    assert ROBOTS in twin and '<link rel="canonical" href="https://tidehours.com/stations/9410660/">' in twin
+    assert '<meta property="og:url" content="https://tidehours.com/stations/9410660/">' in twin
+    assert "/stations/9410650/<" not in sitemap and "/stations/9410650/" not in manifest
+    assert "asks search engines to show that station's page instead" in twin
+    la = (built / "stations/9410660/index.html").read_text(encoding="utf-8")
+    assert "noindex" not in la and 'href="/stations/9410650/"' in la  # still linked from its reference
+    cat = load()
+    assert {s.id: s.twin_of for s in cat.stations if s.twin_of} == TWINS
+    windham = cat.station("9451962")  # 0 min times, but its own heights
+    assert windham is not None and windham.twin_of is None and site.indexable(windham)
+    # The rule is what holds it back: with Cabrillo Beach's high tides scaled
+    # by 1.01 it is no longer a twin.
+    o = cat.offsets("9410650")
+    assert subordinate.is_twin(o) and not subordinate.is_twin(dataclasses.replace(o, high_height=1.01))
+    assert not subordinate.is_twin(dataclasses.replace(o, low_time_minutes=1.0))
+    assert subordinate.is_twin(dataclasses.replace(o, adjustment="F", high_height=0.0, low_height=0.4))
+
+
+def test_sitemap_counts_every_station_but_the_twins(built: Path) -> None:
+    """The sitemap lists every station page in the build but the twins, and
+    over the whole catalog that is 3,254 of 3,256 (1,232 harmonic and 2,022
+    subordinate), with the 2 twins left out (DECISIONS 0033)."""
+    cat = load()
+    assert sum(site.indexable(s) for s in cat.stations) == 3254 == len(cat.stations) - len(TWINS)
+    assert sum(s.is_subordinate and site.indexable(s) for s in cat.stations) == 2022
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    locs = set(re.findall(r"<loc>https://tidehours\.com/stations/([^/<]+)/</loc>", sitemap))
+    built_ids = {f.parent.name for f in built.glob("stations/*/index.html")}
+    assert locs == built_ids - set(TWINS) and "9410650" in built_ids
+    assert sum(cat.station(i).is_subordinate for i in locs) > 100  # type: ignore[union-attr]
+
+
+def test_height_phrase() -> None:
+    assert subordinate.height_phrase("R", 0.96) == "multiplied by 0.96"
+    assert subordinate.height_phrase("R", 1.0) == "unchanged"
+    assert subordinate.height_phrase("F", -0.7) == "0.7 ft lower"
+    assert subordinate.height_phrase("F", 0.3) == "0.3 ft higher"
+    assert subordinate.height_phrase("F", 0.0) == "unchanged"
+
+
+def test_thin_region_pages_are_noindex_and_out_of_the_sitemap(built: Path) -> None:
+    """DECISIONS 0022: a region page of one or two stations is served, linked
+    from its state page and followed, but asks not to be indexed and is in
+    neither the sitemap nor lastmod.json; its stations keep their own rule,
+    so a harmonic station in a thin region is still indexed."""
+    robots = '<meta name="robots" content="noindex,follow">'
+    sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
+    manifest = json.loads((built / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+    states = site.group([s for s in load().stations if (s.state or site.OTHER) in ("CA", "HI", "other")])
+    regions = [r for st in states for r in st.regions]
+    thin = [r for r in regions if len(r.stations) < 3]
+    assert thin and len(thin) < len(regions)
+    for st in states:
+        state_page = (built / st.path / "index.html").read_text(encoding="utf-8")
+        assert "noindex" not in state_page, st.path
+        for r in st.regions:
+            html = (built / r.path / "index.html").read_text(encoding="utf-8")
+            assert f'rel="canonical" href="https://tidehours.com/{r.path}"' in html, r.path
+            assert f'href="/{r.path}"' in state_page, r.path  # still linked
+            listed = f"https://tidehours.com/{r.path}</loc>" in sitemap
+            assert (robots in html) == (r in thin) == (not site.region_indexable(r)) == (not listed), r.path
+            assert ("/" + r.path in manifest) == listed, r.path
+            if r in thin:
+                for s in r.stations:
+                    assert f'href="/stations/{s.id}/"' in state_page, (r.path, s.id)
+                    station = (built / "stations" / s.id / "index.html").read_text(encoding="utf-8")
+                    assert (robots in station) == (not site.indexable(s)), s.id
+    # The rule never holds back a harmonic station's own page; 34 sit in thin regions.
+    full = [r for st in site.group(load().stations) for r in st.regions if not site.region_indexable(r)]
+    assert any(not s.is_subordinate and site.indexable(s) for r in full for s in r.stations)
+    sfbay = (built / "states/ca/san-francisco-bay/index.html").read_text(encoding="utf-8")
+    assert "noindex" not in sfbay and "https://tidehours.com/states/ca/san-francisco-bay/</loc>" in sitemap
+
+
+def test_check_site_catches_a_thin_region_mistake(tmp_path: Path, built: Path) -> None:
+    """Negative control: the gate fails once a thin region page loses its
+    noindex, and once a full region page gains one."""
+    check: Any = _check_site()
+    site_dir = tmp_path / "site"
+    shutil.copytree(built, site_dir)
+    stations = load().stations
+    robots = '<meta name="robots" content="noindex,follow">'
+    assert check.check_indexing(site_dir, sorted(site_dir.rglob("*.html")), stations) == []
+    thin = site_dir / "states/hi/kahoolawe-island/index.html"
+    html = thin.read_text(encoding="utf-8")
+    assert robots in html
+    thin.write_text(html.replace(robots, ""), encoding="utf-8")
+    assert "noindex" not in thin.read_text(encoding="utf-8")  # the sabotage applied
+    full = site_dir / "states/ca/san-francisco-bay/index.html"
+    html = full.read_text(encoding="utf-8")
+    full.write_text(html.replace("<head>", "<head>" + robots, 1), encoding="utf-8")
+    assert robots in full.read_text(encoding="utf-8")  # the sabotage applied
+    found: list[str] = check.check_indexing(site_dir, sorted(site_dir.rglob("*.html")), stations)
+    assert "states/hi/kahoolawe-island/: a region of 2 station(s) needs noindex" in found
+    assert any(
+        p.startswith("states/ca/san-francisco-bay/: a region of") and p.endswith("needs no noindex") for p in found
+    )
+    assert any(p.startswith("sitemap lists") for p in found)
 
 
 def test_offset_phrase() -> None:
@@ -519,7 +701,8 @@ def _check_site() -> object:
 
 def test_check_site_catches_an_indexing_mistake(tmp_path: Path, built: Path) -> None:
     """Negative control: the gate's noindex, sitemap and lastmod.json checks
-    pass on the build and fail once a subordinate page loses its noindex."""
+    pass on the build and fail once a twin's page loses its noindex or its
+    canonical, and once an indexed subordinate page gains a noindex."""
     check: Any = _check_site()
     site_dir = tmp_path / "site"
     shutil.copytree(built, site_dir)
@@ -530,12 +713,21 @@ def test_check_site_catches_an_indexing_mistake(tmp_path: Path, built: Path) -> 
         return found
 
     assert problems() == []
-    page = site_dir / "stations/9413878/index.html"
+    page = site_dir / "stations/9410650/index.html"  # Cabrillo Beach, a twin
     html = page.read_text(encoding="utf-8")
-    page.write_text(html.replace('<meta name="robots" content="noindex,follow">', ""), encoding="utf-8")
+    html = html.replace(ROBOTS, "").replace(
+        '<link rel="canonical" href="https://tidehours.com/stations/9410660/">',
+        '<link rel="canonical" href="https://tidehours.com/stations/9410650/">',
+    )
+    page.write_text(html, encoding="utf-8")
     assert "noindex" not in page.read_text(encoding="utf-8")  # the sabotage applied
+    sub = site_dir / "stations/9413878/index.html"
+    sub.write_text(sub.read_text(encoding="utf-8").replace("<head>", "<head>" + ROBOTS, 1), encoding="utf-8")
+    assert ROBOTS in sub.read_text(encoding="utf-8")  # applied
     found = problems()
-    assert "stations/9413878: a subordinate station needs noindex" in found
+    assert "stations/9410650: a twin station needs noindex" in found
+    assert "stations/9410650: canonical stations/9410650/, expected stations/9410660/" in found
+    assert "stations/9413878: a subordinate station needs no noindex" in found
     assert any(p.startswith("sitemap lists") for p in found)
     assert any(p.startswith("lastmod.json lists") for p in found)
 
@@ -620,8 +812,9 @@ def test_king_tides_coming_up(built: Path) -> None:
     lead with it and name the month, and nearby pages link to it (0015)."""
     en = (built / "king-tides/index.html").read_text(encoding="utf-8")
     es = (built / "es/king-tides/index.html").read_text(encoding="utf-8")
-    assert "<title>King tides November 2026: WA, OR and CA dates and times | Tide Hours</title>" in en
-    assert 'content="West Coast king tides Nov 23–Dec 1, 2026:' in en
+    assert "<title>King tides November 2026: Washington, Oregon and California | Tide Hours</title>" in en
+    assert 'content="The next West Coast king tides are Nov 23–Dec 1, 2026: the peak day, local time' in en
+    assert "height at 31 NOAA stations, from Seattle and Puget Sound to the Oregon coast" in en
     assert "The next king tides: Nov 23–Dec 1, 2026" in en
     assert en.index('id="kt-next"') < en.index('id="kt-safety"') < en.index('id="kt-california"')
     assert en.count("data-kt-next=") == 31 and es.count("data-kt-next=") == 31
@@ -659,7 +852,7 @@ def test_king_tides_out_of_season(tmp_path: Path) -> None:
     out = tmp_path / "march"
     assert cli.main(["--out", str(out), "--now", "2027-03-15T12:00:00Z", "--states", "CA"]) == 0
     en = (out / "king-tides/index.html").read_text(encoding="utf-8")
-    assert "<title>King tides 2026–27: WA, OR and CA dates and heights | Tide Hours</title>" in en
+    assert "<title>King tides 2026–27: Washington, Oregon and California dates | Tide Hours</title>" in en
     assert "kt-next" not in en and "data-kt-next" not in en
     sf = (out / "stations/9414290/index.html").read_text(encoding="utf-8")
     assert "data-kt-run" not in sf and 'href="/king-tides/#station-9414290"' in sf  # the section lower down
@@ -731,3 +924,256 @@ def test_site_checks_sample_skips_redirect_stubs(tmp_path: Path) -> None:
         p.parent.relative_to(out).as_posix() + "/" for p in out.glob("states/*/*/index.html")
     ]
     assert "states/nc/" in picked and "stations/1630000/" in picked
+
+
+def _lastmods(root: Path) -> dict[str, str]:
+    text = (root / "sitemap.xml").read_text(encoding="utf-8")
+    return dict(re.findall(r"<loc>https://tidehours\.com/([^<]*)</loc><lastmod>([^<]*)</lastmod>", text))
+
+
+def test_sitemap_lastmod_carries_over_for_unchanged_pages(tmp_path: Path, built: Path) -> None:
+    """DECISIONS 0028: with the live sitemap and lastmod.json, a page whose
+    HTML is unchanged keeps the date it last changed, and a changed page gets
+    the build date. Without them, or with a record that cannot be trusted,
+    every page gets the build date."""
+    prev = tmp_path / "prev"
+    prev.mkdir()
+    shutil.copy(built / "lastmod.json", prev / "lastmod.json")
+    old = (built / "sitemap.xml").read_text(encoding="utf-8").replace("<lastmod>2026-11-01<", "<lastmod>2026-10-20<")
+    (prev / "sitemap.xml").write_text(old, encoding="utf-8")
+    # Negative control: the about page's recorded fingerprint no longer
+    # matches, so it must get the build date, not the carried one.
+    manifest = json.loads((prev / "lastmod.json").read_text(encoding="utf-8"))
+    manifest["pages"]["/about/"]["fingerprint"] = "0" * 64
+    (prev / "lastmod.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert "<lastmod>2026-10-20<" in old and "2026-11-01" not in old  # the sabotage applied
+
+    out = tmp_path / "next"
+    # The same empty lists as `built`, so only the day differs.
+    (tmp_path / "booklets.json").write_text('{"booklets": {}}', encoding="utf-8")
+    (tmp_path / "calendars.json").write_text('{"calendars": {}}', encoding="utf-8")
+    (tmp_path / "posters.json").write_text('{"posters": {}}', encoding="utf-8")
+    lists = ["--booklets", str(tmp_path / "booklets.json"), "--calendars", str(tmp_path / "calendars.json")]
+    lists += ["--posters", str(tmp_path / "posters.json")]
+    args = ["--now", "2026-11-02T11:20:00Z", "--states", "CA,HI,other", "--previous", str(prev), *lists]
+    assert cli.main(["--out", str(out), *args]) == 0
+    mods = _lastmods(out)
+    # Unchanged since the previous build: the king-tide calendars, privacy, terms.
+    for path in ("king-tides/california/", "privacy/", "terms/"):
+        assert mods[path] == "2026-10-20", path
+    assert mods["about/"] == "2026-11-02"  # the record no longer matched
+    assert mods["stations/9414290/"] == "2026-11-02"  # today's tides are new
+    assert set(mods.values()) == {"2026-10-20", "2026-11-02"}
+
+    # Nothing to compare with, or a lastmod after the build date: build date.
+    assert set(_lastmods(built).values()) == {"2026-11-01"}
+    (prev / "lastmod.json").unlink()
+    assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-11-02") == {}
+    assert site.previous_lastmods(None, "https://tidehours.com/", "2026-11-02") == {}
+    shutil.copy(built / "lastmod.json", prev / "lastmod.json")
+    assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-10-19") == {}
+    (prev / "lastmod.json").write_text("not json", encoding="utf-8")
+    assert site.previous_lastmods(prev, "https://tidehours.com/", "2026-11-02") == {}
+
+
+# Answer first (docs/DECISIONS.md 0032): the title in the shape people search
+# with, each day's highs and lows under a plain question before anything
+# else, the same answer in the meta description, and a nearby list by radius.
+
+
+def _meta_description(html: str) -> str:
+    m = re.search(r'<meta name="description" content="([^"]*)">', html)
+    assert m
+    return htmllib.unescape(m.group(1))
+
+
+def test_station_title_shape_and_lead_answer(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    assert "<title>San Francisco (Golden Gate), CA tides today: high and low</title>" in sf
+    # The answer comes before the first table, tide chart and nearby list.
+    answer = sf.index('<div class="answer">')
+    assert answer < sf.index('<table class="events">') < sf.index('id="near"')
+    assert sf.index("<h1>") < answer
+    assert "When is high tide at San Francisco (Golden Gate), CA today?</h2>" in sf
+    assert "When is low tide at San Francisco (Golden Gate), CA today?</h2>" in sf
+    block = sf[answer : sf.index("</div>", answer)]
+    # Each question lists both days, by date, in the order of the page.
+    for kind in ("high", "low"):
+        part = block[block.index(f'id="q-{kind}"') :]
+        assert part.index('data-date="2026-11-01"') < part.index('data-date="2026-11-02"')
+    # The 5:40 AM high (the golden fixture's NOAA high at 13:40Z) is the
+    # first high of November 1, with its height.
+    high = block[block.index('id="q-high"') :]
+    first = high[high.index('data-date="2026-11-01"') : high.index("</li>")]
+    assert "Sunday, Nov 1: " in first and '<time datetime="2026-11-01T05:40-08:00">5:40 AM</time></strong> (' in first
+    assert re.search(r"\(−?\d+\.\d ft\)", first)
+    lead = re.search(r'<p class="lead">(.*?)</p>', sf, re.S)
+    assert lead and "Times are Pacific Time (PT), local to the station;" in lead.group(1)
+
+
+def test_meta_description_carries_the_answer(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    desc = _meta_description(sf)
+    assert desc.startswith("San Francisco (Golden Gate), CA tides Nov 1: high 5:40 AM (")
+    assert "; low " in desc
+    for f in built.glob("stations/*/index.html"):
+        d = _meta_description(f.read_text(encoding="utf-8"))
+        assert len(d) <= site.DESCRIPTION_MAX, (f, len(d))
+        assert " tides Nov " in d or " high and low tides, " in d, f
+
+
+def test_description_tiers_and_absence() -> None:
+    def ev(kind: str, time: str, ft: str) -> Event:
+        return Event(kind, time, "", ft, "", 0.0)
+
+    def day(d: dt.date, events: list[Event]) -> Day:
+        # The sky fields do not enter the description; any valid values do.
+        sun = sky.SunDay(d, [], False, [], [], False)
+        return Day(d, events, None, False, sun, sky.MoonDay(d, "New moon", 0.0, None), sky.MoonTimes(d, [], False))
+
+    one = day(dt.date(2026, 11, 1), [ev("High", "5:40 AM", "5.6 ft"), ev("Low", "11:58 AM", "0.8 ft")])
+    two = day(dt.date(2026, 11, 2), [ev("High", "6:20 AM", "5.5 ft")])
+    empty = day(dt.date(2026, 11, 2), [])
+    assert site.day_answer(one) == "high 5:40 AM (5.6 ft); low 11:58 AM (0.8 ft)"
+    assert site.day_answer(two) == "high 6:20 AM (5.5 ft); no low tide"  # absence says so
+    assert site.day_answer(empty) == "no high or low tide predicted"
+    assert site.station_description("Monterey, CA", [one, two]) == (
+        "Monterey, CA tides Nov 1: high 5:40 AM (5.6 ft); low 11:58 AM (0.8 ft). Nov 2: high 6:20 AM (5.5 ft); no low tide."
+    )
+    long = "x" * 60  # tomorrow no longer fits; today does
+    assert site.station_description(long, [one, two]).endswith("Nov 2 too, with a tide chart.")
+    longer = "x" * 120
+    assert site.station_description(longer, [one, two]) == f"{longer} high and low tides, Nov 1 and Nov 2."
+    # An extra sentence is added only when it fits.
+    assert site.station_description("Monterey, CA", [one, two], "King tides Nov 24–26.").endswith(
+        "King tides Nov 24–26."
+    )
+    assert "King" not in site.station_description("x" * 60, [one, two], "King tides Nov 24–26.")
+
+
+def test_nearby_list_by_radius_and_state(built: Path) -> None:
+    sf = (built / "stations/9414290/index.html").read_text(encoding="utf-8")
+    near = sf[sf.index('id="near"') : sf.index("</section>", sf.index('id="near"'))]
+    miles = [int(m) for m in re.findall(r'<span class="dist">(\d+) mi</span>', near)]
+    assert 1 <= len(re.findall(r"<li>", near)) <= site.NEARBY_MAX
+    assert miles == sorted(miles) and all(m <= site.NEARBY_MILES for m in miles)
+    assert "within 25 miles" in near
+    cat = load()
+    stations = [s for s in cat.stations if s.state in ("CA", "HI", "")]
+    near_all = site.Nearby(stations)
+    for f in built.glob("stations/*/index.html"):
+        sid = f.parent.name
+        html = f.read_text(encoding="utf-8")
+        s = cat.station(sid)
+        assert s is not None
+        expect = site.neighbors(near_all, s)
+        assert ('id="near"' in html) == bool(expect), sid
+        for other, km in expect:
+            assert other.state == s.state and km <= site.NEARBY_KM
+            assert f'href="/stations/{other.id}/"' in html
+
+
+def test_no_neighbor_within_the_radius_renders_no_list(built: Path) -> None:
+    # Negative control: a station with no other station of its state within
+    # the radius gets no "Nearby" section at all, not an empty one.
+    cat = load()
+    stations = [s for s in cat.stations if s.state in ("CA", "HI", "")]
+    near_all = site.Nearby(stations)
+    alone = [s for s in stations if not site.neighbors(near_all, s)]
+    assert alone
+    for s in alone[:5]:
+        html = (built / f"stations/{s.id}/index.html").read_text(encoding="utf-8")
+        assert 'id="near"' not in html and ">Nearby<" not in html, s.id
+    # Unit level: two stations 30 miles apart are not neighbors; 20 miles
+    # apart they are; across a state line they are not.
+    base = Station("A", "A", "CA", 37.0, -122.0, "America/Los_Angeles", None, None)
+    far = dataclasses.replace(base, id="B", lat=37.0 + 30 / 69.05)
+    close = dataclasses.replace(base, id="C", lat=37.0 + 20 / 69.05)
+    other = dataclasses.replace(base, id="D", state="OR", lat=37.0 + 1 / 69.05)
+    assert [s.id for s, _ in site.neighbors(site.Nearby([base, far, close, other]), base)] == ["C"]
+    assert site.neighbors(site.Nearby([base, far, other]), base) == []
+
+
+def test_state_and_region_pages_lead_with_the_list(built: Path) -> None:
+    ca = (built / "states/ca/index.html").read_text(encoding="utf-8")
+    assert re.search(r"<title>California tides today: tide times at \d+ stations</title>", ca)
+    assert "<h1>California tides today</h1>" in ca
+    first_list = ca.index('<ul class="stations">')
+    if 'id="king"' in ca:
+        assert first_list < ca.index('id="king"')
+    assert ca.count("<p", ca.index("<h1>"), first_list) == 1  # one line of lead, then the list
+    region = (built / "states/ca/san-francisco-bay/index.html").read_text(encoding="utf-8")
+    assert "<title>San Francisco Bay, California tides today: tide times</title>" in region
+    assert "<h1>San Francisco Bay tides today</h1>" in region
+    lst = region.index('<ul class="stations">')
+    assert region.count("<p", region.index("<h1>"), lst) == 1
+    if 'id="king"' in region:
+        assert lst < region.index('id="king"')
+    for f in list(built.glob("states/*/index.html")) + list(built.glob("states/*/*/index.html")):
+        title = re.search(r"<title>([^<]*)</title>", f.read_text(encoding="utf-8"))
+        assert title and len(htmllib.unescape(title.group(1))) <= site.TITLE_MAX, f
+
+
+def test_searched_place_names_lead_their_pages(built: Path) -> None:
+    # copy/place_names.json (DECISIONS 0032): each entry names a station that
+    # exists, is pinned to its current display name, comes from a Search
+    # Console query, and leads with the searched place, then the station.
+    cat = load()
+    names = site.place_names()
+    assert len(names) >= 5
+    titles = Counter(site.station_title(site.place_name(s, names)) for s in cat.stations)
+    assert [t for t, n in titles.items() if n > 1] == []
+    for sid, entry in names.items():
+        s = cat.station(sid)
+        assert s is not None, sid
+        assert entry["station"] == s.display_name, sid  # a rename makes this fail
+        assert entry["query"] and entry["basis"], sid
+        assert s.display_name in entry["name"] and not entry["name"].startswith(s.display_name), sid
+        assert site.place_name(s, names) == entry["name"]
+        assert len(site.station_title(entry["name"])) <= site.TITLE_MAX, sid
+    kahului = (built / "stations/1615680/index.html").read_text(encoding="utf-8")
+    assert "<title>Maui (Kahului, HI) tides today: high and low tide chart</title>" in kahului
+    assert "<h1>Maui (Kahului, HI) tides today</h1>" in kahului
+    assert "When is high tide at Maui (Kahului, HI) today?" in kahului
+    assert _meta_description(kahului).startswith("Maui (Kahului, HI) tides Nov 1: ")
+    # Negative control: an entry pinned to a name the station no longer has
+    # does not apply, and a station without an entry keeps its own name.
+    s = cat.station("1615680")
+    assert s is not None
+    stale = {"1615680": {**names["1615680"], "station": "Kahului Harbor, HI"}}
+    assert site.place_name(s, stale) == "Kahului, HI"
+    sf = cat.station("9414290")
+    assert sf is not None and site.place_name(sf, names) == sf.display_name
+
+
+def test_region_pages_do_not_repeat_the_state() -> None:
+    cat = load()
+    states = {st.code: st for st in site.group(cat.stations)}
+    regions = {r.path: (r, st) for st in states.values() for r in st.regions}
+    al, al_st = regions["states/al/alabama/"]
+    assert site.region_place(al, al_st) == "Alabama"
+    assert site.region_title(al, al_st) == "Alabama tides today: tide times"
+    keys = next((r, st) for r, st in regions.values() if r.name == "Florida Keys")
+    assert site.region_place(*keys) == "Florida Keys"
+    hawaiian = next((r, st) for r, st in regions.values() if r.name == "Hawaiian Islands")
+    assert site.region_place(*hawaiian) == "Hawaiian Islands, Hawaii"  # a word, not a substring
+    sf = regions["states/ca/san-francisco-bay/"]
+    assert site.region_place(*sf) == "San Francisco Bay, California"
+    for r, st in regions.values():
+        place = site.region_place(r, st)
+        named = re.findall(rf"\b{re.escape(st.name)}\b", place, re.I)
+        assert len(named) <= 1, place  # "Alabama, Alabama" never
+        assert len(site.region_title(r, st)) <= site.TITLE_MAX, place
+    for st in states.values():
+        assert len(site.state_title(st)) <= site.TITLE_MAX, st.code
+
+
+def test_every_station_description_can_fit() -> None:
+    # The shortest description tier fits for every station's name (the
+    # longest date is "Sep 30"), so no station page's meta description can
+    # exceed DESCRIPTION_MAX, whatever its day holds.
+    cat = load()
+    names = site.place_names()
+    for s in cat.stations:
+        fallback = f"{site.place_name(s, names)} high and low tides, Sep 30 and Sep 30."
+        assert len(fallback) <= site.DESCRIPTION_MAX, s.id

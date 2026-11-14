@@ -125,7 +125,14 @@ TEXT_PAIRS = [
     ("foot-link", "foot-bg"),
     ("on-brand", "brand"),
 ]
-GRAPHIC_PAIRS = [("curve", "surface"), ("datum", "surface"), ("buoy", "buoy-tint"), ("brand", "bg")]
+GRAPHIC_PAIRS = [
+    ("curve", "surface"),
+    ("datum", "surface"),
+    ("curve", "night"),
+    ("datum", "night"),
+    ("buoy", "buoy-tint"),
+    ("brand", "bg"),
+]
 
 
 @pytest.mark.parametrize("scheme", ["light", "dark"])

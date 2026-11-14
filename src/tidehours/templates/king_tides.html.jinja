@@ -11,6 +11,7 @@
 <h1>{{ c.heading }}</h1>
 <p class="lead">{{ c.lead }}</p>
 <p class="meta">{{ fill(c.updated, date=fmt_long_date(retrieved, lang, c)) }}</p>
+<p data-kt-calendars>{{ c.calendarLinks }} {% for region in ["WA", "OR", "CA"] %}<a href="/{{ calendar_path(region) }}"{% if lang != "en" %} hreflang="en"{% endif %}>{{ c.stations.regions[region] }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
 
 {% if king_up %}
 <section class="callout kt-next" aria-labelledby="kt-next">
@@ -32,14 +33,14 @@
       <th scope="col">{{ c.next.cols.height }}</th>
     </tr></thead>
     <tbody>
-    {% for u in king_up %}
-      <tr data-kt-next="{{ u.stamp() }}">
-        <th scope="row"><a href="#station-{{ u.season.id }}">{{ u.season.place }}</a>, {{ u.season.state }}</th>
-        <td>{{ fmt_range(u.first, u.last, lang, c) }}</td>
-        <td>{{ fmt_date(u.peak.date, lang, c) }}, {{ fmt_time(u.peak.time, lang) }}</td>
-        <td>{{ fmt_feet(u.peak.height, lang, c) }}</td>
-      </tr>
-    {% endfor %}
+{% for u in king_up %}
+<tr data-kt-next="{{ u.stamp() }}">
+<th scope="row"><a href="#station-{{ u.season.id }}">{{ u.season.place }}</a>, {{ u.season.state }}</th>
+<td>{{ fmt_range(u.first, u.last, lang, c) }}</td>
+<td>{{ fmt_date(u.peak.date, lang, c) }}, {{ fmt_time(u.peak.time, lang) }}</td>
+<td>{{ fmt_feet(u.peak.height, lang, c) }}</td>
+</tr>
+{% endfor %}
     </tbody>
   </table>
   </div>
@@ -49,6 +50,11 @@
   <p class="meta">{{ c.next.note }}</p>
 </section>
 {% endif %}
+
+<section aria-labelledby="kt-definition">
+  <h2 id="kt-definition">{{ c.definition.heading }}</h2>
+  {% for p in c.definition.body %}<p>{{ p }}</p>{% endfor %}
+</section>
 
 <section class="callout warning" aria-labelledby="kt-safety">
   <h2 id="kt-safety">{{ c.safety.heading }}</h2>
@@ -75,6 +81,7 @@
   {% for region in ["WA", "OR", "CA"] %}
   <section aria-labelledby="kt-{{ region }}">
     <h3 id="kt-{{ region }}">{{ c.stations.regions[region] }}</h3>
+    <p><a href="/{{ calendar_path(region) }}"{% if lang != "en" %} hreflang="en"{% endif %}>{{ fill(c.stations.calendarLink, state=c.stations.regions[region]) }}</a></p>
     {% for s in seasons if s.state == region %}
     <section class="kt-station" id="station-{{ s.id }}" aria-labelledby="kt-h-{{ s.id }}">
       <h4 id="kt-h-{{ s.id }}">{{ s.place }}</h4>
@@ -88,24 +95,24 @@
           <th scope="col">{{ c.stations.cols.above }}</th>
         </tr></thead>
         <tbody>
-        {% for series in s.series %}
-          {% set peak = series|max(attribute="height") %}
-          <tr>
-            <th scope="row">{{ fmt_range(series[0].date, series[-1].date, lang, c) }}{% if series[-1].date == window_end %}<span class="note">{{ fill(c.stations.clipped, end=fmt_long_date(window_end, lang, c)) }}</span>{% endif %}</th>
-            <td>{{ fmt_date(peak.date, lang, c) }}, {{ fmt_time(peak.time, lang) }}</td>
-            <td>{{ fmt_feet(peak.height, lang, c) }}</td>
-            <td>{{ fmt_feet(s.above_mhhw(peak), lang, c, true) }}</td>
-          </tr>
-        {% endfor %}
+{% for series in s.series %}
+{% set peak = series|max(attribute="height") %}
+<tr>
+<th scope="row">{{ fmt_range(series[0].date, series[-1].date, lang, c) }}{% if series[-1].date == window_end %}<span class="note">{{ fill(c.stations.clipped, end=fmt_long_date(window_end, lang, c)) }}</span>{% endif %}</th>
+<td>{{ fmt_date(peak.date, lang, c) }}, {{ fmt_time(peak.time, lang) }}</td>
+<td>{{ fmt_feet(peak.height, lang, c) }}</td>
+<td>{{ fmt_feet(s.above_mhhw(peak), lang, c, true) }}</td>
+</tr>
+{% endfor %}
         </tbody>
       </table>
       </div>
       <details>
         <summary>{{ fill(c.stations.everyDay, place=s.place) }}</summary>
         <ul>
-        {% for series in s.series %}{% for d in series %}
-          <li>{{ fmt_date(d.date, lang, c) }}: {{ fmt_time(d.time, lang) }}, {{ fmt_feet(d.height, lang, c) }}</li>
-        {% endfor %}{% endfor %}
+{% for series in s.series %}{% for d in series %}
+<li>{{ fmt_date(d.date, lang, c) }}: {{ fmt_time(d.time, lang) }}, {{ fmt_feet(d.height, lang, c) }}</li>
+{% endfor %}{% endfor %}
         </ul>
       </details>
       <p class="meta"><a href="/stations/{{ s.id }}/">{{ fill(c.stations.siteLink, place=s.place) }}</a> · <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ s.id }}">{{ fill(c.stations.noaaLink, id=s.id) }}</a></p>
@@ -127,5 +134,8 @@
 </section>
 {% if affiliate %}
 {% include "_affiliate_block.html.jinja" %}
+{% endif %}
+{% if print_shop and lang == "en" %}
+{% include "_print_shop.html.jinja" %}
 {% endif %}
 {% endblock %}

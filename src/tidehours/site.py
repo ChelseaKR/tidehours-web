@@ -1,7 +1,8 @@
 """Renders the static site: a page per station (today and tomorrow), state
-and region indexes, the king-tide pages, about, privacy, terms, 404, sitemap and
-robots.txt. Every number on a page is computed at build time from NOAA's
-constants (docs/DECISIONS.md 0002); nothing is fetched while building."""
+and region indexes, the king-tide pages, about, privacy, terms, the list of
+printable calendars and posters, 404, sitemap and robots.txt. Every number
+on a page is computed at build time from NOAA's constants
+(docs/DECISIONS.md 0002); nothing is fetched while building."""
 
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ import re
 import shutil
 import string
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -22,7 +24,20 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, indexnow, kingtides, ktformat
+from . import (
+    affiliate,
+    booklets,
+    calendars,
+    indexnow,
+    kingtides,
+    ktformat,
+    llms,
+    posters,
+    printables,
+    printshop,
+    schema,
+    subordinate,
+)
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -52,12 +67,31 @@ OTHER_NAME = "Stations without a state"
 def indexable(station: Station) -> bool:
     """Whether a station's page asks search engines to index it.
 
-    Harmonic stations are indexed. A subordinate station's highs and lows are
-    its reference station's, moved by fixed minutes and scaled, so its page is
-    a near-copy of another page on this site; it is served, linked and
-    followed, but carries ``noindex`` and is left out of the sitemap (and so of
-    IndexNow) until the site has earned some trust (docs/DECISIONS.md 0013)."""
-    return not station.is_subordinate
+    Harmonic stations are indexed, and so are subordinate stations: each
+    shows its own times and heights (its reference's moved and scaled by
+    NOAA's published corrections), its own name, coordinates, corrections and
+    nearby list (docs/DECISIONS.md 0033, superseding 0013's noindex). The
+    exception is a twin, whose corrections leave every time and every high
+    tide as its reference's: it is served, linked and followed, but carries
+    ``noindex`` with a canonical link to the reference station's page, and is
+    left out of the sitemap (and so of IndexNow)."""
+    return station.twin_of is None
+
+
+# A region page lists its stations, and its state page lists the same
+# stations under the same heading, so a region of one or two stations is a
+# near-empty copy of part of its state page (about 120 to 130 words). Those
+# pages are served, linked and followed, but carry noindex and are left out of
+# the sitemap and lastmod.json (docs/DECISIONS.md 0022). Their stations are
+# linked from the state page either way, and each station page is indexed or
+# not by its own rule (indexable above).
+REGION_MIN_STATIONS = 3
+
+
+def region_indexable(region: Region) -> bool:
+    """Whether a region page asks search engines to index it: only when it
+    lists at least REGION_MIN_STATIONS stations (docs/DECISIONS.md 0022)."""
+    return len(region.stations) >= REGION_MIN_STATIONS
 
 
 def slug(text: str) -> str:
@@ -66,17 +100,105 @@ def slug(text: str) -> str:
 
 
 # A station page's <title> (and og:title): the longest of these that fits in
-# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020).
+# TITLE_MAX characters, else the shortest (docs/DECISIONS.md 0020). The words
+# follow what people search for: the place, then "tides", "today", "high and
+# low" and "tide chart" (0032).
 TITLE_MAX = 60
-TITLE_TIERS = ("{} tide times today | Tide Hours", "{} tide times today", "{} tide times")
+TITLE_TIERS = (
+    "{} tides today: high and low tide chart",
+    "{} tides today: high and low",
+    "{} tides today",
+    "{} tides",
+)
 
 
-def station_title(name: str) -> str:
-    for tier in TITLE_TIERS:
-        title = tier.format(name)
+def fit(tiers: tuple[str, ...], *args: object) -> str:
+    """The first of `tiers`, formatted, that fits in TITLE_MAX characters,
+    else the last."""
+    for tier in tiers:
+        title = tier.format(*args)
         if len(title) <= TITLE_MAX:
             return title
     return title
+
+
+def station_title(name: str) -> str:
+    return fit(TITLE_TIERS, name)
+
+
+PLACE_NAMES_FILE = Path(__file__).parent / "copy" / "place_names.json"
+
+
+def place_names(path: Path = PLACE_NAMES_FILE) -> dict[str, dict[str, str]]:
+    """Station id -> its entry in copy/place_names.json (0032)."""
+    data: dict[str, dict[str, str]] = json.loads(path.read_text(encoding="utf-8"))["stations"]
+    return data
+
+
+def place_name(station: Station, names: dict[str, dict[str, str]]) -> str:
+    """The name a station page leads with: the searched-for place name from
+    copy/place_names.json while the station's display name is still the one
+    the entry is pinned to, else the display name."""
+    entry = names.get(station.id)
+    if entry is not None and entry["station"] == station.display_name:
+        return entry["name"]
+    return station.display_name
+
+
+STATE_TITLE_TIERS = ("{} tides today: tide times at {} stations", "{} tides today: {} stations", "{} tides")
+REGION_TITLE_TIERS = ("{} tides today: tide times", "{} tides today", "{} tides")
+
+
+def state_title(state: State) -> str:
+    if state.code == OTHER:
+        return f"{state.name}: {state.count} tide stations"
+    return fit(STATE_TITLE_TIERS, state.name, state.count)
+
+
+def region_place(region: Region, state: State) -> str:
+    """A region's name with its state after it, unless the label already
+    names the state ("Alabama", "Christina River, Delaware", "Florida Keys"),
+    so no page says "Alabama, Alabama" (0032)."""
+    if state.code == OTHER or re.search(rf"\b{re.escape(state.name)}\b", region.name, re.I):
+        return region.name
+    return f"{region.name}, {state.name}"
+
+
+def region_title(region: Region, state: State) -> str:
+    return fit(REGION_TITLE_TIERS, region_place(region, state))
+
+
+# A station page's meta description: the day's highs and lows, today's and
+# tomorrow's when they fit in DESCRIPTION_MAX characters (0032). Dates, not
+# "today": the description is true whenever it is read.
+DESCRIPTION_MAX = 155
+
+
+def day_answer(day: Day) -> str:
+    """ "high 5:40 AM (5.6 ft), 6:12 PM (4.9 ft); low 11:58 AM (0.8 ft)"; a
+    kind the day has none of says so."""
+    if not day.events:
+        return "no high or low tide predicted"
+    parts = []
+    for kind in ("High", "Low"):
+        times = [f"{e.time} ({e.height_ft})" for e in day.events if e.kind == kind]
+        parts.append(f"{kind.lower()} {', '.join(times)}" if times else f"no {kind.lower()} tide")
+    return "; ".join(parts)
+
+
+def station_description(name: str, days: list[Day], extra: str = "") -> str:
+    first, second = days[0], days[1]
+    today = f"{name} tides {short_date(first.date)}: {day_answer(first)}."
+    tiers = (
+        f"{today} {short_date(second.date)}: {day_answer(second)}.",
+        f"{today} {short_date(second.date)} too, with a tide chart.",
+        today,
+        f"{name} high and low tides, {short_date(first.date)} and {short_date(second.date)}.",
+    )
+    text = next((t for t in tiers if len(t) <= DESCRIPTION_MAX), tiers[-1])
+    if extra and len(f"{text} {extra}") <= DESCRIPTION_MAX:
+        text = f"{text} {extra}"
+    return text
 
 
 # NOAA's region names with typos or case slips, written right
@@ -136,6 +258,21 @@ class Config:
     # Amazon Associates tracking ID. Empty (the default) means off: no
     # affiliate link anywhere (docs/DECISIONS.md 0016).
     amazon_tag: str = ""
+    # The Tide Hours shop on Etsy. Empty (the default) means off: no link
+    # anywhere (docs/DECISIONS.md 0029).
+    print_shop_url: str = ""
+    # The list of printed booklets on sale. None (the default) reads the
+    # committed list, copy/booklets.json; a test passes its own
+    # (docs/DECISIONS.md 0030).
+    booklets_file: Path | None = None
+    # The list of printable calendars on sale in the Tide Hours shop on
+    # Etsy. None (the default) reads the committed list, copy/calendars.json;
+    # a test passes its own (docs/DECISIONS.md 0035).
+    calendars_file: Path | None = None
+    # The list of printable posters on sale there. None (the default) reads
+    # the committed list, copy/posters.json; a test passes its own
+    # (docs/DECISIONS.md 0037).
+    posters_file: Path | None = None
 
 
 @dataclass
@@ -212,11 +349,22 @@ class Nearby:
         self.pool = pool
         self.lat = np.radians(np.array([s.lat for s in pool]))
         self.lon = np.radians(np.array([s.lon for s in pool]))
+        self.ids = np.array([s.id for s in pool])
 
-    def __call__(self, station: Station, n: int = 6) -> list[tuple[Station, float]]:
+    def _km(self, station: Station) -> Any:
         la1, lo1 = math.radians(station.lat), math.radians(station.lon)
         h = np.sin((self.lat - la1) / 2) ** 2 + math.cos(la1) * np.cos(self.lat) * np.sin((self.lon - lo1) / 2) ** 2
-        km = 6371.0 * 2 * np.arcsin(np.sqrt(np.minimum(1.0, h)))
+        return 6371.0 * 2 * np.arcsin(np.sqrt(np.minimum(1.0, h)))
+
+    def within(self, station: Station, radius_km: float) -> list[tuple[Station, float]]:
+        """Every other station within radius_km, nearest first."""
+        km = self._km(station)
+        close = np.flatnonzero(km <= radius_km)
+        order = close[np.lexsort((self.ids[close], km[close]))]
+        return [(self.pool[i], float(km[i])) for i in order if self.pool[i].id != station.id]
+
+    def __call__(self, station: Station, n: int = 6) -> list[tuple[Station, float]]:
+        km = self._km(station)
         order = np.lexsort((np.array([s.id for s in self.pool]), km))
         out: list[tuple[Station, float]] = []
         for i in order:
@@ -225,6 +373,18 @@ class Nearby:
             if len(out) == n:
                 break
         return out
+
+
+# A station page lists other stations in its own state within NEARBY_MILES,
+# nearest first, at most NEARBY_MAX; a station with none lists nothing
+# (0032).
+NEARBY_MILES = 25
+NEARBY_KM = NEARBY_MILES / 0.621371
+NEARBY_MAX = 6
+
+
+def neighbors(near: Nearby, station: Station) -> list[tuple[Station, float]]:
+    return [(s, km) for s, km in near.within(station, NEARBY_KM) if s.state == station.state][:NEARBY_MAX]
 
 
 def offset_phrase(minutes: float) -> str:
@@ -251,7 +411,12 @@ def env() -> Environment:
     e.filters["short_date_iso"] = lambda iso: short_date(dt.date.fromisoformat(iso))
     e.globals.update(
         minutes=offset_phrase,
+        height_phrase=subordinate.height_phrase,
         station_title=station_title,
+        state_title=state_title,
+        region_title=region_title,
+        region_place=region_place,
+        station_description=station_description,
         fill=ktformat.fill,
         fmt_date=ktformat.fmt_date,
         fmt_long_date=ktformat.fmt_long_date,
@@ -259,8 +424,10 @@ def env() -> Environment:
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
         fmt_months=ktformat.fmt_months,
+        calendar_path=kingtides.calendar_path,
         zone_label=zone_label,
         zone_unknown=ZONE_UNKNOWN,
+        jsonld_dumps=schema.dumps,
     )
     return e
 
@@ -292,6 +459,7 @@ def king_tide_context(cat: Catalog) -> dict[str, Any]:
         "window_start": first,
         "window_end": last,
         "datums_retrieved": datums_raw["retrieved"],
+        "datum_epochs": {k: str(v.get("epoch", "")) for k, v in datums_raw["datums"].items()},
         "copy": copy,
     }
 
@@ -359,6 +527,39 @@ def king_links(
     return out
 
 
+def king_calendar_pages(
+    page: Callable[..., None], kt: dict[str, Any], states: list[State], king_common: dict[str, Any]
+) -> None:
+    """The WA, OR and CA winter calendar pages (docs/DECISIONS.md 0024)."""
+    state_paths = {st.code: st.path for st in states}
+    for code, (name, _) in kingtides.CALENDAR_STATES.items():
+        page(
+            kingtides.calendar_path(code),
+            "king_tides_state.html.jinja",
+            state_code=code,
+            state_name=name,
+            state_path=state_paths.get(code),
+            calendar=kingtides.calendar(kt["seasons"], code),
+            kt_station_count=sum(1 for k in kt["seasons"] if k.state == code),
+            epochs=kingtides.epochs(kt["seasons"], kt["datum_epochs"], code),
+            calendar_first=kingtides.CALENDAR_FIRST,
+            calendar_last=kingtides.CALENDAR_LAST,
+            calendar_states=kingtides.CALENDAR_STATES,
+            search=kingtides.CALENDAR_SEARCH[code],
+            **king_common,
+        )
+
+
+def king_calendar(season: kingtides.StationSeason | None, link: KingLink | None) -> tuple[str, str] | None:
+    """The winter calendar page a station page links to, (path, state name):
+    its own state's, for a king-tide station, or the nearby king-tide
+    station's while that station's run is coming up."""
+    state = season.state if season is not None else link.up.season.state if link is not None else None
+    if state is None:
+        return None
+    return kingtides.calendar_path(state), kingtides.CALENDAR_STATES[state][0]
+
+
 def derived_from(cat: Catalog, by_id: dict[str, Station]) -> dict[str, list[Derived]]:
     """Reference station id -> the built subordinate stations predicted from
     it, nearest first."""
@@ -421,11 +622,76 @@ def moved_pages(template: Template, common: dict[str, Any], states: list[State])
     return pages
 
 
+def booklets_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, booklets.Booklet]:
+    """Station id -> the booklet its page links to in this build: a listed
+    booklet whose year is not over on the station's own date
+    (docs/DECISIONS.md 0030). A listed station the catalog does not have
+    stops the build."""
+    listed = booklets.load(cfg.booklets_file)
+    unknown = sorted(sid for sid in listed if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"booklets: no station {', '.join(unknown)} in the catalog")
+    return {
+        s.id: listed[s.id] for s in stations if s.id in listed and booklets.shown(listed[s.id], local_today(s, now))
+    }
+
+
+def calendars_shown(
+    cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime
+) -> dict[str, calendars.Calendar]:
+    """Station id -> the calendar its page links to in this build: a listed
+    calendar whose year is not over on the station's own date
+    (docs/DECISIONS.md 0035, as booklets_shown). A listed station the
+    catalog does not have stops the build."""
+    listed = calendars.load(cfg.calendars_file)
+    unknown = sorted(sid for sid in listed if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"calendars: no station {', '.join(unknown)} in the catalog")
+    return {
+        s.id: listed[s.id] for s in stations if s.id in listed and calendars.shown(listed[s.id], local_today(s, now))
+    }
+
+
+def posters_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, posters.Poster]:
+    """Station id -> the poster its page links to in this build: a listed
+    poster whose year is not over on the station's own date
+    (docs/DECISIONS.md 0037, as calendars_shown). A listed station the
+    catalog does not have stops the build, and so does a listing that is
+    also in the calendar list."""
+    listed = posters.load(cfg.posters_file)
+    unknown = sorted(sid for sid in listed if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"posters: no station {', '.join(unknown)} in the catalog")
+    calendar_listings = {c.listing for c in calendars.load(cfg.calendars_file).values()}
+    twice = sorted(p.listing for p in listed.values() if p.listing in calendar_listings)
+    if twice:
+        raise ValueError(f"posters: listing {', '.join(twice)} is in the calendar list too")
+    return {s.id: listed[s.id] for s in stations if s.id in listed and posters.shown(listed[s.id], local_today(s, now))}
+
+
+def printables_page(
+    page: Callable[..., None],
+    calendar_of: dict[str, calendars.Calendar],
+    poster_of: dict[str, posters.Poster],
+    by_id: dict[str, Station],
+) -> None:
+    """The list of the calendars and posters this build's station pages
+    link to, when there is one to list (docs/DECISIONS.md 0037)."""
+    listing = printables.block(calendar_of, poster_of, by_id)
+    if listing is not None:
+        page(printables.PATH, "printables.html.jinja", listing=listing)
+
+
+def selected(cat: Catalog, cfg: Config) -> list[Station]:
+    """The stations this build makes pages for."""
+    return [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
     e = env()
-    stations = [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
+    stations = selected(cat, cfg)
     if not stations:
         raise ValueError("no stations selected")
     states = group(stations)
@@ -437,6 +703,11 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     kt_months = kingtides.months(kt_up, kt_today)
     kt_states = {code: king_span([u for u in kt_up if u.season.state == code]) for code in ("WA", "OR", "CA")}
     links = king_links(stations, kt["seasons"], kt_today, cat)
+    booklet_of = booklets_shown(cat, stations, cfg, now)
+    calendar_of = calendars_shown(cat, stations, cfg, now)
+    poster_of = posters_shown(cat, stations, cfg, now)
+    printed = printables.kind(bool(calendar_of), bool(poster_of))
+    shop = printshop.block(cfg.print_shop_url)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
         "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
@@ -445,9 +716,14 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
+        "print_shop": shop,
+        "booklet_links": booklets.notice(bool(booklet_of)),
+        "shop_links": printables.notice(printed, shop),
+        "printables": printables.link(printed),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
+        "date_modified": schema.DATE_MODIFIED,
     }
     gear = affiliate.block(cfg.amazon_tag)
     region_of: dict[str, tuple[State, Region | None]] = {}
@@ -459,10 +735,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             region_of[s.id] = (st, None)
 
     near = Nearby(stations)
+    searched = place_names()
     pages: list[Page] = []
 
     def page(path: str, template: str, index: bool = True, **ctx: Any) -> None:
-        html = e.get_template(template).render(**common, path=path, noindex=not index, **ctx)
+        # A page in the sitemap carries the sitemap's lastmod as its
+        # dateModified; so does every station page, whose tides change each
+        # day (docs/DECISIONS.md 0034). Other noindex pages carry none.
+        ctx.setdefault("schema_nodes", [])
+        dated = index or path.startswith("stations/")
+        html = e.get_template(template).render(**common, path=path, noindex=not index, dated=dated, **ctx)
         pages.append(Page(path, html, index))
 
     derived = derived_from(cat, by_id)
@@ -480,6 +762,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
+    printables_page(page, calendar_of, poster_of, by_id)
     for lang in ("en", "es"):
         page(
             "king-tides/" if lang == "en" else "es/king-tides/",
@@ -487,14 +770,35 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             lang=lang,
             c=kt["copy"][lang],
             affiliate=gear if lang == "en" else None,
+            schema_nodes=schema.king_tide_nodes(
+                base,
+                "king-tides/" if lang == "en" else "es/king-tides/",
+                kt["copy"][lang],
+                kt["window_start"],
+                kt["window_end"],
+            ),
             **kt,
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
+    king_calendar_pages(page, kt, states, king_common)
     for st in states:
-        page(st.path, "state.html.jinja", state=st, king=kt_states.get(st.code), **king_common)
+        page(
+            st.path,
+            "state.html.jinja",
+            state=st,
+            king=kt_states.get(st.code),
+            king_calendar=kingtides.calendar_path_for(st.code),
+            **king_common,
+        )
         for r in st.regions:
             page(
-                r.path, "region.html.jinja", state=st, region=r, region_king=region_king(r, links, kt_up), **king_common
+                r.path,
+                "region.html.jinja",
+                index=region_indexable(r),
+                state=st,
+                region=r,
+                region_king=region_king(r, links, kt_up),
+                **king_common,
             )
     pages += moved_pages(e.get_template("moved.html.jinja"), common, states)
     for s in stations:
@@ -506,30 +810,99 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         st, region = region_of[s.id]
         ref = cat.station(s.reference_id) if s.reference_id else None
         season = kt_by_id.get(s.id)
+        # A twin's canonical is its reference station's page (DECISIONS 0033).
+        twin: dict[str, Any] = {"canonical_path": f"stations/{s.twin_of}/"} if s.twin_of else {}
         page(
             f"stations/{s.id}/",
             "station.html.jinja",
             index=indexable(s),
             station=s,
+            place=place_name(s, searched),
             state=st,
             region=region,
             days=days,
             reference=ref,
             reference_listed=ref is not None and ref.id in by_id,
-            nearby=near(s),
+            reference_km=distance_km(s, ref) if ref is not None else None,
+            offsets=cat.offsets(s.id) if s.is_subordinate else None,
+            nearby=neighbors(near, s),
+            nearby_miles=NEARBY_MILES,
             derived=derived.get(s.id, []),
             tide_type=cat.tide_type(s.id),
             king_season=season,
             king_next=kingtides.next_run(season, today) if season else None,
             king_link=links.get(s.id),
+            king_calendar=king_calendar(season, links.get(s.id)),
             kc=kt["copy"]["en"],
+            booklet=booklets.block(booklet_of.get(s.id)),
+            schema_nodes=schema.station_nodes(
+                s,
+                state_code=st.code,
+                state_name=st.name,
+                base_url=base,
+                path=f"stations/{s.id}/",
+                first=days[0].date.isoformat(),
+                last=days[1].date.isoformat(),
+                built=common["built"],
+            ),
+            calendar=calendars.block(calendar_of.get(s.id)),
+            poster=posters.block(poster_of.get(s.id)),
+            **twin,
         )
     return pages
 
 
-def sitemap(pages: list[Page], base: str, built: str) -> str:
+def fingerprint(page: Page) -> str:
+    return hashlib.sha256(page.html.encode("utf-8")).hexdigest()
+
+
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def previous_lastmods(previous: Path | None, base: str, built: str) -> dict[str, tuple[str, str]]:
+    """Page path ("" for home) -> (fingerprint, lastmod) from the live site's
+    sitemap.xml and lastmod.json, saved into `previous` before the build
+    (publish.yml). A page whose HTML is unchanged keeps the date it last
+    changed instead of the build date (docs/DECISIONS.md 0028). Anything
+    missing or unreadable gives {}: every page then gets the build date, as
+    before, which is never earlier than the truth."""
+    if previous is None:
+        return {}
+    try:
+        mods = indexnow.parse_sitemap((previous / "sitemap.xml").read_text(encoding="utf-8"))
+        pages = json.loads((previous / "lastmod.json").read_text(encoding="utf-8"))["pages"]
+        out: dict[str, tuple[str, str]] = {}
+        for path, entry in pages.items():
+            mod = mods.get(base.rstrip("/") + path, "")
+            if _ISO_DATE.fullmatch(mod) and mod <= built:
+                out[path[1:]] = (str(entry["fingerprint"]), mod)
+        return out
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {}
+
+
+def lastmod(p: Page, built: str, previous: dict[str, tuple[str, str]]) -> str:
+    """The date a page last changed: the previous build's when its record
+    says the HTML is unchanged, else the build date (docs/DECISIONS.md 0028).
+    The sitemap's lastmod and the page's own dateModified (0034)."""
+    have = previous.get(p.path)
+    return have[1] if have and have[0] == fingerprint(p) else built
+
+
+def dated_html(p: Page, built: str, previous: dict[str, tuple[str, str]]) -> str:
+    """The page as written: schema.DATE_MODIFIED replaced by its lastmod. The
+    fingerprint is the page's HTML before this, so a page that did not change
+    keeps its fingerprint and its date (0034)."""
+    return p.html.replace(schema.DATE_MODIFIED, lastmod(p, built, previous))
+
+
+def sitemap(pages: list[Page], base: str, built: str, previous: dict[str, tuple[str, str]] | None = None) -> str:
+    """Each indexable page with its lastmod: the date its HTML last changed
+    when the previous build's record says it is unchanged, else the build
+    date."""
+    prev = previous or {}
     rows = [
-        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{built}</lastmod></url>"
+        f"<url><loc>{escape(base + p.path)}</loc><lastmod>{lastmod(p, built, prev)}</lastmod></url>"
         for p in pages
         if p.path != "404" and p.index
     ]
@@ -539,19 +912,24 @@ def sitemap(pages: list[Page], base: str, built: str) -> str:
     )
 
 
-def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
+def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path | None = None) -> int:
     """Builds into `out` (replaced). Returns the number of HTML pages."""
     pages = render(cat, cfg, now)
     e = env()
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     built = now.astimezone(dt.UTC).date().isoformat()
+    prev = previous_lastmods(previous, base, built)
+    stations = selected(cat, cfg)
+    printed = printables.kind(
+        bool(calendars_shown(cat, stations, cfg, now)), bool(posters_shown(cat, stations, cfg, now))
+    )
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
     for p in pages:
         target = out / p.path / "index.html"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(p.html, encoding="utf-8")
+        target.write_text(dated_html(p, built, prev), encoding="utf-8")
     copy = json.loads((Path(__file__).parent / "copy" / "king_tides.json").read_text(encoding="utf-8"))
     common = {
         "ui": {lang: copy[lang]["chrome"] for lang in ("en", "es")},
@@ -560,13 +938,18 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
         "ga4_denied_regions": GA4_DENIED_REGIONS,
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
+        "print_shop": printshop.block(cfg.print_shop_url),
+        "printables": printables.link(printed),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),
     }
     (out / "404.html").write_text(e.get_template("404.html.jinja").render(**common, path="404"), encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(pages, base, built), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(pages, base, built, prev), encoding="utf-8")
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
+    # /llms.txt (llms.py); deploy.sh uploads non-HTML files with the type the
+    # extension gives, text/plain for .txt, as it does for robots.txt.
+    (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
@@ -581,15 +964,10 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path) -> int:
 
 def page_manifest(pages: list[Page]) -> str:
     """Each sitemap page's path and a SHA-256 of its HTML (schema 1, as read
-    by indexnow.py's "manifest" kind). The sitemap's lastmod is the build date
-    on every page, so it cannot tell a changed page from an unchanged one;
-    this can, because a rebuild of the same day is byte-identical. The next
-    build compares its manifest with the live one and announces only the pages
-    whose HTML changed (docs/DECISIONS.md 0011). Noindex pages are left out,
-    as they are from the sitemap (0013)."""
-    entries = {
-        "/" + p.path: {"fingerprint": hashlib.sha256(p.html.encode("utf-8")).hexdigest()}
-        for p in pages
-        if p.path != "404" and p.index
-    }
+    by indexnow.py's "manifest" kind). A rebuild of the same day is
+    byte-identical, so the next build compares its manifest with the live one
+    and announces only the pages whose HTML changed (docs/DECISIONS.md 0011),
+    and keeps an unchanged page's sitemap lastmod (0028). Noindex pages are
+    left out, as they are from the sitemap (0013, 0022, 0033)."""
+    entries = {"/" + p.path: {"fingerprint": fingerprint(p)} for p in pages if p.path != "404" and p.index}
     return json.dumps({"schema": 1, "pages": entries}, sort_keys=True, separators=(",", ":")) + "\n"

@@ -49,7 +49,9 @@ list of printed booklets in place of `src/tidehours/copy/booklets.json`,
 for tests; DECISIONS 0030), `--calendars FILE` (a list of printable
 calendars in place of `src/tidehours/copy/calendars.json`, for tests;
 DECISIONS 0035), `--posters FILE` (the same for the printable posters,
-`src/tidehours/copy/posters.json`; DECISIONS 0037).
+`src/tidehours/copy/posters.json`; DECISIONS 0037), `--gifts FILE` (the
+same for the other products the tide gifts page lists,
+`src/tidehours/copy/gifts.json`; DECISIONS 0041).
 
 ## CI
 
@@ -96,3 +98,10 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    Poster: Place") to `src/tidehours/copy/posters.json` in a pull request.
    That station's page then links to it, and `/tide-calendars/` lists it
    with every other calendar and poster, until the poster's year is over.
+9. Other products (DECISIONS 0041): when a tide rings print, a tide
+   blanket pattern, a moon phase calendar or a multi-town book is live,
+   add it to `src/tidehours/copy/gifts.json` in a pull request with its
+   Etsy listing id or ASIN, year, title, station or towns, and `live`, the
+   date it was marked live. `/tide-gifts/` then lists it until its year is
+   over. Calendars and posters go in their own lists (7 and 8) and appear
+   there too.

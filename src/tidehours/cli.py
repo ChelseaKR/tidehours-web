@@ -6,7 +6,7 @@
               [--amazon-tag tidehours-20]
               [--print-shop-url https://www.etsy.com/shop/...]
               [--booklets booklets.json] [--calendars calendars.json]
-              [--posters posters.json]
+              [--posters posters.json] [--gifts gifts.json]
 
 `--now` pins the clock (tests and reproducible builds); without it the
 build uses the current time. `--amazon-tag` turns on the Amazon links on
@@ -18,7 +18,9 @@ names a list of printed booklets to use in place of the committed one,
 src/tidehours/copy/booklets.json (docs/DECISIONS.md 0030); it is for tests.
 `--calendars` does the same for the printable calendars on Etsy,
 src/tidehours/copy/calendars.json (docs/DECISIONS.md 0035), and `--posters`
-for the printable posters there, src/tidehours/copy/posters.json (0037).
+for the printable posters there, src/tidehours/copy/posters.json (0037),
+and `--gifts` for the other products the tide gifts page lists,
+src/tidehours/copy/gifts.json (0041).
 Each station's "today" is its own local date at that instant. Nothing is fetched: the NOAA data is committed in
 src/tidehours/data/ (scripts/refresh_data.py refreshes it).
 """
@@ -31,7 +33,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import affiliate, booklets, calendars, catalog, posters, printshop, site
+from . import affiliate, booklets, calendars, catalog, gifts, posters, printshop, site
 
 
 def parse_now(text: str | None) -> dt.datetime:
@@ -56,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--booklets", type=Path, help="a booklet list to use in place of copy/booklets.json (tests)")
     ap.add_argument("--calendars", type=Path, help="a calendar list to use in place of copy/calendars.json (tests)")
     ap.add_argument("--posters", type=Path, help="a poster list to use in place of copy/posters.json (tests)")
+    ap.add_argument("--gifts", type=Path, help="a gift list to use in place of copy/gifts.json (tests)")
     ap.add_argument(
         "--previous",
         type=Path,
@@ -82,6 +85,10 @@ def main(argv: list[str] | None = None) -> int:
         posters.load(args.posters)
     except (OSError, ValueError) as err:
         raise SystemExit(f"posters: {err}") from err
+    try:
+        gifts.load(args.gifts)
+    except (OSError, ValueError) as err:
+        raise SystemExit(f"gifts: {err}") from err
     started = time.monotonic()
     cat = catalog.load()
     states = None
@@ -97,6 +104,7 @@ def main(argv: list[str] | None = None) -> int:
         args.booklets,
         args.calendars,
         args.posters,
+        args.gifts,
     )
     n = site.write(cat, cfg, parse_now(args.now), args.out, args.previous)
     print(f"tidehours: {n} pages in {time.monotonic() - started:.1f}s -> {args.out}")

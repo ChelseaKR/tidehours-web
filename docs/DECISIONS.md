@@ -2232,4 +2232,168 @@ on first use), and seven negative controls for `check_places`.
 **Reversible.** Yes: drop the groups, the anchor, the script, the list and
 their styles and checks, and the home page is as before.
 
+## 0041: A tide gifts page lists every Tide Hours product, by kind and by town (2026-11-14)
+
+The owner asked for more
+Google visitors to the Tide Hours products for holiday gift searches ("tide
+chart gift", "Bar Harbor tide calendar 2027", "tide art print"). The site
+already had `tide-calendars/` (0037), which lists the printable calendars
+and posters by state for a reader who wants a town's calendar. This page is
+for a reader who wants a gift: every product the site can link to, grouped
+by kind, and by town within a kind. The wording below is this change's, for
+the owner to approve before it is merged. The listings were not fetched for
+this change.
+
+**Nothing forbids it.** No decision here freezes the site or rules out a
+new page. 0029 kept shop links off station, state and region pages, and
+0037 added one footer link to a page of this site on the owner's request;
+this change adds a second footer link of the same kind and no link to a
+shop from any page that did not have one, apart from the new page.
+
+**The page.** `tide-gifts/` (the address follows `tide-calendars/` and
+`king-tides/`), from `gifts.py`, `copy/gifts_page.json` and
+`templates/gifts.html.jinja`. Title and heading "Tide chart gifts and tide
+art prints" ("Tide chart gifts" when the build has no art print). A lead
+that says each one is made by Tide Hours and that the tide gifts are "art,
+not for navigation, and not a NOAA product", a sentence on how the page is
+listed, then one section per kind, in this order, each with a sentence on
+what the thing is:
+
+- **Custom tide chart prints:** the print shop's made-to-order print
+  (0029), with one link to the shop's own address. Shown only when
+  `PRINT_SHOP_URL` is set, as it is on the live site. It links to the shop
+  and not to a listing, because the listing ids of the custom print and its
+  occasion versions are not marked live in the product notes the owner
+  keeps for each listing.
+- **Tide rings art prints, year-of-tides posters, printable calendars and
+  tide blanket patterns:** one line per town, alphabetical: the town's
+  name linked to its station page, the state, and the listing linked by
+  its title.
+- **Printed tide tables:** each book, linked by its cover title, with the
+  towns it covers, each linked to its station page.
+- **Moon phase calendars:** one line each, no town. The sentence says they
+  show the moon, not the tide.
+
+**The lists.** The calendars and posters are exactly the ones the station
+pages of this build link to (0035, 0037); this page adds no id to them. The
+other products are in `copy/gifts.json`, a list of entries of four kinds
+(`rings`, `blanket`, `moon`, `book`) with the Etsy listing id or ASIN, the
+year, a title in a fixed shape ("2027 Tide Rings: Bar Harbor", "2027 Tide
+Blanket Pattern: Half Moon Bay", "2027 Moon Phase Poster: US Time Zones",
+"2027 Tide Tables: Maine Coast"), the station for a town-bound entry, the
+format and the towns for a book, and **`live`, the date its listing was
+marked live**. An entry without a `live` date, or with anything but a date
+there ("draft", "LISTED", an empty string), stops the build, as do a slug,
+a whole address, a claim word, a price, an unknown kind or key, a listing
+listed twice or also in the calendar or poster list, and a station the
+catalog does not have. As committed it holds the eight entries marked live
+in the owner's product notes on 2026-11-13 and 2026-11-14: tide rings for
+Bar Harbor and Monterey, tide blanket patterns for Bar Harbor and Half
+Moon Bay, the three moon phase calendars, and the hardcover "2027 Tide
+Tables: Maine Coast" (Eastport, Bar Harbor, Rockland, Portland,
+Kennebunkport and Wells). `booklets.json` (0030) is still empty: no single
+station's booklet is marked live, and the hardcover covers six towns, so it
+is on this page and not on a station page. `--gifts FILE` on the build and
+on `check_site.py` names another list; it is for tests.
+
+**The links.** Exactly `https://www.etsy.com/listing/ID` or
+`https://www.amazon.com/dp/ASIN`, `rel="noopener"`, as on the station pages
+(0030, 0035): no slug, query string, Associates tag (even with 0016's
+switch on), tracking parameter or click event. No price, sale, discount,
+image, rating or claim anywhere on the page. The Etsy shop's 20% sale
+(November 20 to December 2) is left out: the site states no prices, and the
+daily build at 11:20 UTC would keep a sale sentence up for hours after the
+sale ends in Pacific time, or longer if a publish failed.
+
+**Structured data.** None added. The page carries the `dateModified` every
+sitemap page has (0034) and no JSON-LD: there is nothing on it that
+schema.org can describe accurately without `Product` and `Offer`, which
+0034 rules out, and a `Book` or `ItemList` of other sites' pages would be
+markup for things this site does not hold. Etsy and Amazon are never in
+its JSON-LD.
+
+**When it exists.** Only while an entry of `gifts.json` shows: its year is
+not over by the build's date (UTC), and a town-bound one's station has a
+page in the build. The calendars, posters and custom print alone make no
+page, because `tide-calendars/` and the print shop's own link already list
+them. So the build of January 1, 2028 has no gifts page and no footer link
+to one, with nobody editing a file; the About and king-tide pages keep the
+shop link.
+
+**Links to it.** The footer of every English page, the 404 page included,
+links to it after "Tide calendars and posters": "Tide gifts". That is the
+link from the home page and from every town's station page. The Spanish
+king-tide page's footer does not (0029, 0037). No page body links to it,
+and it is not in `llms.txt`, which says nothing about Etsy or Amazon.
+
+**Indexing.** In the sitemap and `lastmod.json`. The footer link changes
+the HTML of every English page once, so the first build with it gives every
+page that build's `lastmod` and IndexNow announces every page once (0011,
+0028), as 0037's footer link did.
+
+**Privacy and terms.** The privacy page's Etsy section (`/privacy/#shop`)
+names the new page while it links to Etsy (`gifts.shop_notice`); every
+earlier case is unchanged. As published: "The About and king tides pages,
+the tide calendars and posters page, the tide gifts page, and the station
+pages of towns with a printable calendar or poster, link to the Tide Hours
+shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy,
+where Etsy's own privacy policy applies." While the page lists a book, the
+Amazon section (`/privacy/#booklets`) reads, under "Book links": "The tide
+gifts page links to printed tide tables that Tide Hours publishes and sells
+on Amazon. They are plain links, not affiliate links, and this site sends
+nothing to Amazon. A link takes you to Amazon, where Amazon's own privacy
+notice applies." (with "Some station pages, and the tide gifts page, link
+to ..." when a station booklet also shows). The terms page then names
+Amazon and Etsy among the trademarks. The "no ads" sentence is unchanged.
+
+**Checked.** `check_site.py` works out from the build what the page must
+list (`gift_listing`: the calendars and posters due on the station pages,
+the live entries whose year is not over on the date the station pages say
+the build was made, and the custom print when the shop address is set),
+and `check_gifts` fails the build if the page is missing or present when it
+should not be; if its title, heading, two paragraphs, section headings or
+section sentences differ; if its lines or their links differ or are out of
+order; **if it links to any Etsy listing or Amazon book that it does not
+list, which covers one not marked live**, or to one twice; if a link's rel
+is not `noopener` or it has a click event; if Etsy or Amazon is in its
+JSON-LD; if it names a price, sale, discount or claim; or if an English
+page does not link to it exactly once or the Spanish page links to it.
+0016's and 0029's rules leave this page to `check_gifts`, and still hold
+for every other page; the privacy and terms pages may name Amazon and Etsy
+in words while the page links to them, never with a link. The privacy
+page's Amazon section must be exactly `gifts.book_notice`'s.
+
+**Accessibility sample.** `scripts/site_sample.py` adds the page when the
+build has it. It is a heading, two paragraphs, and a heading, a sentence
+and a list for each kind, styled as `ul.printables`; no new CSS and no
+script.
+
+**Tests.** `tests/test_gifts.py`: the committed list is exactly the eight
+listings marked live; 21 bad entries are refused, six of them a missing or
+non-date `live`; the published page word for word, its 55 outbound links
+(40 calendars, 6 posters, 8 gifts and the shop), towns in order; no price,
+sale, rating or product markup; the footer of every English page and not
+the Spanish one; the sitemap and not `llms.txt`; the privacy and terms
+pages; the shop off; a one-town book; a moon calendar alone; the 2028
+build; an empty list, and calendars, posters and the custom print with no
+gift, both without a page; the affiliate switch on; the accessibility sample;
+and 25 negative controls, three of them links to a listing or book that is
+not marked live. `tests/conftest.py` points `gifts.load()` with no path at
+an empty list for the whole test session, so the other test modules stay
+about what they test; `test_gifts.py` names the committed list wherever it
+means the site as published.
+
+**Not checked.** The listings themselves: their ids are from the owner's
+notes, and Etsy and Amazon were not asked. The link titles are this
+change's, written to match the calendars' and posters'; the listings' own
+titles are longer. The Maine hardcover's notes say to look at an author
+copy before telling anyone about it; whether that has happened is with the
+owner.
+
+**Reversible.** Yes: empty `gifts.json` and the next build has no page and
+no footer link. To remove the code, drop `gifts.py`,
+its two copy files and template, the footer link, the privacy and terms
+cases in `gifts.shop_notice` and `gifts.book_notice`, the sample line,
+`check_gifts` and `tests/conftest.py`.
+
 **For the app:** nothing changes.

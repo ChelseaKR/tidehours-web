@@ -1,0 +1,9 @@
+{#
+  The link to this station's printable year-of-tides poster in the Tide
+  Hours shop on Etsy (docs/DECISIONS.md 0037). station.html.jinja includes
+  this only on the page of a station whose poster is listed and whose year
+  is not over, after the calendar sentence (0035) when both show. One
+  sentence, one plain link: no slug, no query string, no price, no claim,
+  no image and no click event.
+#}
+<p class="poster" data-poster="{{ poster.listing }}">{{ poster.before }} <a href="{{ poster.url }}" rel="{{ poster.rel }}">{{ poster.title }}</a>{{ poster.after }}</p>

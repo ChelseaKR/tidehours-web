@@ -1,0 +1,16 @@
+{
+  "kinds": {
+    "both": {"plural": "calendars and posters", "sold": "tide calendars and year-of-tides posters", "one": "calendar or poster"},
+    "calendars": {"plural": "calendars", "sold": "tide calendars", "one": "calendar"},
+    "posters": {"plural": "posters", "sold": "year-of-tides posters", "one": "poster"}
+  },
+  "title": "Printable {year} tide {plural}",
+  "description": "Printable {year} tide {plural} from Tide Hours, one town each, listed by state, with links to each town's tide times and its Etsy listing.",
+  "heading": "Printable {year} tide {plural}",
+  "intro": "Tide Hours sells printable {year} {sold}, one town each, as digital downloads in the Tide Hours shop on Etsy.",
+  "how": "They are listed here by state. Each town's name links to its tide times on this site, and each {one} links to its listing on Etsy.",
+  "footer": "Tide {plural}",
+  "privacyHeading": "Shop links",
+  "privacyWithShop": "The About and king tides pages, the tide {plural} page, and the station pages of towns with a printable {one}, link to the Tide Hours shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies.",
+  "privacy": "The tide {plural} page, and the station pages of towns with a printable {one}, link to those {plural} in the Tide Hours shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies."
+}

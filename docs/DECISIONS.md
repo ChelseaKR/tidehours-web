@@ -1826,3 +1826,179 @@ between the site and the app.
 
 **Reversible.** Yes: set `NEAR_STAND_MINUTES` to 0 and the engine is 0004's
 again (with the wider margin, which removes nothing by itself).
+
+## 0037: Station pages link to their posters, and one page lists every calendar and poster (2026-11-13)
+
+The Tide Hours shop on Etsy (0029) now also sells printable year-of-tides
+posters, one town each, as digital downloads: Bar Harbor (station 8413320),
+Eastport (8410140), Homer (9455558), Provincetown (8446121), La Jolla
+(9410230) and Monterey (9413450). On 2026-11-13 the owner gave the six
+listing ids from her live listings and asked for two things, to send more
+of the site's readers to the listings: each of those station pages links
+to its poster, as 0035 does for the calendars, and one page lists every
+calendar and poster. The site had no such page. The listings were not
+fetched for this change. The wording below is this change's, for the owner
+to approve before it is merged.
+
+**The poster list.** `src/tidehours/copy/posters.json` maps a station id to
+its poster's Etsy listing id, year and title, as `calendars.json` does
+(0035), and refuses what that list refuses: a listing id that is not digits
+only, a year that is not a whole number from 2000 to 2099, a title that is
+not "YEAR Tide Poster: Place" with the entry's own year or that carries one
+of the words 0030 refuses, any other key, one listing under two stations,
+and a station the catalog does not have. New: a listing that is also in the
+calendar list stops the build. Each poster is listed under the station its
+town's calendar is listed under; each of the six towns has exactly one
+station in `calendars.json`. `--posters FILE` on the build and on
+`check_site.py` names another list; it is for tests. There is no repository
+variable.
+
+**The poster sentence.** On that station's own page, right after the
+calendar sentence (0035): "A printable 2027 year-of-tides poster for this
+station is in the Tide Hours shop on Etsy: 2027 Tide Poster: Bar Harbor."
+with the title as the link. The link is exactly
+`https://www.etsy.com/listing/ID` with `rel="noopener"`, as in 0035: no
+slug, no query string, no parameter of any kind, no click event, no price,
+no image, no claim. It leaves with the build of January 1, 2028, as the
+calendars do.
+
+**The page.** `tide-calendars/` ("Printable 2027 tide calendars and
+posters"), from `printables.py`, `copy/printables.json` and
+`templates/printables.html.jinja`. It is built from the two lists and
+nothing else: every town whose station page shows a calendar or poster
+link in this build, under its state's name, states and towns in
+alphabetical order. A town's name links to its station page, and after it
+come the same links the station page carries, the calendar first:
+"Bar Harbor: 2027 Tide Calendar: Bar Harbor, 2027 Tide Poster: Bar
+Harbor". Above the list, two paragraphs: "Tide Hours sells printable 2027
+tide calendars and year-of-tides posters, one town each, as digital
+downloads in the Tide Hours shop on Etsy." and "They are listed here by
+state. Each town's name links to its tide times on this site, and each
+calendar or poster links to its listing on Etsy." The description is
+"Printable 2027 tide calendars and posters from Tide Hours, one town each,
+listed by state, with links to each town's tide times and its Etsy
+listing." As published it lists 28 towns in 11 states and 34 listings.
+
+- No price, image, claim, count or shop link on it, and no JSON-LD: nothing
+  on this site is marked up as a product or an offer (0034).
+- It is an indexed page: in the sitemap and `lastmod.json`, with the
+  `dateModified` every sitemap page has. It is not in `llms.txt`, which
+  still says nothing about Etsy (0029).
+- The words follow what the build has, as the privacy section does in
+  0035: with calendars only, "Printable 2027 tide calendars" and "each
+  calendar"; with posters only, "Printable 2027 tide posters" and "each
+  poster"; with calendars and posters of more than one year, no year. As
+  published it is always the first form. The address stays
+  `tide-calendars/` in each case.
+- A build whose station pages show no calendar or poster link has no such
+  page and no link to one. So the page leaves with the links on January 1,
+  2028, and an empty pair of lists leaves no trace.
+
+**The footer.** While the page exists, the footer of every English page,
+the 404 page included, links to it after Privacy, Terms and About: "Tide
+calendars and posters" ("Tide calendars" or "Tide posters" when the build
+has one kind). The header's three links are unchanged. The Spanish
+king-tide page's footer does not link to it: the page is in English and the
+label has had no native-Spanish review (0029). 0029 kept shop links off
+station, state and region pages because 3,700 links to a shop would read as
+an ad on every page. This is one link to a page of this site, among the
+footer's other page links, and no page links to Etsy that did not before
+except the new one; it is still a pointer to things for sale on every page,
+and the owner asked for it.
+
+**What it changes in 0035.** "Only on that station's own page" now reads:
+on that station's own page and on `tide-calendars/`. The privacy page's
+section on the Etsy links (`/privacy/#shop`) is now picked by
+`printables.notice`, which replaces `calendars.notice`, and its sentences
+name the new page, so the two sentences the owner worded on 2026-11-12
+change:
+
+- No Etsy link: no section, as before.
+- The print shop only (for example in 2028): 0029's sentence, unchanged.
+- The print shop and a calendar or poster link, as the site is published:
+  "The About and king tides pages, the tide calendars and posters page,
+  and the station pages of towns with a printable calendar or poster, link
+  to the Tide Hours shop on Etsy. This site sends nothing to Etsy. The
+  link takes you to Etsy, where Etsy's own privacy policy applies."
+- A calendar or poster link with the print shop off: "The tide calendars
+  and posters page, and the station pages of towns with a printable
+  calendar or poster, link to those calendars and posters in the Tide
+  Hours shop on Etsy." and the same two sentences after it.
+
+In the last two, a build with one kind names that kind only ("the tide
+calendars page", "a printable calendar"). The last two sentences of each
+are 0035's, word for word. The terms page names Etsy among the trademarks
+as before. The print shop's sentence on the About and king-tide pages
+(0035) is not changed: it still says "printable 2027 tide calendars for a
+few towns" and does not name the posters or link the new page.
+
+**Checked.** `check_site.py` reads the poster list as it reads the calendar
+list, works out from each listed station page's own date which pages are
+due the poster sentence, checks that sentence by 0035's rules (exactly one,
+one link, exactly the listing's address, `rel="noopener"`, no click event,
+between the tide tables and the closing notes, after the booklet and
+calendar sentences), and takes it out before 0029's Etsy rules run on the
+rest. New, `check_printables`: while any page is due a calendar or poster
+sentence, `tide-calendars/` exists; its title, heading and two paragraphs
+are exactly `printables.py`'s for those sentences; its towns are exactly
+the due ones, in order, each with its station page's address and name and
+each listing's exact address and title; it has one Etsy link for each
+listing and no other, each `rel="noopener"` with no click event; and Etsy
+is not in its JSON-LD. That page is the one page left out of 0029's rules.
+Every page with `lang="en"` links to it exactly once and the Spanish page
+not at all; with no sentence due there is no such page and no link to it
+anywhere. The privacy section must be exactly `printables.notice`'s.
+`check_page`'s rules (the required statements, the size limit, no broken
+internal link) apply to the page as to any other.
+
+**Accessibility sample.** `scripts/site_sample.py` adds the page, when the
+build has it, and the station pages of the poster list to the pages
+`make site-checks` audits. The page is a heading, two paragraphs, and a
+heading and a list for each state. The list is styled as the station
+lists are, in one column at every width: three selectors in `style.css`
+gain `ul.printables`. It adds no script.
+
+**Analytics.** None added. As in 0030 and 0035 the links have no event of
+their own; whether GA4's Enhanced measurement records outbound clicks is a
+setting in the property, with the owner.
+
+**What it changes elsewhere.** The footer link changes the HTML of every
+English page once, so the build that first carries it gives every page
+that build's sitemap `lastmod`, and IndexNow announces the state, region,
+king-tide and other pages that otherwise change rarely, along with the
+station pages it announces every day (0011, 0028). The six station pages
+gain the poster sentence, and the sitemap gains one URL. Views that arrive
+from these links count toward the listings' Etsy views (0029).
+
+**Tests.** `tests/test_station_posters.py`: the committed list is the
+owner's six, each under its calendar's station, no listing in both lists;
+bad entries are refused; the empty list leaves no trace; one poster puts
+one link on its page and on the list page; the sentence after the calendar
+sentence; the 2028 removal; and a negative control for each rule of the
+sentence. `tests/test_printables.py`: the published page, word for word,
+with its 28 towns and 34 listings in order, each town's links the same as
+its station page's; the sitemap; the footer of every English page and not
+the Spanish one; the words for each kind; no page and no link with nothing
+to list or in 2028; the accessibility sample; and 21 negative controls for
+`check_printables`. Each negative control asserts first that its sabotage
+changed the build. `tests/test_station_calendars.py` now expects the list
+page and the footer link wherever a calendar shows, and the new privacy
+sentences. `tests/test_site.py` builds with an empty poster list too.
+
+**Not checked.**
+
+- The listings themselves: the ids are the owner's, and Etsy was not
+  asked. The year, 2027, and the link text "2027 Tide Poster: Place" are
+  this change's, written to match the calendars'; they were not read from
+  the listings, whose own titles may differ.
+- `make site-checks` (axe-core and pa11y) was not run on the machine this
+  was written on; it runs on the pull request.
+
+**Reversible.** Yes: empty `posters.json` and the next build has no poster
+sentence; empty both lists and it has no list page and no footer link. To
+remove the code, drop `posters.py`, `printables.py`, their three copy
+files and two templates, the two includes, the footer link, the sample
+lines and the checks, and put back `calendars.notice` and the two privacy
+sentences in `copy/calendar_link.json` from 0035.
+
+**For the app:** nothing changes.

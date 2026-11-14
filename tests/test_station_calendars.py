@@ -1,12 +1,14 @@
 """A station page's link to its printable tide calendar in the Tide Hours shop
 on Etsy (docs/DECISIONS.md 0035, built as 0030 builds the booklet links): the
 committed list is the calendars the owner listed (three on 2026-11-11, twelve from 2026-11-12, twenty-eight from 2026-11-13); an empty list leaves
-no trace; one listed calendar puts one plain link on that station's page and
-nowhere else; a bad entry is refused; the link leaves when the calendar's
-year is over; the privacy page names the Etsy links by what the build shows;
-and the link sits after the booklet sentence when both show. Negative
-controls prove each new check_site rule can fail, each asserting its
-sabotage changed the build.
+no trace; one listed calendar puts one plain link on that station's page, and
+since 0037 the same link on the page that lists the calendars, which every
+English page's footer then links to; a bad entry is refused; the link leaves
+when the calendar's year is over; the privacy page names the Etsy links by
+what the build shows; and the link sits after the booklet sentence when both
+show. Negative controls prove each new check_site rule can fail, each
+asserting its sabotage changed the build. tests/test_station_posters.py and
+tests/test_printables.py cover the posters and the list (0037).
 
 The Guam listing id below is made up. It lives only in a list a test writes
 to a temporary directory; the committed list holds the real ones."""
@@ -14,6 +16,7 @@ to a temporary directory; the committed list holds the real ones."""
 from __future__ import annotations
 
 import datetime as dt
+import functools
 import html as htmllib
 import importlib.util
 import json
@@ -26,7 +29,7 @@ from typing import Any
 import pytest
 from markupsafe import escape
 
-from tidehours import booklets, calendars, catalog, cli
+from tidehours import booklets, calendars, catalog, cli, posters
 
 NOW = "2026-11-01T11:20:00Z"
 STATION = "1630000"  # Apra Harbor, Guam
@@ -35,6 +38,10 @@ LISTING = "1234567890"
 TITLE = "2027 Tide Calendar: Apra Harbor"
 URL = "https://www.etsy.com/listing/1234567890"
 PAGE = f"stations/{STATION}/index.html"
+# The page that lists the calendars (0037), and its link in the footer of a
+# build that has calendars and no posters.
+HUB = "tide-calendars/index.html"
+FOOTER = ' · <a href="/tide-calendars/">Tide calendars</a>'
 SENTENCE = "A printable 2027 tide calendar for this station is in the Tide Hours shop on Etsy: 2027 Tide Calendar: Apra Harbor."
 SHOP = "https://www.etsy.com/shop/TideHours"
 TAG = "tidehours-20"
@@ -87,14 +94,22 @@ PRIVACY_SHOP_ONLY = (
 )
 PRIVACY_BOTH = (
     "Shop links",
-    "The About and king tides pages, and the station pages of towns with a printable calendar, link to the "
-    "Tide Hours shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own "
-    "privacy policy applies.",
+    "The About and king tides pages, the tide calendars page, and the station pages of towns with a printable "
+    "calendar, link to the Tide Hours shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy, "
+    "where Etsy's own privacy policy applies.",
 )
 PRIVACY_CALENDARS_ONLY = (
     "Shop links",
-    "The station pages of towns with a printable calendar link to that calendar in the Tide Hours shop on Etsy. "
-    "This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies.",
+    "The tide calendars page, and the station pages of towns with a printable calendar, link to those calendars "
+    "in the Tide Hours shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's "
+    "own privacy policy applies.",
+)
+# As the site is published: the print shop, the calendars and the posters.
+PRIVACY_COMMITTED = (
+    "Shop links",
+    "The About and king tides pages, the tide calendars and posters page, and the station pages of towns with a "
+    "printable calendar or poster, link to the Tide Hours shop on Etsy. This site sends nothing to Etsy. The link "
+    "takes you to Etsy, where Etsy's own privacy policy applies.",
 )
 SHOP_SENTENCE = (
     "Tide Hours also sells a made-to-order print of the tide at one place on one day, and printable 2027 tide "
@@ -225,21 +240,36 @@ def traces(root: Path) -> list[str]:
     return found
 
 
-def differing(a: Path, b: Path) -> list[str]:
-    """The files that are in only one of two builds, or differ in a byte."""
+def differing(a: Path, b: Path, ignoring: str = "") -> list[str]:
+    """The files that are in only one of two builds, or differ in a byte
+    once every `ignoring` is taken out of both."""
     names = {f.relative_to(root).as_posix() for root in (a, b) for f in root.rglob("*") if f.is_file()}
-    return sorted(
-        n
-        for n in names
-        if not ((a / n).is_file() and (b / n).is_file() and (a / n).read_bytes() == (b / n).read_bytes())
-    )
+    cut = ignoring.encode("utf-8")
+
+    def same(n: str) -> bool:
+        if not ((a / n).is_file() and (b / n).is_file()):
+            return False
+        one, other = (a / n).read_bytes(), (b / n).read_bytes()
+        return one == other or (bool(cut) and one.replace(cut, b"") == other.replace(cut, b""))
+
+    return sorted(n for n in names if not same(n))
+
+
+@functools.cache
+def the_catalog() -> catalog.Catalog:
+    return catalog.load()
 
 
 def problems(check_site: Any, root: Path, list_file: Path | None, url: str = "") -> list[str]:
-    """What check_site's main does for Etsy: the pages due a calendar link,
-    from the list and each page's own date, then the Etsy rules."""
+    """What check_site's main does for Etsy: the pages due a calendar or
+    poster link, from the lists and each page's own date, then the Etsy
+    rules and the page that lists them (0037). The poster list is the
+    committed one, which has no station in Guam."""
     want, undated = check_site.calendar_pages(root, calendars.load(list_file))
-    found: list[str] = undated + check_site.check_print_shop(root, pages(root), url, want)
+    want_posters, undated_posters = check_site.poster_pages(root, posters.load())
+    found: list[str] = undated + undated_posters
+    found += check_site.check_print_shop(root, pages(root), url, want, want_posters)
+    found += check_site.check_printables(root, pages(root), the_catalog(), want, want_posters)
     return found
 
 
@@ -337,6 +367,8 @@ def test_a_station_the_catalog_does_not_have_stops_the_build(tmp_path: Path) -> 
 
 def test_an_empty_list_leaves_no_trace(off: Path, empty: Path, tmp_path: Path, check_site: Any) -> None:
     assert traces(off) == []
+    assert not (off / HUB).exists()
+    assert not any("tide-calendars" in f.read_text(encoding="utf-8") for f in off.rglob("*") if f.suffix in SUFFIXES)
     assert TERMS_OFF in text_of(read(off, "terms"))
     assert shop_section(off) == []
     assert problems(check_site, off, empty) == []
@@ -369,15 +401,26 @@ def test_the_empty_list_check_can_fail(off: Path, on: Path, empty: Path, tmp_pat
 
 
 def test_one_calendar_puts_one_link_on_one_page(off: Path, on: Path, listed: Path, check_site: Any) -> None:
-    # Nothing but that station's page, the privacy and terms pages, and the
-    # record of their fingerprints differs from the empty-list build.
-    assert differing(off, on) == ["lastmod.json", "privacy/index.html", PAGE, "terms/index.html"]
+    # Every English page's footer gains the link to the list (0037). Apart
+    # from that, nothing but that station's page, the privacy and terms
+    # pages, the list itself, the sitemap that now names it and the record
+    # of fingerprints differs from the empty-list build.
+    linking = {f.relative_to(on).as_posix() for f in pages(on) if FOOTER in f.read_text(encoding="utf-8")}
+    assert linking == {f.relative_to(on).as_posix() for f in pages(on)} - {"es/king-tides/index.html"}
+    assert differing(off, on, ignoring=FOOTER) == [
+        "lastmod.json",
+        "privacy/index.html",
+        "sitemap.xml",
+        PAGE,
+        "terms/index.html",
+        HUB,
+    ]
     links = {
         f.relative_to(on).as_posix(): ETSY_A.findall(f.read_text(encoding="utf-8"))
         for f in on.rglob("*")
         if f.is_file() and f.suffix in SUFFIXES and ETSY_A.search(f.read_text(encoding="utf-8"))
     }
-    assert links == {PAGE: [URL]}
+    assert links == {PAGE: [URL], HUB: [URL]}
     html = read(on, f"stations/{STATION}")
     blocks = BLOCK.findall(html)
     assert len(blocks) == 1
@@ -386,14 +429,15 @@ def test_one_calendar_puts_one_link_on_one_page(off: Path, on: Path, listed: Pat
     assert f'<a href="{URL}" rel="noopener">{TITLE}</a>' in blocks[0]
     for unwanted in ("?", "&", "ref=shop", "utm_", "data-ga", "sponsored", "nofollow", "<img", "$"):
         assert unwanted not in blocks[0], unwanted
-    # Take the sentence out and the page is the empty-list page, byte for byte.
-    assert html.replace(blocks[0], "") == read(off, f"stations/{STATION}")
+    # Take the sentence and the footer's link out and the page is the
+    # empty-list page, byte for byte.
+    assert html.replace(blocks[0], "").replace(FOOTER, "") == read(off, f"stations/{STATION}")
     # After the tide tables and the app line, before the closing notes.
     last_day = html.rindex('<section class="day"')
     assert (
         html.index("</section>", last_day) < html.index('id="week"') < html.index(blocks[0]) < html.index('id="what"')
     )
-    assert sorted(traces(on)) == sorted(["privacy/index.html", PAGE, "terms/index.html"])
+    assert sorted(traces(on)) == sorted(["privacy/index.html", PAGE, "terms/index.html", HUB])
     assert problems(check_site, on, listed) == []
 
 
@@ -432,10 +476,19 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
             found = ETSY_A.findall(f.read_text(encoding="utf-8"))
             if found:
                 links[f.relative_to(committed).as_posix()] = found
+    # The six towns with a poster (0037) link to it after the calendar, and
+    # the page that lists them all carries every listing once.
+    poster_of = {sid: poster.url for sid, poster in posters.load().items()}
+    assert len(poster_of) == 6 and set(poster_of) <= set(COMMITTED)
     want = {
-        f"stations/{sid}/index.html": [f"https://www.etsy.com/listing/{listing}"]
+        f"stations/{sid}/index.html": [
+            f"https://www.etsy.com/listing/{listing}",
+            *([poster_of[sid]] if sid in poster_of else []),
+        ]
         for sid, (listing, _) in COMMITTED.items()
     }
+    every = sorted(url for urls in want.values() for url in urls)
+    assert len(every) == 34 and sorted(links.pop(HUB)) == every
     assert links == want | {"about/index.html": [SHOP], "king-tides/index.html": [SHOP]}
     for sid, (listing, title) in COMMITTED.items():
         html = read(committed, f"stations/{sid}")
@@ -449,7 +502,7 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
             f'the Tide Hours shop on Etsy: <a href="https://www.etsy.com/listing/{listing}" rel="noopener">'
             f"{title}</a>.</p>"
         )
-    assert shop_section(committed) == [PRIVACY_BOTH]
+    assert shop_section(committed) == [PRIVACY_COMMITTED]
     assert problems(check_site, committed, None, SHOP) == []
 
 
@@ -470,6 +523,7 @@ def test_the_committed_calendars_leave_on_january_1_2028(tmp_path: Path, check_s
         "king-tides/index.html",
     }
     assert shop_section(after) == [PRIVACY_SHOP_ONLY]
+    assert not (after / HUB).exists()
     assert problems(check_site, after, None, SHOP) == []
 
 

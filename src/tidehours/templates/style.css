@@ -102,9 +102,9 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; }
 .tide-chart .dot-L { fill: var(--low); }
 figcaption { font-size: 0.875rem; color: var(--muted); }
 
-ul.states, ul.stations, ul.near { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.1rem 1rem; grid-template-columns: 1fr; }
-ul.states li, ul.stations li, ul.near li { padding-block: 0.35rem; border-bottom: 1px solid var(--line); }
-ul.states a, ul.stations a, ul.near a { display: inline-block; min-height: 24px; }
+ul.states, ul.stations, ul.near, ul.printables { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.1rem 1rem; grid-template-columns: 1fr; }
+ul.states li, ul.stations li, ul.near li, ul.printables li { padding-block: 0.35rem; border-bottom: 1px solid var(--line); }
+ul.states a, ul.stations a, ul.near a, ul.printables a { display: inline-block; min-height: 24px; }
 @media (min-width: 34rem) {
   ul.states, ul.stations { grid-template-columns: 1fr 1fr; }
   h1 { font-size: 2rem; }

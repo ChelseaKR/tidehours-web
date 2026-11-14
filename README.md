@@ -36,7 +36,7 @@ constants for the highs and lows of the first 30 minutes of the next
 ## Commands
 
     make verify        # the gate: format, lint, types, tests (incl. NOAA accuracy), full build + checks, audit, secrets, hygiene
-    make site-checks   # axe-core and pa11y-ci on a sample of 138 pages (needs Node 22 and Chrome)
+    make site-checks   # axe-core and pa11y-ci on a sample of 161 pages (needs Node 22 and Chrome)
     make site          # build with today's numbers into ./site
     uv run python scripts/refresh_data.py --app-checkout ~/portfolio/tide-app   # refresh NOAA data (network)
     uv run python scripts/fetch_golden.py [--month | --add | --year-boundary]    # refresh the NOAA fixtures (network)
@@ -48,7 +48,8 @@ Build options: `--now` (pin the clock), `--states CA,OR,WA` (a subset),
 list of printed booklets in place of `src/tidehours/copy/booklets.json`,
 for tests; DECISIONS 0030), `--calendars FILE` (a list of printable
 calendars in place of `src/tidehours/copy/calendars.json`, for tests;
-DECISIONS 0035).
+DECISIONS 0035), `--posters FILE` (the same for the printable posters,
+`src/tidehours/copy/posters.json`; DECISIONS 0037).
 
 ## CI
 
@@ -90,3 +91,8 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    year is over. The print shop's sentence on the About and king-tide pages
    names "printable 2027 tide calendars" in `copy/print_shop.json`; change
    it when the year changes.
+8. Printable posters (DECISIONS 0037): when a poster is live in the Etsy
+   shop, add its station id, Etsy listing id, year and title ("2027 Tide
+   Poster: Place") to `src/tidehours/copy/posters.json` in a pull request.
+   That station's page then links to it, and `/tide-calendars/` lists it
+   with every other calendar and poster, until the poster's year is over.

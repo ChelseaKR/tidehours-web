@@ -30,17 +30,21 @@ NOW = "2026-11-01T11:20:00Z"  # US daylight saving time ends this day
 @pytest.fixture(scope="module")
 def built(tmp_path_factory: pytest.TempPathFactory) -> Path:
     out = tmp_path_factory.mktemp("site")
-    # Empty booklet and calendar lists, so these tests stay about the site
-    # without them now that a California calendar is listed and when a
-    # California booklet is (docs/DECISIONS.md 0030 and 0035;
-    # tests/test_station_booklets.py and tests/test_station_calendars.py
-    # cover listed ones).
+    # Empty booklet, calendar and poster lists, so these tests stay about
+    # the site without them now that California calendars and posters are
+    # listed and when a California booklet is (docs/DECISIONS.md 0030, 0035
+    # and 0037; tests/test_station_booklets.py,
+    # tests/test_station_calendars.py, tests/test_station_posters.py and
+    # tests/test_printables.py cover listed ones).
     lists = tmp_path_factory.mktemp("lists")
     no_booklets = lists / "booklets.json"
     no_booklets.write_text('{"booklets": {}}', encoding="utf-8")
     no_calendars = lists / "calendars.json"
     no_calendars.write_text('{"calendars": {}}', encoding="utf-8")
+    no_posters = lists / "posters.json"
+    no_posters.write_text('{"posters": {}}', encoding="utf-8")
     args = ["--states", "CA,HI,other", "--booklets", str(no_booklets), "--calendars", str(no_calendars)]
+    args += ["--posters", str(no_posters)]
     assert cli.main(["--out", str(out), "--now", NOW, *args]) == 0
     return out
 
@@ -948,7 +952,9 @@ def test_sitemap_lastmod_carries_over_for_unchanged_pages(tmp_path: Path, built:
     # The same empty lists as `built`, so only the day differs.
     (tmp_path / "booklets.json").write_text('{"booklets": {}}', encoding="utf-8")
     (tmp_path / "calendars.json").write_text('{"calendars": {}}', encoding="utf-8")
+    (tmp_path / "posters.json").write_text('{"posters": {}}', encoding="utf-8")
     lists = ["--booklets", str(tmp_path / "booklets.json"), "--calendars", str(tmp_path / "calendars.json")]
+    lists += ["--posters", str(tmp_path / "posters.json")]
     args = ["--now", "2026-11-02T11:20:00Z", "--states", "CA,HI,other", "--previous", str(prev), *lists]
     assert cli.main(["--out", str(out), *args]) == 0
     mods = _lastmods(out)

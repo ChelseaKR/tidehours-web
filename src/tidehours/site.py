@@ -1,7 +1,8 @@
 """Renders the static site: a page per station (today and tomorrow), state
-and region indexes, the king-tide pages, about, privacy, terms, 404, sitemap and
-robots.txt. Every number on a page is computed at build time from NOAA's
-constants (docs/DECISIONS.md 0002); nothing is fetched while building."""
+and region indexes, the king-tide pages, about, privacy, terms, the list of
+printable calendars and posters, 404, sitemap and robots.txt. Every number
+on a page is computed at build time from NOAA's constants
+(docs/DECISIONS.md 0002); nothing is fetched while building."""
 
 from __future__ import annotations
 
@@ -23,7 +24,20 @@ from xml.sax.saxutils import escape
 import numpy as np
 from jinja2 import Environment, PackageLoader, StrictUndefined, Template, select_autoescape
 
-from . import affiliate, booklets, calendars, indexnow, kingtides, ktformat, llms, printshop, schema, subordinate
+from . import (
+    affiliate,
+    booklets,
+    calendars,
+    indexnow,
+    kingtides,
+    ktformat,
+    llms,
+    posters,
+    printables,
+    printshop,
+    schema,
+    subordinate,
+)
 from .catalog import DATA_DIR, STATE_NAMES, Catalog, Station, tidy_name
 from .days import Day, feet, local_today, long_date, short_date, station_day
 from .engine import Offsets
@@ -255,6 +269,10 @@ class Config:
     # Etsy. None (the default) reads the committed list, copy/calendars.json;
     # a test passes its own (docs/DECISIONS.md 0035).
     calendars_file: Path | None = None
+    # The list of printable posters on sale there. None (the default) reads
+    # the committed list, copy/posters.json; a test passes its own
+    # (docs/DECISIONS.md 0037).
+    posters_file: Path | None = None
 
 
 @dataclass
@@ -634,11 +652,46 @@ def calendars_shown(
     }
 
 
+def posters_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, posters.Poster]:
+    """Station id -> the poster its page links to in this build: a listed
+    poster whose year is not over on the station's own date
+    (docs/DECISIONS.md 0037, as calendars_shown). A listed station the
+    catalog does not have stops the build, and so does a listing that is
+    also in the calendar list."""
+    listed = posters.load(cfg.posters_file)
+    unknown = sorted(sid for sid in listed if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"posters: no station {', '.join(unknown)} in the catalog")
+    calendar_listings = {c.listing for c in calendars.load(cfg.calendars_file).values()}
+    twice = sorted(p.listing for p in listed.values() if p.listing in calendar_listings)
+    if twice:
+        raise ValueError(f"posters: listing {', '.join(twice)} is in the calendar list too")
+    return {s.id: listed[s.id] for s in stations if s.id in listed and posters.shown(listed[s.id], local_today(s, now))}
+
+
+def printables_page(
+    page: Callable[..., None],
+    calendar_of: dict[str, calendars.Calendar],
+    poster_of: dict[str, posters.Poster],
+    by_id: dict[str, Station],
+) -> None:
+    """The list of the calendars and posters this build's station pages
+    link to, when there is one to list (docs/DECISIONS.md 0037)."""
+    listing = printables.block(calendar_of, poster_of, by_id)
+    if listing is not None:
+        page(printables.PATH, "printables.html.jinja", listing=listing)
+
+
+def selected(cat: Catalog, cfg: Config) -> list[Station]:
+    """The stations this build makes pages for."""
+    return [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
     e = env()
-    stations = [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
+    stations = selected(cat, cfg)
     if not stations:
         raise ValueError("no stations selected")
     states = group(stations)
@@ -652,6 +705,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     links = king_links(stations, kt["seasons"], kt_today, cat)
     booklet_of = booklets_shown(cat, stations, cfg, now)
     calendar_of = calendars_shown(cat, stations, cfg, now)
+    poster_of = posters_shown(cat, stations, cfg, now)
+    printed = printables.kind(bool(calendar_of), bool(poster_of))
     shop = printshop.block(cfg.print_shop_url)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
@@ -663,7 +718,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": shop,
         "booklet_links": booklets.notice(bool(booklet_of)),
-        "shop_links": calendars.notice(bool(calendar_of), shop),
+        "shop_links": printables.notice(printed, shop),
+        "printables": printables.link(printed),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
@@ -706,6 +762,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
+    printables_page(page, calendar_of, poster_of, by_id)
     for lang in ("en", "es"):
         page(
             "king-tides/" if lang == "en" else "es/king-tides/",
@@ -789,6 +846,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
                 built=common["built"],
             ),
             calendar=calendars.block(calendar_of.get(s.id)),
+            poster=posters.block(poster_of.get(s.id)),
             **twin,
         )
     return pages
@@ -861,6 +919,10 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     built = now.astimezone(dt.UTC).date().isoformat()
     prev = previous_lastmods(previous, base, built)
+    stations = selected(cat, cfg)
+    printed = printables.kind(
+        bool(calendars_shown(cat, stations, cfg, now)), bool(posters_shown(cat, stations, cfg, now))
+    )
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -877,6 +939,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": printshop.block(cfg.print_shop_url),
+        "printables": printables.link(printed),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),

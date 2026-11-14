@@ -2,6 +2,19 @@
 
 ## 0.1.0 (unreleased)
 
+- Sixteen more listings of 2026-11-14 are linked. `/tide-gifts/` lists
+  the made-to-order "Custom Tide Cross Stitch Pattern" under the custom
+  prints, its line ending with its listing's own first sentence, and
+  tide rings prints for Ogunquit, Cape May, Myrtle Beach, Tybee Island,
+  Newport and Long Beach, tide blanket patterns for Newport, Ogunquit,
+  Tybee Island and Fernandina Beach, and cross-stitch patterns for
+  Monterey and Half Moon Bay, each town linked to its station page, and a
+  new section, "Year-of-daylight prints", with the made-to-order "2027
+  Year of Daylight Print: Any City", its line ending with its listing's
+  own description. The San Francisco and Half Moon Bay station pages link
+  to their 2027 year-of-tides posters, and `/tide-calendars/` lists both
+  (41 towns, 48 listings); San Francisco has a poster and no calendar
+  (DECISIONS 0037, 0041).
 - `/tide-gifts/` lists four more products: the made-to-order "Your Year In
   Tides" print and "Beach Wedding Welcome Sign" under the custom prints,
   and a new section, "Cross-stitch patterns", with the San Francisco and

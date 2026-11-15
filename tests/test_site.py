@@ -1184,3 +1184,83 @@ def test_every_station_description_can_fit() -> None:
     for s in cat.stations:
         fallback = f"{site.place_name(s, names)} high and low tides, Sep 30 and Sep 30."
         assert len(fallback) <= site.DESCRIPTION_MAX, s.id
+
+
+def _png_size(path: Path) -> tuple[int, int]:
+    data = path.read_bytes()
+    assert data[:8] == b"\x89PNG\r\n\x1a\n" and data[12:16] == b"IHDR", path
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+def test_every_page_has_the_share_card_and_icons(built: Path) -> None:
+    """Every page, the 404 page and redirect stubs included, shares as its
+    own title and description with the one share image, and links the
+    icons (docs/DECISIONS.md 0042)."""
+    for f in pages(built):
+        html = f.read_text(encoding="utf-8")
+        rel = f.relative_to(built)
+        title = re.findall(r"<title>([^<]*)</title>", html)
+        description = re.findall(r'<meta name="description" content="([^"]*)">', html)
+        assert len(title) == 1 and title[0], rel
+        assert re.findall(r'<meta property="og:title" content="([^"]*)">', html) == title, rel
+        assert len(description) == 1 and description[0], rel
+        assert re.findall(r'<meta property="og:description" content="([^"]*)">', html) == description, rel
+        assert html.count('<meta property="og:image" content="https://tidehours.com/share.png">') == 1, rel
+        assert '<meta property="og:image:width" content="1200">' in html, rel
+        assert '<meta property="og:image:height" content="630">' in html, rel
+        assert '<meta property="og:image:alt" content="Tide Hours, tidehours.com: ' in html, rel
+        assert html.count('<meta name="twitter:card" content="summary_large_image">') == 1, rel
+        assert '<link rel="apple-touch-icon" href="/apple-touch-icon.png">' in html, rel
+        assert '<link rel="manifest" href="/manifest.json">' in html, rel
+        assert '<link rel="icon" href="/favicon.ico" sizes="32x32">' in html, rel
+        canonical = re.findall(r'<link rel="canonical" href="([^"]*)">', html)
+        assert re.findall(r'<meta property="og:url" content="([^"]*)">', html) == canonical, rel
+    home = (built / "index.html").read_text(encoding="utf-8")
+    assert '<meta property="og:url" content="https://tidehours.com/">' in home
+
+
+def test_share_image_and_icons_exist_at_their_sizes(built: Path) -> None:
+    sizes = {
+        "share.png": (1200, 630),
+        "apple-touch-icon.png": (180, 180),
+        "icon-192.png": (192, 192),
+        "icon-512.png": (512, 512),
+    }
+    for name, size in sizes.items():
+        f = built / name
+        assert _png_size(f) == size, name
+        assert f.stat().st_size < 200_000, name
+        assert f.read_bytes() == (site.STATIC_DIR / name).read_bytes(), name
+    ico = (built / "favicon.ico").read_bytes()
+    assert ico[:4] == b"\x00\x00\x01\x00" and len(ico) < 200_000
+    count = int.from_bytes(ico[4:6], "little")
+    assert [(ico[6 + 16 * i], ico[7 + 16 * i]) for i in range(count)] == [(16, 16), (32, 32), (48, 48)]
+    manifest = json.loads((built / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["name"] == "Tide Hours" and manifest["display"] == "browser"
+    for icon in manifest["icons"]:
+        w, h = _png_size(built / icon["src"].lstrip("/"))
+        assert icon["sizes"] == f"{w}x{h}" and icon["type"] == "image/png"
+    assert sorted(i["sizes"] for i in manifest["icons"]) == ["192x192", "512x512"]
+    check: Any = _check_site()
+    assert check.check_share_files(built) == []
+
+
+def test_check_site_catches_a_missing_share_card_or_a_wrong_icon(tmp_path: Path, built: Path) -> None:
+    check: Any = _check_site()
+    home = (built / "index.html").read_text(encoding="utf-8")
+    assert check.check_share_tags("index.html", home) == []
+    no_image = re.sub(r'<meta property="og:image" content="[^"]*">', "", home)
+    assert any("og:image" in p for p in check.check_share_tags("index.html", no_image))
+    no_card = home.replace('<meta name="twitter:card" content="summary_large_image">', "")
+    assert any("twitter:card" in p for p in check.check_share_tags("index.html", no_card))
+    other_title = home.replace('<meta property="og:title" content="', '<meta property="og:title" content="X', 1)
+    assert any("og:title" in p for p in check.check_share_tags("index.html", other_title))
+    root = tmp_path / "site"
+    root.mkdir()
+    for name in ("share.png", "favicon.ico", "icon-192.png", "icon-512.png", "manifest.json"):
+        shutil.copyfile(built / name, root / name)
+    shutil.copyfile(built / "icon-192.png", root / "apple-touch-icon.png")  # 192, not 180
+    assert check.check_share_files(root) == ["/apple-touch-icon.png is (192, 192), not (180, 180)"]
+    (root / "icon-512.png").unlink()
+    problems = check.check_share_files(root)
+    assert "no /icon-512.png" in problems and any(p.startswith("manifest.json: icon") for p in problems)

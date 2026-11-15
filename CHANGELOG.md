@@ -2,6 +2,16 @@
 
 ## 0.1.0 (unreleased)
 
+- Links to the site share with a picture, and it has home-screen icons.
+  Every page names one share image, `/share.png` (1200 x 630, in the print
+  shop's Night colors: the Tide Hours mark, "Tide Hours", a line from the
+  home page's description and "tidehours.com" over the predicted tide at
+  Bar Harbor on January 1, 2027), with a large-image card for X, and its
+  own title and description as before. `/apple-touch-icon.png`, a
+  `/manifest.json` with 192 and 512 px icons, and `/favicon.ico` beside
+  `/favicon.svg`. The images are drawn once and committed
+  (`scripts/share_image.py`); `check_site.py` checks the tags on every
+  page and the files' sizes (DECISIONS 0042).
 - Region pages say when their day has passed. From midnight at the
   region's stations until the next build (before dawn on the East Coast,
   most of the day in Guam), the page's script puts a notice above the dated

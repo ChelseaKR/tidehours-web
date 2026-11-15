@@ -38,6 +38,7 @@ constants for the highs and lows of the first 30 minutes of the next
     make verify        # the gate: format, lint, types, tests (incl. NOAA accuracy), full build + checks, audit, secrets, hygiene
     make site-checks   # axe-core and pa11y-ci on a sample of 161 pages (needs Node 22 and Chrome)
     make site          # build with today's numbers into ./site
+    uv run python scripts/share_image.py --fonts DIR --logo PNG --out share.html   # the share image's page, drawn once with Chrome (DECISIONS 0042)
     uv run python scripts/refresh_data.py --app-checkout ~/portfolio/tide-app   # refresh NOAA data (network)
     uv run python scripts/fetch_golden.py [--month | --add | --year-boundary]    # refresh the NOAA fixtures (network)
 

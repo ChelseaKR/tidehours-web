@@ -51,6 +51,10 @@ page's row for a station shows that station page's first-day highs and lows,
 for the date its heading names (0039). /places.json, the home page's find
 list, names every station page of the build once, by its display name, and
 the home page lists every state under its coast groups (0040).
+Every page carries the share card (its own title and description, the
+one 1200 x 630 share image, a large-image Twitter card) and links
+favicon.ico, the apple-touch-icon and manifest.json, and those files are
+at the root at their exact sizes, each under 200 KB (0042).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
                                        [--calendars FILE] [--posters FILE] [--gifts FILE]
@@ -112,6 +116,32 @@ BUILT = re.compile(r"page built (\d{4}-\d{2}-\d{2}) \(UTC\)")
 # What no word on the gifts page may be: a price, a discount, a rating or a
 # claim (0029, 0030, 0041).
 GIFT_FORBIDDEN = re.compile(r"[$%\u2605]|\b(sale|discount|free shipping|best|cheap|deals?|rated|official)\b", re.I)
+# The share and icon tags every page carries, and the files they name, at
+# their exact pixel sizes and each under MAX_IMAGE_BYTES (0042).
+SHARE_TAGS = (
+    '<meta property="og:image:type" content="image/png">',
+    '<meta property="og:image:width" content="1200">',
+    '<meta property="og:image:height" content="630">',
+    '<meta property="og:image:alt" content="',
+    '<meta name="twitter:card" content="summary_large_image">',
+    '<link rel="icon" href="/favicon.ico" sizes="32x32">',
+    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">',
+    '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
+    '<link rel="manifest" href="/manifest.json">',
+)
+OG_IMAGE = re.compile(r'<meta property="og:image" content="https://[^/"]+/share\.png">')
+OG_TITLE = re.compile(r'<meta property="og:title" content="([^"]*)">')
+OG_DESCRIPTION = re.compile(r'<meta property="og:description" content="([^"]*)">')
+OG_URL = re.compile(r'<meta property="og:url" content="https://[^/"]+/([^"]*)">')
+DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">')
+SHARE_IMAGES = {
+    "share.png": (1200, 630),
+    "apple-touch-icon.png": (180, 180),
+    "icon-192.png": (192, 192),
+    "icon-512.png": (512, 512),
+}
+FAVICON_ICO_SIZES = [(16, 16), (32, 32), (48, 48)]
+MAX_IMAGE_BYTES = 200_000
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -128,10 +158,77 @@ def check_page(root: Path, f: Path) -> list[str]:
         problems.append(f"{rel}: no NOAA credit")
     body = SCRIPT.sub("", text)
     problems += [f"{rel}: contains {b!r}" for b in BAD if b in body]
+    problems += check_share_tags(rel, text)
     for link in HREF.findall(text):
         target = root / link.lstrip("/")
         if not (target.is_file() or (target / "index.html").is_file()):
             problems.append(f"{rel}: broken link {link}")
+    return problems
+
+
+def check_share_tags(rel: str, text: str) -> list[str]:
+    """The page's share card is its own title and description with the one
+    share image, its og:url is its canonical URL (none on the 404 page), and
+    it links the icons and the manifest (0042)."""
+    problems = [f"{rel}: no {tag!r}" for tag in SHARE_TAGS if text.count(tag) != 1]
+    if len(OG_IMAGE.findall(text)) != 1:
+        problems.append(f"{rel}: no og:image of the share image")
+    title, description = TITLE.findall(text), DESCRIPTION.findall(text)
+    if OG_TITLE.findall(text) != title[:1] or len(title) != 1:
+        problems.append(f"{rel}: og:title is not the page's title")
+    if OG_DESCRIPTION.findall(text) != description[:1] or len(description) != 1:
+        problems.append(f"{rel}: og:description is not the page's description")
+    if OG_URL.findall(text) != CANONICAL.findall(text):
+        problems.append(f"{rel}: og:url is not the canonical URL")
+    return problems
+
+
+def png_size(data: bytes) -> tuple[int, int] | None:
+    """A PNG's width and height from its header, or None if it is not a PNG."""
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        return None
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+def ico_sizes(data: bytes) -> list[tuple[int, int]]:
+    """The sizes in an .ico file's directory (0 means 256), or [] if it is
+    not one."""
+    if data[:4] != b"\x00\x00\x01\x00":
+        return []
+    count = int.from_bytes(data[4:6], "little")
+    entries = [data[6 + 16 * i : 8 + 16 * i] for i in range(count)]
+    return [(e[0] or 256, e[1] or 256) for e in entries if len(e) == 2]
+
+
+def check_share_files(root: Path) -> list[str]:
+    """The share image and the icons are at the root at their exact sizes,
+    each under MAX_IMAGE_BYTES, and the manifest names the two home-screen
+    icons by their real sizes (0042)."""
+    problems: list[str] = []
+    for name, size in SHARE_IMAGES.items():
+        f = root / name
+        if not f.is_file():
+            problems.append(f"no /{name}")
+            continue
+        data = f.read_bytes()
+        if png_size(data) != size:
+            problems.append(f"/{name} is {png_size(data)}, not {size}")
+        if len(data) > MAX_IMAGE_BYTES:
+            problems.append(f"/{name} is {len(data)} bytes")
+    ico = root / "favicon.ico"
+    if not ico.is_file() or ico_sizes(ico.read_bytes()) != FAVICON_ICO_SIZES:
+        problems.append(f"/favicon.ico does not hold {FAVICON_ICO_SIZES}")
+    elif ico.stat().st_size > MAX_IMAGE_BYTES:
+        problems.append(f"/favicon.ico is {ico.stat().st_size} bytes")
+    manifest = root / "manifest.json"
+    icons = json.loads(manifest.read_text(encoding="utf-8")).get("icons", []) if manifest.is_file() else []
+    for icon in icons:
+        f = root / str(icon.get("src", "")).lstrip("/")
+        named = tuple(int(n) for n in re.findall(r"\d+", str(icon.get("sizes", ""))))
+        if not f.is_file() or png_size(f.read_bytes()) != named:
+            problems.append(f"manifest.json: icon {icon} does not match its file")
+    if sorted(str(i.get("src")) for i in icons) != ["/icon-192.png", "/icon-512.png"]:
+        problems.append("manifest.json does not name /icon-192.png and /icon-512.png")
     return problems
 
 
@@ -1111,6 +1208,7 @@ def main(
     problems += check_next(root, cat)
     problems += check_hubs(root, cat)
     problems += check_places(root, cat)
+    problems += check_share_files(root)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))

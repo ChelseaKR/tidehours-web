@@ -20,9 +20,19 @@
 <meta property="og:description" content="{{ self.description() }}">
 {% if not is_404 %}<meta property="og:url" content="{{ base_url }}{{ canonical }}">
 {% endif %}
+{# One share image for every page (docs/DECISIONS.md 0042). #}
+<meta property="og:image" content="{{ base_url }}share.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tide Hours, tidehours.com: the predicted tide at Bar Harbor, Maine, on January 1, 2027, drawn as a curve.">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#f7f3e8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b1624" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="/style.css">
 {% block jsonld %}{% endblock %}
 {% if ga4_measurement_id %}{% include "_ga4.html.jinja" %}{% endif %}

@@ -563,6 +563,7 @@ def env() -> Environment:
         fmt_time=ktformat.fmt_time,
         fmt_feet=ktformat.fmt_feet,
         fmt_months=ktformat.fmt_months,
+        king_hub_head=king_hub_head,
         calendar_path=kingtides.calendar_path,
         zone_label=zone_label,
         zone_unknown=ZONE_UNKNOWN,
@@ -671,6 +672,7 @@ def king_calendar_pages(
 ) -> None:
     """The WA, OR and CA winter calendar pages (docs/DECISIONS.md 0024)."""
     state_paths = {st.code: st.path for st in states}
+    kc: dict[str, Any] = kt["copy"]["en"]
     for code, (name, _) in kingtides.CALENDAR_STATES.items():
         page(
             kingtides.calendar_path(code),
@@ -685,8 +687,80 @@ def king_calendar_pages(
             calendar_last=kingtides.CALENDAR_LAST,
             calendar_states=kingtides.CALENDAR_STATES,
             search=kingtides.CALENDAR_SEARCH[code],
+            head=king_calendar_head(
+                code, kingtides.calendar(kt["seasons"], code), dt.date.fromisoformat(king_common["king_today"]), kc
+            ),
             **king_common,
         )
+
+
+def king_calendar_head(
+    code: str, months: list[kingtides.CalendarMonth], today: dt.date, c: dict[str, Any]
+) -> tuple[str, str]:
+    """A state calendar page's title and description (docs/DECISIONS.md 0045).
+    While a month's runs are in season (kingtides.calendar_now), both name
+    that month's days, the same span the page's summary gives for it, so the
+    title moves on to the next month's dates once the last run ends. The
+    title is the first of these that fits in TITLE_MAX characters: with the
+    year, without it, without the places, the season's title. Out of season,
+    the season's title and description (0028)."""
+    search = kingtides.CALENDAR_SEARCH[code]
+    name = kingtides.CALENDAR_STATES[code][0]
+    places: list[str] = search["places"]
+
+    def named(n: int) -> str:
+        return ", ".join(places[: n - 1]) + " and " + places[n - 1]
+
+    month = kingtides.calendar_now(months, today)
+    span = month.span if month is not None else None
+    if span is None:
+        season = f"Predicted king tides {search['where']} by month, Nov 2026 to Feb 2027: {named(len(places))}"
+        return (
+            ktformat.first_fitting([f"{search['title']} | Tide Hours", search["title"]], TITLE_MAX),
+            ktformat.first_fitting([f"{season}, with times and heights.", f"{season}."], DESCRIPTION_MAX),
+        )
+    first, last, peak_first, peak_last = span
+    dates = ktformat.fmt_range(first, last, "en", c)
+    short = ktformat.fmt_range_short(first, last, c)
+    title = ktformat.first_fitting(
+        [
+            f"{name} king tides {dates}: {search['tail']}",
+            f"{name} king tides {short}: {search['tail']}",
+            f"{name} king tides {dates}",
+            search["title"],
+        ],
+        TITLE_MAX,
+    )
+    peaks = ktformat.fmt_range_short(peak_first, peak_last, c)
+    lead = f"{name}'s next king tides are {dates}, {'highest on' if peak_first == peak_last else 'highest'} {peaks}."
+    description = ktformat.first_fitting(
+        [f"{lead} Predicted times and heights for {named(n)}." for n in range(len(places), 1, -1)]
+        + [f"{lead} Predicted times and heights by month."],
+        DESCRIPTION_MAX,
+    )
+    return title, description
+
+
+def king_hub_head(
+    lang: str, c: dict[str, Any], up: list[kingtides.Upcoming], months: list[tuple[int, int]], span: KingSpan | None
+) -> tuple[str, str]:
+    """The king-tide page's title and description: in season, the months of
+    the runs coming up and their days (0015, 0025); out of season, the
+    season's. In English the title is the first of the copy's titles that fits
+    in TITLE_MAX characters, without " | Tide Hours" when it does not fit
+    (0045). The Spanish page is unchanged."""
+    if not up or span is None:
+        titles, description = [c["title"]], c["description"]
+    else:
+        names = ktformat.fmt_months(months, lang, c)
+        tiers = [c["titleNext"], *c["titleNextShorter"]] if lang == "en" else [c["titleNext"]]
+        titles = [ktformat.fill(t, months=names) for t in tiers]
+        description = ktformat.fill(
+            c["descriptionNext"], range=ktformat.fmt_range(span.first, span.last, lang, c), count=str(len(up))
+        )
+    if lang != "en":
+        return f"{titles[0]} | Tide Hours", description
+    return ktformat.first_fitting([f"{titles[0]} | Tide Hours", *titles], TITLE_MAX), description
 
 
 def king_calendar(season: kingtides.StationSeason | None, link: KingLink | None) -> tuple[str, str] | None:

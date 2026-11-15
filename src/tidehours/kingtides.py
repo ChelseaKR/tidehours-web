@@ -304,21 +304,26 @@ CALENDAR_STATES: dict[str, tuple[str, str]] = {
 # oregon 2026 schedule", "king tides seattle 2026"; docs/DECISIONS.md 0028).
 # Every place named is a king-tide station's place or its catalog region,
 # which tests/test_king_calendar.py checks, so a title never names a place
-# the page has no dates for. Titles stay within 60 characters (0020).
+# the page has no dates for. Titles stay within 60 characters (0020). While a
+# month's runs are in season, the title is "{state} king tides {dates}: {tail}"
+# and the description names the dates (0045, site.king_calendar_head).
 CALENDAR_SEARCH: dict[str, dict[str, Any]] = {
     "WA": {
         "title": "Washington king tides 2026–27: Seattle, Puget Sound, coast",
         "where": "in Washington",
+        "tail": "Seattle, Puget Sound",
         "places": ["Seattle", "Tacoma", "Olympia", "Puget Sound", "Neah Bay", "Willapa Bay"],
     },
     "OR": {
         "title": "Oregon king tides 2026–27: coast schedule by month, Nov–Feb",
         "where": "on the Oregon coast",
+        "tail": "coast schedule by month",
         "places": ["Astoria", "Tillamook Bay", "Newport", "Coos Bay", "Port Orford"],
     },
     "CA": {
         "title": "California king tides 2026–27: San Francisco to San Diego",
         "where": "in California",
+        "tail": "San Francisco to San Diego",
         "places": ["Crescent City", "San Francisco Bay", "Monterey", "Los Angeles", "San Diego"],
     },
 }
@@ -386,6 +391,20 @@ def calendar(
     for runs in by_month.values():
         runs.sort(key=lambda u: (u.first, order[u.season.id]))
     return [CalendarMonth(y, m, runs) for (y, m), runs in by_month.items()]
+
+
+def calendar_now(months: list[CalendarMonth], today: dt.date, lead_days: int = LEAD_DAYS) -> CalendarMonth | None:
+    """The month of a state's calendar whose dates its title and description
+    name on `today` (docs/DECISIONS.md 0045): the first month with a run that
+    has not ended, while that month's first run starts within `lead_days` or
+    is under way, as 0015 counts "coming up". None out of season and after the
+    calendar's last month, when the page keeps its season title."""
+    for m in months:
+        span = m.span
+        if span is None or dt.date.fromisoformat(span[1]) < today:
+            continue
+        return m if (dt.date.fromisoformat(span[0]) - today).days <= lead_days else None
+    return None
 
 
 def epochs(seasons: list[StationSeason], datums: dict[str, str], state: str) -> list[str]:

@@ -2671,3 +2671,73 @@ wrong size. `tests/test_site.py` checks the same on its build.
 **Indexing.** The tags change every page's HTML once, so the first build
 with them gives every page that build's `lastmod` and IndexNow announces
 every page once (0011, 0028), as 0037's and 0041's footer links did.
+
+## 0045: King-tide titles name the coming run's dates (2026-11-15)
+
+(0043 and 0044 are reserved for other branches.) Search Console, US, Nov 3
+to 15, 2026: `/king-tides/washington/` had 79 impressions at position 6.8
+and no clicks, the site's best-ranked page; `/king-tides/` had 66 at 9.0;
+`/king-tides/oregon/` had 5 at 14.4. Their queries name a state, a place
+and the year ("king tides washington 2026", "puget sound king tides 2026",
+"seattle king tides 2026", "king tides oregon 2026 schedule"). The state
+calendars' titles named only "2026–27", and with " | Tide Hours" they were
+70 to 72 characters, over 0020's 60; the king-tide page's was 72 and its
+description 175, over 0032's 155.
+
+**State calendars (0024, 0028).** While a month's runs are in season, the
+title and description name that month's days, the same `CalendarMonth.span`
+the page's own "When are the king tides" line gives, so the two cannot
+disagree. The month is the first in the calendar with a run that has not
+ended on the build day (Pacific time), while its first run starts within
+`LEAD_DAYS` (30) or is under way, as 0015 counts "coming up"
+(`kingtides.calendar_now`). Built Nov 15, 2026:
+
+- "Washington king tides Nov 23–Dec 1: Seattle, Puget Sound" (56). With the
+  year it is 62, so the title drops the year and keeps "Washington",
+  "Seattle" and "Puget Sound".
+- "Oregon king tides Nov 23–27, 2026: coast schedule by month" (58).
+- "California king tides Nov 23–27: San Francisco to San Diego" (59).
+
+The title is the first that fits in 60 characters of: the dates with the
+year and the places, without the year, without the places, the season's
+title. The description is "{State}'s next king tides are {dates}, highest
+{peak days}. Predicted times and heights for {places}.", with as many of
+0028's places as fit in 155. No place is new: each is 0028's, or Seattle,
+Puget Sound, San Francisco or San Diego, which `tests/test_king_calendar.py`
+already ties to a king-tide station.
+
+The title moves on by itself. Washington keeps November's dates through
+Dec 1, while Seattle's run lasts, and from Dec 2 reads "Washington king
+tides Dec 8–30, 2026: Seattle, Puget Sound", the span of its December runs:
+Cherry Point, Friday Harbor and Port Townsend have one from Dec 8 to 16, and
+every Washington station has one between Dec 20 and 30. Oregon and
+California name December's dates from Nov 28. A month with no run is
+skipped (California's February), and when no month is in season, or after
+February 2027, the page keeps its season title and description, without
+" | Tide Hours" when that does not fit. The rest of the page is still
+pinned to the season (0024): only the title and description read the build
+day, so a calendar page's HTML, `lastmod` and IndexNow announcement (0011,
+0028) change about once a month in season, when its dates do.
+
+**The king-tide page (English).** The title still names the months (0015,
+0025), and is the first that fits in 60 of "King tides {months}:
+Washington, Oregon and California", the same with commas, and "...: WA, OR
+and CA". " | Tide Hours" is dropped when it does not fit, as on station,
+state and region pages (0020, 0032): "King tides November 2026: Washington,
+Oregon and California" (59). The description is shorter, at most 155 on
+every day of the season: "The next West Coast king tides are {range}: peak
+day, time and height at {count} NOAA stations, from Puget Sound to Oregon
+and San Diego." The range is still 0015's, as the page's summary gives it.
+The Spanish page is unchanged (no Spanish queries yet, 0025).
+
+**Checked.** `scripts/check_site.py` recomputes each calendar's title and
+description for the day the build was dated and compares them, with a
+negative control; the tests check every day from Oct 1, 2026 to Mar 31,
+2027 (and the king-tide page's to Oct 31, 2027) against 60 and 155, and the
+dates on Nov 15, Nov 28, Dec 1, Dec 2 and Dec 31.
+
+**Not known.** Google does not publish how a title change moves rank or
+clicks. Recheck the three pages' click-through rate in Search Console a
+week or two after the Nov 23 run.
+
+**For the app:** nothing changes.

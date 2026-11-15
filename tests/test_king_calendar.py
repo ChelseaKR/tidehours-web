@@ -16,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from tidehours import cli, site
+from tidehours import cli, ktformat, site
 from tidehours import kingtides as kt
 from tidehours.catalog import DATA_DIR, load
 
@@ -28,6 +28,9 @@ STATES = "CA,HI"
 def seasons() -> list[kt.StationSeason]:
     raw = json.loads((DATA_DIR / "datums.json").read_text(encoding="utf-8"))["datums"]
     return kt.season(load(), {k: v["mhhwAboveMllwFt"] for k, v in raw.items()})
+
+
+KC = json.loads((Path(site.__file__).parent / "copy" / "king_tides.json").read_text(encoding="utf-8"))["en"]
 
 
 @pytest.fixture(scope="module")
@@ -90,12 +93,13 @@ def test_station_page_calendar_link(seasons: list[kt.StationSeason]) -> None:
     assert site.king_calendar(None, None) is None
 
 
-def test_built_pages(built: Path) -> None:
+def test_built_pages(built: Path, seasons: list[kt.StationSeason]) -> None:
     sitemap = (built / "sitemap.xml").read_text(encoding="utf-8")
     for code, (name, slug) in kt.CALENDAR_STATES.items():
         html = (built / "king-tides" / slug / "index.html").read_text(encoding="utf-8")
-        title = kt.CALENDAR_SEARCH[code]["title"]
-        assert title.startswith(f"{name} king tides") and f"<title>{title} | Tide Hours</title>" in html
+        title, description = site.king_calendar_head(code, kt.calendar(seasons, code), dt.date(2026, 11, 1), KC)
+        assert title.startswith(f"{name} king tides") and f"<title>{title}</title>" in html
+        assert f'<meta name="description" content="{description.replace("'", "&#39;")}">' in html
         assert "These are predictions, not observations or flood forecasts." in html
         assert "feet above mean lower low water (MLLW)" in html
         assert "mean higher high water (MHHW)" in html and "1983–2001 tidal datum epoch" in html
@@ -148,8 +152,11 @@ def test_check_site_catches_a_wrong_calendar(tmp_path: Path, built: Path) -> Non
     )
     sabotaged = sabotaged.replace('data-kt-cal-month="2027-01"', "")
     sabotaged = sabotaged.replace("stations does a run of the year's highest predicted tides peak in", "stations: 0")
+    sabotaged = sabotaged.replace("<title>California king tides Nov 23–27:", "<title>California king tides Dec 21–26:")
+    sabotaged = sabotaged.replace("next king tides are Nov 23–27, 2026", "next king tides are Nov 23–28, 2026")
     assert sabotaged.count("11:49") == html.count("11:49") + 1  # the sabotage applied
     assert 'data-kt-cal-month="2027-01"' not in sabotaged and "stations: 0" in sabotaged
+    assert "<title>California king tides Dec 21–26:" in sabotaged and "are Nov 23–28, 2026" in sabotaged
     ca.write_text(sabotaged, encoding="utf-8")
     shutil.rmtree(site_dir / "king-tides/oregon")
 
@@ -158,8 +165,14 @@ def test_check_site_catches_a_wrong_calendar(tmp_path: Path, built: Path) -> Non
     assert any(p.startswith("king-tides/california/: runs differ") and "11:49" in p for p in found)
     assert any(p.startswith("king-tides/california/: months") for p in found)
     assert "king-tides/california/: 1 month(s) without a run, not each said in words" in found
+    assert any(p.startswith("king-tides/california/: title") and "Nov 23–27" in p for p in found)
+    assert any(p.startswith("king-tides/california/: description") and "Nov 23–27, 2026" in p for p in found)
     assert not any(p.startswith("king-tides/washington/") for p in found)
-    assert len(found) == 4
+    assert len(found) == 6
+    # Without a king-tide station page to date the build, it says so.
+    assert "king-tides: no king-tide station page to date the calendars' titles" in check.check_king_calendar(
+        tmp_path / "empty", cat
+    )
 
 
 def test_calendar_rows_show_the_computed_numbers(built: Path, seasons: list[kt.StationSeason]) -> None:
@@ -197,6 +210,10 @@ def test_search_copy_names_only_places_with_dates(seasons: list[kt.StationSeason
         assert len(search["title"]) <= 60
         assert _unbacked(seasons, code, search["places"]) == []
     assert "Puget Sound" in kt.CALENDAR_SEARCH["WA"]["places"]
+    # The in-season titles' places (0045), too.
+    assert kt.CALENDAR_SEARCH["WA"]["tail"] == "Seattle, Puget Sound"
+    assert _unbacked(seasons, "WA", ["Seattle", "Puget Sound"]) == []
+    assert _unbacked(seasons, "CA", ["San Francisco", "San Diego"]) == []
     # Negative control: a place with no king-tide station is caught.
     assert _unbacked(seasons, "OR", ["Astoria", "Portland"]) == ["Portland"]
     assert _unbacked(seasons, "WA", ["San Diego"]) == ["San Diego"]
@@ -243,3 +260,76 @@ def test_answer_first_summary_and_links(built: Path, seasons: list[kt.StationSea
     home = (built / "index.html").read_text(encoding="utf-8")
     for slug in ("washington", "oregon", "california"):
         assert f'href="/king-tides/{slug}/"' in home
+
+
+def test_titles_name_the_dates_in_season(seasons: list[kt.StationSeason]) -> None:
+    """DECISIONS 0045: while a month's runs are in season, each calendar's
+    title and description name that month's days, from the same span as the
+    page's summary, and move on to the next month's once its last run ends;
+    out of season, the season's. Every day of the season, titles fit in 60
+    characters and descriptions in 155."""
+
+    def head(code: str, day: str) -> tuple[str, str]:
+        return site.king_calendar_head(code, kt.calendar(seasons, code), dt.date.fromisoformat(day), KC)
+
+    assert head("WA", "2026-11-15") == (
+        "Washington king tides Nov 23–Dec 1: Seattle, Puget Sound",
+        "Washington's next king tides are Nov 23–Dec 1, 2026, highest Nov 25–27. Predicted times and heights for"
+        " Seattle, Tacoma, Olympia, Puget Sound and Neah Bay.",
+    )
+    assert head("OR", "2026-11-15")[0] == "Oregon king tides Nov 23–27, 2026: coast schedule by month"
+    assert head("CA", "2026-11-15")[0] == "California king tides Nov 23–27: San Francisco to San Diego"
+    # Seattle's run lasts to Dec 1, so Washington keeps November's dates
+    # through it; Oregon's ended Nov 27, so it names December's.
+    assert head("WA", "2026-12-01")[0] == "Washington king tides Nov 23–Dec 1: Seattle, Puget Sound"
+    assert head("OR", "2026-11-28")[0] == "Oregon king tides Dec 21–26, 2026: coast schedule by month"
+    assert head("WA", "2026-12-02")[0] == "Washington king tides Dec 8–30, 2026: Seattle, Puget Sound"
+    assert head("WA", "2026-12-31")[0] == "Washington king tides Jan 18–27, 2027: Seattle, Puget Sound"
+    # California has no February run, and in March no state has one coming up.
+    season_ca = "California king tides 2026–27: San Francisco to San Diego"
+    assert head("CA", "2027-01-24")[0] == season_ca
+    assert head("CA", "2027-01-24")[1].startswith("Predicted king tides in California by month, Nov 2026 to Feb 2027")
+    assert head("WA", "2027-03-15")[0] == "Washington king tides 2026–27: Seattle, Puget Sound, coast"
+    # More than 30 days before a month's first run, the season's title.
+    assert kt.calendar_now(kt.calendar(seasons, "WA"), dt.date(2026, 10, 23)) is None
+    assert kt.calendar_now(kt.calendar(seasons, "WA"), dt.date(2026, 10, 24)) is not None
+    day = dt.date(2026, 10, 1)
+    while day <= dt.date(2027, 3, 31):
+        for code in kt.CALENDAR_STATES:
+            title, description = head(code, day.isoformat())
+            assert len(title) <= site.TITLE_MAX and len(description) <= site.DESCRIPTION_MAX, (code, day)
+            month = kt.calendar_now(kt.calendar(seasons, code), day)
+            if month is not None and month.span is not None:
+                assert ktformat.fmt_range_short(month.span[0], month.span[1], KC) in title, (code, day)
+                assert ktformat.fmt_range(month.span[0], month.span[1], "en", KC) in description, (code, day)
+        day += dt.timedelta(days=1)
+
+
+def test_hub_title_fits_and_rolls(seasons: list[kt.StationSeason]) -> None:
+    """The king-tide page's English title is the longest of its titles that
+    fits in 60 characters (0045); it names the months of the runs coming up
+    (0015) and their days are in the description. Spanish is unchanged."""
+    es = json.loads((Path(site.__file__).parent / "copy" / "king_tides.json").read_text(encoding="utf-8"))["es"]
+
+    def head(day: str, lang: str = "en") -> tuple[str, str]:
+        today = dt.date.fromisoformat(day)
+        up = kt.coming_up(seasons, today)
+        return site.king_hub_head(lang, KC if lang == "en" else es, up, kt.months(up, today), site.king_span(up))
+
+    assert head("2026-11-15") == (
+        "King tides November 2026: Washington, Oregon and California",
+        "The next West Coast king tides are Nov 23–Dec 1, 2026: peak day, time and height at 31 NOAA stations,"
+        " from Puget Sound to Oregon and San Diego.",
+    )
+    assert head("2026-11-28")[0] == "King tides November and December 2026: WA, OR and CA"
+    assert head("2026-12-02")[0] == "King tides December 2026: Washington, Oregon and California"
+    assert head("2026-12-02")[1].startswith("The next West Coast king tides are Dec 8–30, 2026:")
+    assert head("2027-03-15")[0] == "King tides 2026–27: Washington, Oregon and California dates"
+    assert head("2026-11-15", "es")[0] == (
+        "Mareas reales (king tides) noviembre de 2026: WA, OR y CA, fechas y horas | Tide Hours"
+    )
+    day = dt.date(2026, 10, 1)
+    while day <= dt.date(2027, 10, 31):
+        title, description = head(day.isoformat())
+        assert len(title) <= site.TITLE_MAX and len(description) <= site.DESCRIPTION_MAX, day
+        day += dt.timedelta(days=1)

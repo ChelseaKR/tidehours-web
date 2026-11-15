@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
-{% block title %}{{ search.title }} | Tide Hours{% endblock %}
-{% block description %}Predicted king tides {{ search.where }} by month, Nov 2026 to Feb 2027: {{ search.places[:-1]|join(", ") }} and {{ search.places[-1] }}, with times and heights.{% endblock %}
+{% block title %}{{ head[0] }}{% endblock %}
+{% block description %}{{ head[1] }}{% endblock %}
 {% block jsonld %}
 <script type="application/ld+json">{{ {
   "@context": "https://schema.org",

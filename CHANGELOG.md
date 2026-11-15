@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- The king-tide calendars' titles and descriptions name the coming run's
+  dates while it is in season, and move on to the next month's by
+  themselves: built Nov 15, "Washington king tides Nov 23–Dec 1: Seattle,
+  Puget Sound"; from Dec 2, "Washington king tides Dec 8–30, 2026: Seattle,
+  Puget Sound". The king-tide page's English title drops " | Tide Hours"
+  to fit in 60 characters, and its description fits in 155. The Spanish
+  page is unchanged (DECISIONS 0045).
 - A station page's `WebPage` structured data is named by the page's own
   title, not the title it had before DECISIONS 0032, and its
   `dateModified` is the page's sitemap `lastmod`, as on its other nodes.

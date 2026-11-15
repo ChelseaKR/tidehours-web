@@ -3,7 +3,8 @@
     "title": "King tides 2026–27: Washington, Oregon and California dates",
     "description": "Predicted king tide dates, times and heights for 2026–27 at 31 NOAA stations in Washington, Oregon and California, from NOAA tide predictions.",
     "titleNext": "King tides {months}: Washington, Oregon and California",
-    "descriptionNext": "The next West Coast king tides are {range}: the peak day, local time and height at {count} NOAA stations, from Seattle and Puget Sound to the Oregon coast and San Diego.",
+    "titleNextShorter": ["King tides {months}: Washington, Oregon, California", "King tides {months}: WA, OR and CA"],
+    "descriptionNext": "The next West Coast king tides are {range}: peak day, time and height at {count} NOAA stations, from Puget Sound to Oregon and San Diego.",
     "next": {
       "headingSoon": "The next king tides: {range}",
       "headingNow": "King tides now: {range}",

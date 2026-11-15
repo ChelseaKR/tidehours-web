@@ -81,3 +81,27 @@ def fmt_months(months: list[tuple[int, int]], lang: str, c: dict[str, Any]) -> s
         joined = ms[0] if len(ms) == 1 else ", ".join(ms[:-1]) + conj + ms[-1]
         groups.append(f"{joined} de {y}" if lang == "es" else f"{joined} {y}")
     return conj.join(groups)
+
+
+def fmt_range_short(first: str, last: str, c: dict[str, Any]) -> str:
+    """ "Nov 23–27", "Nov 23–Dec 1", "Dec 30–Jan 2": an English range without
+    its year, for a title too long with it."""
+    _, am, ad = _parts(first)
+    _, bm, bd = _parts(last)
+    mons = c["months"]
+    if first == last:
+        return f"{mons[am - 1]} {ad}"
+    if am == bm:
+        return f"{mons[am - 1]} {ad}–{bd}"
+    return f"{mons[am - 1]} {ad}–{mons[bm - 1]} {bd}"
+
+
+def first_fitting(candidates: list[str], limit: int) -> str:
+    """The first of `candidates` at most `limit` characters long, else the
+    last."""
+    if not candidates:
+        raise ValueError("first_fitting: no candidates")
+    for text in candidates:
+        if len(text) <= limit:
+            return text
+    return candidates[-1]

@@ -166,6 +166,16 @@ def test_upcoming_runs_and_their_months(seasons: list[kt.StationSeason]) -> None
     with pytest.raises(ValueError, match="no months"):
         ktformat.fmt_months([], "en", c["en"])
 
+    # A range without its year, for a title too long with it (0045).
+    assert ktformat.fmt_range_short("2026-11-23", "2026-11-27", c["en"]) == "Nov 23–27"
+    assert ktformat.fmt_range_short("2026-11-23", "2026-12-01", c["en"]) == "Nov 23–Dec 1"
+    assert ktformat.fmt_range_short("2026-12-30", "2027-01-02", c["en"]) == "Dec 30–Jan 2"
+    assert ktformat.fmt_range_short("2026-11-25", "2026-11-25", c["en"]) == "Nov 25"
+    assert ktformat.first_fitting(["abcd", "abc", "ab"], 3) == "abc"
+    assert ktformat.first_fitting(["abcd", "abcde"], 3) == "abcde"
+    with pytest.raises(ValueError, match="no candidates"):
+        ktformat.first_fitting([], 3)
+
 
 GARIBALDI_MHHW = 8.32  # 9437540, NOAA 1983-2001 epoch
 

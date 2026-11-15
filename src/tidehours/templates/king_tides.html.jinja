@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
-{% block title %}{% if king_up %}{{ fill(c.titleNext, months=fmt_months(king_months, lang, c)) }}{% else %}{{ c.title }}{% endif %} | Tide Hours{% endblock %}
-{% block description %}{% if king_up %}{{ fill(c.descriptionNext, range=fmt_range(king_span.first, king_span.last, lang, c), count=king_up|length|string) }}{% else %}{{ c.description }}{% endif %}{% endblock %}
+{% block title %}{{ king_hub_head(lang, c, king_up, king_months, king_span)[0] }}{% endblock %}
+{% block description %}{{ king_hub_head(lang, c, king_up, king_months, king_span)[1] }}{% endblock %}
 {% block alternates %}
 <link rel="alternate" hreflang="en" href="{{ base_url }}king-tides/">
 <link rel="alternate" hreflang="es" href="{{ base_url }}es/king-tides/">

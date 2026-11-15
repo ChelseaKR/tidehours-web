@@ -289,6 +289,17 @@ def check_tide_types(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
+def _king_build_day(root: Path, seasons: list[kingtides.StationSeason]) -> dt.date | None:
+    """The day the pages were built for, on the coast: a king-tide station
+    page's date. The king-tide pages don't carry it, so that they stay
+    byte-identical (and are not re-announced, 0011) until what they say changes."""
+    dated = [root / "stations" / k.id / "index.html" for k in seasons]
+    found = [STATION_DATE.findall(f.read_text(encoding="utf-8")) for f in dated if f.exists()]
+    if not found or len(found[0]) != 1:
+        return None
+    return dt.date.fromisoformat(found[0][0])
+
+
 def check_king_tides(root: Path, cat: Catalog) -> list[str]:
     """The king-tide pages list exactly the runs coming up on the day they
     were built, and name their months in the title; each station page links
@@ -296,14 +307,9 @@ def check_king_tides(root: Path, cat: Catalog) -> list[str]:
     problems: list[str] = []
     ctx = site.king_tide_context(cat)
     seasons: list[kingtides.StationSeason] = ctx["seasons"]
-    # The day the pages were built for, on the coast: a king-tide station
-    # page's date. The king-tide pages don't carry it, so that they stay
-    # byte-identical (and are not re-announced, 0011) until what they say changes.
-    dated = [root / "stations" / k.id / "index.html" for k in seasons]
-    found = [STATION_DATE.findall(f.read_text(encoding="utf-8")) for f in dated if f.exists()]
-    if not found or len(found[0]) != 1:
+    today = _king_build_day(root, seasons)
+    if today is None:
         return ["king-tides: no king-tide station page to date the build"]
-    today = dt.date.fromisoformat(found[0][0])
     up = kingtides.coming_up(seasons, today)
     want = [u.stamp() for u in up]
     for lang, rel in (("en", "king-tides"), ("es", "es/king-tides")):
@@ -525,9 +531,14 @@ def check_places(root: Path, cat: Catalog) -> list[str]:
 def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
     """Each state's winter king-tide calendar lists every month of the
     window, in order, and in each exactly the runs computed for it; a month
-    with none says so in words (docs/DECISIONS.md 0024)."""
+    with none says so in words (docs/DECISIONS.md 0024). Its title and
+    description name the dates in season on the build day (0045)."""
     problems: list[str] = []
-    seasons = site.king_tide_context(cat)["seasons"]
+    ctx = site.king_tide_context(cat)
+    seasons: list[kingtides.StationSeason] = ctx["seasons"]
+    today = _king_build_day(root, seasons)
+    if today is None:
+        problems.append("king-tides: no king-tide station page to date the calendars' titles")
     for code in kingtides.CALENDAR_STATES:
         rel = kingtides.calendar_path(code)
         f = root / rel / "index.html"
@@ -536,6 +547,14 @@ def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
             continue
         text = f.read_text(encoding="utf-8")
         months = kingtides.calendar(seasons, code)
+        # The title and description name the dates of the month in season on
+        # the build day, or the season's (docs/DECISIONS.md 0045).
+        if today is not None:
+            title, description = site.king_calendar_head(code, months, today, ctx["copy"]["en"])
+            if [htmllib.unescape(t) for t in TITLE.findall(text)] != [title]:
+                problems.append(f"{rel}: title {TITLE.findall(text)[:1]}, expected {title!r}")
+            if [htmllib.unescape(d) for d in DESCRIPTION.findall(text)] != [description]:
+                problems.append(f"{rel}: description {DESCRIPTION.findall(text)[:1]}, expected {description!r}")
         want_months = [f"{m.year}-{m.month:02d}" for m in months]
         if KT_CAL_MONTH.findall(text) != want_months:
             problems.append(f"{rel}: months {KT_CAL_MONTH.findall(text)}, expected {want_months}")

@@ -129,6 +129,11 @@ def station_title(name: str) -> str:
 
 PLACE_NAMES_FILE = Path(__file__).parent / "copy" / "place_names.json"
 
+# Copied to the site's root unchanged (docs/DECISIONS.md 0042). The images are
+# drawn once and committed (scripts/share_image.py); the build draws nothing.
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_FILES = ("share.png", "favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "manifest.json")
+
 
 def place_names(path: Path = PLACE_NAMES_FILE) -> dict[str, dict[str, str]]:
     """Station id -> its entry in copy/place_names.json (0032)."""
@@ -1137,6 +1142,10 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
+    # The share image, favicon.ico, the home-screen icons and their manifest
+    # (0042), served from the root as they are committed.
+    for f in STATIC_FILES:
+        shutil.copyfile(STATIC_DIR / f, out / f)
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
     # The home page's find list (0040), fetched only when someone uses the box.
     (out / "places.json").write_text(places_json(stations, place_names()), encoding="utf-8")

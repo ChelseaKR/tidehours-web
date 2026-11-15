@@ -2558,3 +2558,61 @@ link are unchanged: its intro already says the tide gifts are drawn from
 the site's predictions, and each new section's sentence says what it
 shows instead. The four other sunrise and sunset calendars (New York, San
 Francisco, Singapore, Sydney) are drafts, not live, and are not listed.
+
+## 0042: A share image and home-screen icons (2026-11-14)
+
+A link to tidehours.com shared in a message or a post showed no picture,
+and a page saved to a phone's home screen had no icon of its own: the site
+had `og:title`, `og:description` and `og:url`, and `/favicon.svg`, and
+nothing else. The owner asked for one site-wide share image and the
+icons, in the Tide Hours style.
+
+**The share image.** `/share.png`, 1200 x 630, about 70 KB, in the print
+shop's Night palette (night #0f2238, cream #f4efe2, water #1d4468, light
+blue #9cc6ea) with Bitter for the wordmark and Archivo for the rest, as on
+the shop's prints. It shows the Tide Hours mark (the clock-over-wave image
+approved for Author Central on 2026-11-14), "Tide Hours", the line "Free
+tide times for today and tomorrow at every NOAA tide prediction station in
+the US.", which is the home page's description without its station count
+and method, and "tidehours.com". Under them, the water is a real curve:
+this engine's predicted tide at Bar Harbor, Maine (8413320), from local
+midnight to midnight on January 1, 2027, drawn to fill the width, with the
+caption "The predicted tide at Bar Harbor, Maine, on January 1, 2027". No
+number is printed on it. Its alt text (`og:image:alt`) is "Tide Hours,
+tidehours.com: the predicted tide at Bar Harbor, Maine, on January 1,
+2027, drawn as a curve.", in English on the Spanish page too.
+
+It is drawn once and committed, not built: `scripts/share_image.py` writes
+the page that headless Chrome draws (its docstring has the commands), with
+the fonts and the mark passed in from outside the repository. The build
+only copies the files in `src/tidehours/static/` to the root. One image for
+every page, not one per station: a per-station image would add 3,256 files
+and a renderer to the daily build, and a station's day changes daily while
+a shared picture is cached for weeks.
+
+**The tags.** Every page, from `base.html.jinja`: `og:image` (absolute),
+its type, width, height and alt, and `twitter:card`
+`summary_large_image`; X reads the `og:` title, description and image. The
+`og:title` and `og:description` are the page's own `<title>` and
+description, as before.
+
+**The icons.** `/apple-touch-icon.png` (180 x 180), and `/icon-192.png`
+and `/icon-512.png` named by a small `/manifest.json` (name "Tide Hours",
+`start_url` "/", `display` "browser", so a home-screen icon opens the site
+in the browser and nothing presents it as the app). All three are the
+Author Central mark scaled down. `/favicon.ico` (16, 32 and 48 px) is
+`/favicon.svg` drawn small, for browsers and crawlers that ask for the
+.ico; the SVG is still linked and unchanged. The manifest is `.json`, not
+`.webmanifest`, so `deploy.sh`'s upload by extension serves it as
+`application/json` without a type of its own. Nothing here is a script,
+a request to another site or a font the site loads.
+
+**Checked.** `check_site.py` fails a page without these tags, whose
+`og:title` or `og:description` is not its own title or description, or
+whose `og:url` is not its canonical URL, and a build whose images are not
+at their sizes or are over 200 KB, or whose manifest names an icon at the
+wrong size. `tests/test_site.py` checks the same on its build.
+
+**Indexing.** The tags change every page's HTML once, so the first build
+with them gives every page that build's `lastmod` and IndexNow announces
+every page once (0011, 0028), as 0037's and 0041's footer links did.

@@ -1110,7 +1110,10 @@ def test_state_and_region_pages_lead_with_the_list(built: Path) -> None:
     assert "<title>San Francisco Bay, California tides today: tide times</title>" in region
     assert "<h1>San Francisco Bay tides today</h1>" in region
     lst = region.index('<ul class="stations">')
-    assert region.count("<p", region.index("<h1>"), lst) == 1
+    # The lead, and the empty status box the script fills once the day has
+    # passed (DECISIONS 0039).
+    assert region.count("<p", region.index("<h1>"), lst) == 2
+    assert region.count('<p class="stale" id="stale" role="status"', region.index("<h1>"), lst) == 1
     if 'id="king"' in region:
         assert lst < region.index('id="king"')
     for f in list(built.glob("states/*/index.html")) + list(built.glob("states/*/*/index.html")):

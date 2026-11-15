@@ -13,6 +13,7 @@
     same numbers as its station page; times only, so no height shows
     without its datum (docs/DECISIONS.md 0039). -#}
 {% if hub_date %}
+<p class="stale" id="stale" role="status" data-tz="{{ region.stations|map(attribute="tz")|unique|sort|join(" ") }}" hidden></p>
 <h2 class="hub-day" data-date="{{ hub_date.isoformat() }}">High and low tides, {{ hub_date|long_date }} <span class="meta">({{ hub_zone if hub_zone else "local time at each place" }}; heights on each place's page)</span></h2>
 {% endif %}
 {% macro group(day, kind, css) %}{% set these = day.events|selectattr("kind", "equalto", kind)|list %}<span class="grp">{% if these %}<span class="{{ css }}">{{ kind }}</span> {% for e in these %}{{ e.time }}{{ ", " if not loop.last }}{% endfor %}{% else %}no {{ kind|lower }} tide{% endif %}</span>{% endmacro %}
@@ -31,5 +32,52 @@
   {% endfor %}
   </ul>
 </section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if hub_date %}
+<script>
+// The day on this page (docs/DECISIONS.md 0039) is its stations' date when
+// the site was built, once a day at 11:20 UTC. From midnight at the stations
+// until the next build (before dawn on the East Coast, most of the day in
+// Guam) that day has passed. Say so, from the stations' own clocks, as the
+// station pages do; the dated heading and the times stay as built. Nothing is
+// said while the day is still today at any of the region's stations, without
+// the script, or if a zone is unknown to the browser.
+var tidehoursHubDay = (function () {
+  function isoDay(tz, now) {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(now);
+  }
+  function words(iso) {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "UTC", weekday: "long", month: "long", day: "numeric", year: "numeric"
+    }).format(new Date(iso + "T12:00:00Z"));
+  }
+  // date: the page's ISO date; zones: its stations' IANA zones. Returns the
+  // message, or "" when the date is not yet past at every station.
+  function stale(date, zones, now) {
+    var today = zones.map(function (tz) { return isoDay(tz, now); }).sort()[0];
+    if (!(today > date)) return "";
+    return "Today, " + words(today) + ", is not on this page yet. The times below are for " + words(date) +
+      ", which has passed. The site updates once a day; each place's page also has the next day's tides.";
+  }
+  return { stale: stale };
+})();
+(function () {
+  var box = document.getElementById("stale");
+  var day = document.querySelector("h2.hub-day[data-date]");
+  if (!box || !day) return;
+  var message;
+  try {
+    message = tidehoursHubDay.stale(day.getAttribute("data-date"), box.getAttribute("data-tz").split(" "), new Date());
+  } catch (e) { return; }
+  if (message) {
+    box.textContent = message;
+    box.hidden = false;
+  }
+})();
+</script>
 {% endif %}
 {% endblock %}

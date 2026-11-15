@@ -97,8 +97,17 @@ var tidehoursFindAll = (function () {
       out.textContent = F.status(hits.length, input.value.trim());
     });
   }
+  // Enter, or a phone keyboard's Search key, moves to the first match: the
+  // keyboard closes and the list shows, and Tab goes on down it.
+  function enter(e) {
+    var first = e.key === "Enter" && list.querySelector("a");
+    if (!first) return;
+    e.preventDefault();
+    first.focus();
+  }
   input.addEventListener("focus", load, { once: true });
   input.addEventListener("input", run);
+  input.addEventListener("keydown", enter);
 })();
 </script>
 {% endblock %}

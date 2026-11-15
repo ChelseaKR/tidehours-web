@@ -153,6 +153,14 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; fon
 .events thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--line); }
 .events caption:not(.vh) { text-align: start; font-family: var(--serif); font-weight: 600; padding-block: 0.3rem; }
 .events td:first-of-type time { font-weight: 600; }
+/* A station day's table on a phone: a time never breaks from its AM or PM,
+   nor a height from its unit. Where the table is narrow (below 400px, and
+   beside the chart from 60rem) the meters take their own line under the
+   feet, so the three columns fit at 320px. */
+.day .events td { white-space: nowrap; }
+@media (max-width: 24.99rem), (min-width: 60rem) {
+  .day .events .m { display: block; }
+}
 /* High and low are told apart by shape as well as color: a rising or
    falling triangle, drawn, so nothing extra is read aloud. */
 .ev-high th, .ev-low th { white-space: nowrap; }
@@ -198,6 +206,7 @@ figcaption { font-size: 0.875rem; color: var(--muted); margin-top: 0.3rem; }
 .answer-days li { padding-block: 0.1rem; font-size: 0.9375rem; }
 .answer-days .times { display: block; }
 .answer-days strong { font-weight: 600; }
+.answer-days .ev { white-space: nowrap; }
 .answer-days .past, .answer-days .past strong { color: var(--muted); font-weight: 400; }
 /* The next tide: a sentence at build time, replaced by the page's script. */
 .next { margin: 0.6rem 0 0; padding-bottom: 0.55rem; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums lining-nums; }
@@ -317,6 +326,11 @@ button { font: inherit; }
 }
 @media print {
   .site-header nav, .wave-rule, .site-footer .app { display: none; }
+  /* A station page on paper: each day's chart and table on one sheet, and
+     not the lists of links to other stations, which are only for following
+     on screen (they ran to four extra pages for San Francisco). */
+  .answer, .day, .chart, table.events { break-inside: avoid; }
+  section[aria-labelledby="near"], section[aria-labelledby="derived"], .find { display: none; }
   .site-footer { background: none; color: var(--fg); }
   .site-footer a { color: var(--fg); }
 }

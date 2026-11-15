@@ -2,6 +2,29 @@
 
 ## 0.1.0 (unreleased)
 
+- Region pages say when their day has passed. From midnight at the
+  region's stations until the next build (before dawn on the East Coast,
+  most of the day in Guam), the page's script puts a notice above the dated
+  heading: "Today, Sunday, November 15, 2026, is not on this page yet. The
+  times below are for Saturday, November 14, 2026, which has passed. The
+  site updates once a day; each place's page also has the next day's
+  tides." A region in two zones waits for the later midnight. The heading
+  and the times are unchanged, and without the script nothing is shown
+  (DECISIONS 0039; the station pages have said this since 0038).
+- Station pages on a phone: in each day's table a time no longer breaks
+  from its AM or PM, nor a height from its unit, and where the table is
+  narrow (below 400px, and beside the chart from 60rem) the meters sit on
+  their own line under the feet. In the answer box each time stays with its
+  height, and the next-tide line keeps "0.1 ft" together.
+- Printing a station page keeps each day's chart and table on one sheet
+  and leaves out the "Nearby" and "Stations predicted from this one" lists
+  of links: San Francisco's page goes from six letter pages to four. The
+  disclaimers still print.
+- The find boxes on the home and state pages: Enter, or a phone keyboard's
+  Search key, moves focus to the first match, which closes the keyboard over
+  the list. The state pages' box is now described by its status line, as
+  the home page's is.
+
 - Seven more listings of 2026-11-14 are linked. `/tide-gifts/` has three
   new sections, each line ending with its listing's own description:
   "Sunrise and sunset calendars" (Anchorage and Seattle, 2027), "Night sky

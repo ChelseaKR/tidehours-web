@@ -164,9 +164,11 @@ function el(tag) {
     get textContent() { return this.children.length ? this.children.map((c) => c.textContent).join("") : this._text; },
     set textContent(v) { this.children = []; this._text = v; },
     append(...n) { this.children.push(...n); },
+    querySelector(q) { return q === "a" && this.children.length ? this.children[0].children[0] : null; },
+    focus() { focused = this.href; },
   };
 }
-let replaced = false, fetches = 0;
+let replaced = false, fetches = 0, focused = null;
 const handlers = {};
 const field = { value: "", addEventListener: (t, f) => { handlers[t] = f; } };
 const out = el("output"), list = el("ul"), label = el("label");
@@ -193,9 +195,18 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
     field.value = q;
     handlers.input();
     for (let i = 0; i < 3; i++) await tick();
+    // Another key does nothing; Enter moves focus to the first match.
+    const keys = [];
+    for (const key of ["Tab", "Enter"]) {
+      focused = null;
+      let prevented = false;
+      handlers.keydown({ key, preventDefault: () => { prevented = true; } });
+      keys.push([key, focused, prevented]);
+    }
     results.push({
       status: out.textContent,
       links: list.children.map((li) => [li.children[0].href, li.children[0].textContent]),
+      keys,
     });
   }
   process.stdout.write(JSON.stringify({ replaced, fetchesBefore, fetches, results }));
@@ -234,12 +245,25 @@ def test_find_box_matches_station_names(built: Path) -> None:
         ["/stations/9433445/", "Umpqua River Entrance, Half Moon Bay, OR"],
     ]
     assert maui["status"] == "1 station matches." and maui["links"] == [["/stations/1615680/", "Kahului, HI"]]
-    assert one == {"status": "", "links": []}  # one letter is not a search yet
+    assert one["status"] == "" and one["links"] == []  # one letter is not a search yet
     assert re.fullmatch(r"The first 12 of \d+ stations that match\. Type more to narrow them\.", bay["status"])
     assert len(bay["links"]) == 12
     assert none["status"] == "No station name matches “zzzz”. Try a nearby town, or pick a state below."
     assert none["links"] == []
     assert ocmd["links"] == [["/stations/8570280/", "Ocean City (Fishing Pier), MD"]]
+
+
+NO_KEY = [["Tab", None, False], ["Enter", None, False]]
+
+
+def test_find_box_enter_moves_to_the_first_match(built: Path) -> None:
+    """Enter (a phone keyboard's Search key) focuses the first match, which
+    closes the keyboard over the list; with no match it does nothing, and
+    other keys are left alone."""
+    home = (built / "index.html").read_text(encoding="utf-8")
+    half, one, none = run_find(home, ["half moon", "a", "zzzz"])["results"]
+    assert half["keys"] == [["Tab", None, False], ["Enter", "/stations/9414131/", True]]
+    assert one["keys"] == NO_KEY and none["keys"] == NO_KEY
 
 
 def test_find_box_says_when_the_list_does_not_load(built: Path) -> None:
@@ -248,4 +272,5 @@ def test_find_box_says_when_the_list_does_not_load(built: Path) -> None:
     assert r["results"][0] == {
         "status": "The list of places did not load. The states below list every station.",
         "links": [],
+        "keys": NO_KEY,
     }

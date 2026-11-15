@@ -2178,6 +2178,21 @@ region pages are as before.
 
 **For the app:** nothing changes.
 
+**Added later (2026-11-14, wording pending the owner's approval): a passed
+day says so.** A region page holds one day, its stations' date at 11:20
+UTC, so from midnight at its stations until the next build that day has
+passed: for a few hours before dawn on the mainland, and for about 21
+hours a day in Guam and the Northern Mariana Islands. The station pages
+already say so (0038); a region page now does too. An empty status box
+above the dated heading carries the region's zones (`data-tz`, space
+separated), and the page's script fills it when the date has passed in
+every one of them (so a region in two zones waits for the later midnight):
+"Today, Sunday, November 15, 2026, is not on this page yet. The times below
+are for Saturday, November 14, 2026, which has passed. The site updates
+once a day; each place's page also has the next day's tides." The heading
+and times stay as built; a clock behind the build, an unknown zone or no
+script shows nothing. `tests/test_today.py` runs the script under Node.
+
 ## 0040: A find box over a static list, and the home page by coast (owner, 2026-11-14)
 
 Phase 2c of the layout proposal the owner approved on 2026-11-13 (Q6, option

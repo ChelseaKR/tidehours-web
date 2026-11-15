@@ -128,6 +128,7 @@ RIVERS = [
     "Water Year 2026 Print: American and Sacramento",
     "Water Year 2026 Print: American and Sacramento Map",
     "Water Year 2026 Print: Arkansas and Little Arkansas Map",
+    "Water Year 2026 Print: Potomac and Shenandoah Map",
 ]
 # The solstice print's sentence: the wording of its live Etsy listing,
 # adapted only to join its first two sentences of the second paragraph.
@@ -216,6 +217,7 @@ LIVE = {
     "4617567212": ("river", "Water Year 2026 Print: American and Sacramento", "2026-11-14"),
     "4617572373": ("river", "Water Year 2026 Print: American and Sacramento Map", "2026-11-14"),
     "4617637616": ("river", "Water Year 2026 Print: Arkansas and Little Arkansas Map", "2026-11-14"),
+    "4617656280": ("river", "Water Year 2026 Print: Potomac and Shenandoah Map", "2026-11-15"),
 }
 NEW_STATIONS = {
     "4617388180": "8419317", "4617381055": "8536110", "4617393736": "8661070", "4617387277": "8670870",
@@ -482,11 +484,11 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     ):  # fmt: skip
         assert line in main
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 8 + 32 listings and the shop.
+    # once each: 40 + 8 + 33 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 32 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 33 + 1
     # Within a kind, by town.
     section = main[main.find('id="g-calendars"') : main.find('id="g-moon"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
@@ -606,7 +608,7 @@ def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, ch
     """Every dated entry of the committed lists is of 2026 or 2027, so the
     build of January 1, 2028 lists only the entries with no year: the
     custom prints (the shop's own sentence and the two made-to-order
-    listings) and the eleven river prints. The made-to-order
+    listings) and the twelve river prints. The made-to-order
     year-of-daylight print, the sunrise and sunset calendars and the night
     sky prints are of 2027 and leave."""
     root = build(tmp_path / "on", "--print-shop-url", SHOP, "--gifts", str(COMMITTED),
@@ -630,6 +632,7 @@ def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, ch
             "https://www.etsy.com/listing/4617567212",
             "https://www.etsy.com/listing/4617572373",
             "https://www.etsy.com/listing/4617637616",
+            "https://www.etsy.com/listing/4617656280",
         ]
     )
     assert "amazon" not in "".join(f.read_text(encoding="utf-8").lower() for f in pages(root))

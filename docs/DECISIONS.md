@@ -2577,6 +2577,17 @@ sentence ("They show a river, not the tide") reads as well for two. The
 page now lists eleven river prints, and the build of January 1, 2028
 lists the custom prints and those eleven.
 
+Update, 2026-11-15: the Harpers Ferry "Where They Meet" map, of the
+Potomac and the Shenandoah, went live that day and is linked after the
+Wichita map, its id checked against the line "LISTED 2026-11-15 ... as
+Etsy listing 4617656280" in its product notes. The listing was not
+fetched. Its title is "Water Year 2026 Print: Potomac and Shenandoah Map",
+proposed for the owner's approval with this change, and its `about` is
+the first sentence of its listing's own description, word for word. No
+new kind, section or sentence. The page now lists twelve river prints,
+and the build of January 1, 2028 lists the custom prints and those
+twelve.
+
 ## 0042: A share image and home-screen icons (2026-11-14)
 
 A link to tidehours.com shared in a message or a post showed no picture,

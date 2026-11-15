@@ -2,6 +2,9 @@
 
 ## 0.1.0 (unreleased)
 
+- The tide gifts page lists the "Where They Meet" map of the Potomac and
+  the Shenandoah at Harpers Ferry, a river year print of the 2026 water
+  year, after the Wichita map (DECISIONS 0041).
 - The tide gifts page lists eight more river year prints of the 2026
   water year: the Potomac, Delaware, Merrimack, American and Sacramento
   rivers, the American and Sacramento side by side, and the two "Where

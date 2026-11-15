@@ -283,6 +283,11 @@ class Config:
     # default) reads the committed list, copy/gifts.json; a test passes its
     # own (docs/DECISIONS.md 0041).
     gifts_file: Path | None = None
+    # The heading of the list of more places in a station's region. None
+    # (the default) reads copy/more_places.json, which is not committed
+    # until the owner approves its wording, so the list is off; a test
+    # passes its own (docs/DECISIONS.md 0043).
+    more_places_file: Path | None = None
 
 
 @dataclass
@@ -430,6 +435,55 @@ def coast_groups(states: list[State]) -> list[tuple[str, list[State]]]:
         raise ValueError(f"states in no home page group: {lost}")
     out = [(name, [by_code[c] for c in codes if c in by_code]) for name, codes in COAST_GROUPS]
     return [(name, sts) for name, sts in out if sts]
+
+
+def coast_neighbors(state: State, groups: list[tuple[str, list[State]]]) -> list[tuple[str, list[State]]]:
+    """The home page's coast groups (0040) that hold this state and at least
+    one other, for the foot of its state page (0043): Maine's page lists the
+    Atlantic coast, Florida's both of its coasts. Alaska and the stations
+    without a state have no other state in their group, so none."""
+    return [(name, sts) for name, sts in groups if len(sts) > 1 and any(s.code == state.code for s in sts)]
+
+
+def sibling_regions(state: State, regions: list[Region]) -> list[Region]:
+    """Every region of a region page's state, in its state page's coast
+    order, for the foot of the region page (0043); none for a state of one
+    region, or for the stations without a state, whose regions are in no
+    order along a coast."""
+    return regions if state.code != OTHER and len(regions) > 1 else []
+
+
+# The list of more places in a station's region, under Nearby (0043). Its
+# heading is new wording waiting for the owner's approval: the file is not
+# committed, and without it no station page has the list.
+MORE_PLACES_FILE = Path(__file__).parent / "copy" / "more_places.json"
+MORE_PLACES_MAX = 6
+
+
+def more_places_heading(path: Path | None = None) -> str | None:
+    """The list's heading, with "{region}" for the region's name, or None
+    when copy/more_places.json is absent."""
+    f = path or MORE_PLACES_FILE
+    if not f.is_file():
+        return None
+    heading = json.loads(f.read_text(encoding="utf-8"))["heading"]
+    if not isinstance(heading, str) or "{region}" not in heading:
+        raise ValueError(f"{f.name}: the heading must name {{region}}")
+    return heading
+
+
+def more_places(
+    station: Station, region: Region | None, shown: list[tuple[Station, float]]
+) -> list[tuple[Station, float]]:
+    """The other stations in a station's region that its Nearby list does not
+    already show, nearest first, at most MORE_PLACES_MAX."""
+    if region is None:
+        return []
+    skip = {s.id for s, _ in shown} | {station.id}
+    rest = sorted(
+        ((s, distance_km(station, s)) for s in region.stations if s.id not in skip), key=lambda x: (x[1], x[0].id)
+    )
+    return rest[:MORE_PLACES_MAX]
 
 
 def places_json(stations: list[Station], searched: dict[str, dict[str, str]]) -> str:
@@ -1015,7 +1069,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "king_states": kt_states,
         "kc": kt["copy"]["en"],
     }
-    page("", "index.html.jinja", groups=coast_groups(states), partial=cfg.states is not None, **king_common)
+    groups = coast_groups(states)
+    page("", "index.html.jinja", groups=groups, partial=cfg.states is not None, **king_common)
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
@@ -1042,12 +1097,15 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     days_of = both_days(cat, stations, now)
     first_days = {sid: d[0] for sid, d in days_of.items()}
     order = region_order()
+    more_heading = more_places_heading(cfg.more_places_file)
     for st in states:
+        in_order = coast_order(st, order)
         page(
             st.path,
             "state.html.jinja",
             state=st,
-            regions=coast_order(st, order),
+            regions=in_order,
+            coast=coast_neighbors(st, groups),
             akas=searched_names(st, searched),
             king=kt_states.get(st.code),
             king_calendar=kingtides.calendar_path_for(st.code),
@@ -1060,6 +1118,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
                 index=region_indexable(r),
                 state=st,
                 region=r,
+                siblings=sibling_regions(st, in_order),
                 hub_date=hub_day(r, first_days),
                 hub_zone=hub_zone(r),
                 first_days=first_days,
@@ -1075,6 +1134,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         season = kt_by_id.get(s.id)
         # A twin's canonical is its reference station's page (DECISIONS 0033).
         twin: dict[str, Any] = {"canonical_path": f"stations/{s.twin_of}/"} if s.twin_of else {}
+        close = neighbors(near, s)
         page(
             f"stations/{s.id}/",
             "station.html.jinja",
@@ -1088,8 +1148,10 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             reference_listed=ref is not None and ref.id in by_id,
             reference_km=distance_km(s, ref) if ref is not None else None,
             offsets=cat.offsets(s.id) if s.is_subordinate else None,
-            nearby=neighbors(near, s),
+            nearby=close,
             nearby_miles=NEARBY_MILES,
+            more=more_places(s, region, close) if more_heading else [],
+            more_heading=more_heading.replace("{region}", region.name) if more_heading and region else "",
             derived=derived.get(s.id, []),
             tide_type=cat.tide_type(s.id),
             king_season=season,

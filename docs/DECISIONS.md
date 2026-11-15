@@ -2741,3 +2741,78 @@ clicks. Recheck the three pages' click-through rate in Search Console a
 week or two after the Nov 23 run.
 
 **For the app:** nothing changes.
+## 0043: Hubs link along the coast: states to states, regions to regions (owner, 2026-11-15)
+
+Measured on a full build pinned to 2026-11-15 11:20 UTC, from the built
+HTML (growth/tidehours-seo-structure-2026-11-15.md). Every page is close
+to the home page: the 32 state pages are one click from it, and every one
+of the 3,256 station pages and the 370 region pages are two (home, state,
+then the station or region). No indexable page is an orphan; the only
+pages nothing links to are the 87 moved-region stubs of 0017 and 0018,
+which are noindex and send visitors on. So depth was not the problem. What
+was thin was the links between hubs: no state page linked another state,
+and no region page linked another region, so a region page's only links
+in were its state page and its own stations' breadcrumbs (median 7; 60 of
+the 370 had 3 or fewer). Search Console (US, 28 days to 2026-11-14) gave
+region pages 151 of 628 impressions, from searches such as "maui tide",
+"tide st simons island" and "tides for crystal river florida".
+
+Two lists, using only words already on the site:
+
+- **A state page ends with its coast.** Under the king-tide links, each of
+  the home page's coast groups (0040) that holds the state and another
+  state: the group's own heading ("Atlantic coast, north to south") and
+  its states in its order, each with its count as on the home page, the
+  page's own state named without a link. Florida's page shows both of its
+  coasts. Alaska and the stations without a state are alone in their
+  groups, so their pages show none. (`site.coast_neighbors`)
+- **A region page ends with its state's regions.** Below the day's list
+  and any king-tide box, the state page's own jump list (0039), with the
+  same words, "Jump to a region, north to south (17)", in the same order,
+  linking each region's page, the page's own region named without a link.
+  Not on a state of one region or on the stations without a state, whose
+  regions follow no coast. (`site.sibling_regions`)
+
+Both are below the answer, so the page still answers first (0032), and
+both are left out when a page is printed, like Nearby.
+
+**After,** on the same build: 30 state pages link to another state (0
+before); 356 of the 370 region pages link another region (0 before; the
+other 14 are in states of one region or among the stations without a
+state); the median region page has 32 links in (7 before), and 8 have 3
+or fewer, all among the stations without a state. Station pages are
+unchanged. The built site grows by about 1% (0.9 MB); the largest region page, Florida Keys, goes from 62,429 to 64,883
+bytes (8,252 to 8,876 gzip), Florida's state page from 56,680 to 58,868.
+
+**Built but off: more places in the region.** 47 station pages have 2 or
+fewer links in (their state and region pages), 30 of them in Alaska, and
+145 have 3 or fewer, because Nearby (0032) lists only stations within 25
+miles. A list under Nearby of up to 6 more stations of the same region,
+nearest first, with distances as Nearby gives them
+(`site.more_places`), takes that to 6 and 24 and the median station page
+from 8 links in to 12. Its heading is new wording, so it waits for the
+owner: the heading lives in `copy/more_places.json`, which is not
+committed, and without that file no page has the list. Adding the file
+with its heading, `{"heading": "..."}` naming `{region}`, turns it on. On
+2026-11-15 the owner held it until 2026-12-15, so as not to change the
+station pages while their indexing test runs (to about 2026-12-10).
+
+**Not done:** an HTML sitemap page (not approved by the owner,
+2026-11-15), and region links on the home page.
+Neither makes any page closer to the home page than two clicks, and both
+need new headings; the region links would add about 370 links to the
+home page the owner approved in 0040.
+
+**Checked.** `check_site.check_links`: each state page's coast lists are
+`coast_neighbors` for the states of the build, itself unlinked; each region
+page's list is its state's regions in `coast_order`, itself unlinked, and
+a region page of a one-region state has none. `tests/test_links.py`: the
+groups and regions on the full catalog, the built pages, more places off
+without its file and right with one, and five negative controls for
+`check_links`.
+
+**Indexing.** The lists change every state and region page's HTML once;
+region pages already change daily (0039), so the first build announces the
+32 state pages once more than usual (0011, 0028).
+
+**Reversible.** Yes: drop the two lists, their styles and their check.

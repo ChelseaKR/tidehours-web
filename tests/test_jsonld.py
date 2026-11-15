@@ -184,6 +184,38 @@ def test_station_place_and_dataset(built: Path) -> None:
     assert dataset["spatialCoverage"] == {k: v for k, v in place.items() if k != "@context"}
 
 
+TITLE = re.compile(r"<title>(.*?)</title>")
+
+
+def webpage_problems(rel: str, page: str) -> list[str]:
+    """A station page's WebPage node is named by the page's own title, which
+    is what the page is called in search, not an older title."""
+    (title,) = TITLE.findall(page)
+    return [
+        f"{rel}: WebPage name {n['name']!r} != title {htmllib.unescape(title)!r}"
+        for n in nodes(page)
+        if n["@type"] == "WebPage" and n["name"] != htmllib.unescape(title)
+    ]
+
+
+def test_station_webpage_is_named_by_its_title(built: Path) -> None:
+    checked = 0
+    for f in sorted((built / "stations").glob("*/index.html")):
+        page = f.read_text(encoding="utf-8")
+        assert [n["@type"] for n in nodes(page)].count("WebPage") == 1, f
+        assert webpage_problems(f.parent.name, page) == []
+        checked += 1
+    assert checked > 100
+    # A searched name (copy/place_names.json) leads the title, so it leads the node.
+    page = (built / "stations/1615680/index.html").read_text(encoding="utf-8")
+    (web,) = [n for n in nodes(page) if n["@type"] == "WebPage"]
+    assert web["name"].startswith("Maui (Kahului, HI) tides today")
+    # Negative control: the node's name before 2026-11-15 is caught.
+    old = page.replace(f'"name": {json.dumps(web["name"])}', '"name": "Kahului, HI tide times"', 1)
+    assert old != page
+    assert webpage_problems("1615680", old)
+
+
 def test_every_station_place_matches_the_catalog(built: Path) -> None:
     cat = load()
     checked = 0

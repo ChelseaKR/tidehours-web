@@ -3,12 +3,14 @@
 {% block title %}{{ station_title(place) }}{% endblock %}
 {% block description %}{{ station_description(place, days, ("King tides " ~ fmt_range(king_link.up.first, king_link.up.last, "en", kc) ~ ".") if king_link and king_link.own else "") }}{% endblock %}
 {% block jsonld %}
+{#- The page's own title, and its sitemap lastmod as every other node's
+    dateModified (docs/DECISIONS.md 0034). -#}
 <script type="application/ld+json">{{ {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  "name": station.display_name ~ " tide times",
+  "name": station_title(place),
   "url": base_url ~ path,
-  "dateModified": built,
+  "dateModified": date_modified,
   "about": {"@type": "Place", "name": station.display_name,
             "geo": {"@type": "GeoCoordinates", "latitude": station.lat, "longitude": station.lon}},
   "isBasedOn": "https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id=" ~ station.id

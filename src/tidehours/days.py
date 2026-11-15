@@ -164,6 +164,17 @@ class Day:
             return "no high or low tide predicted"
         return ", ".join(f"{e.kind.lower()} {e.height_ft} at {e.time}" for e in self.events)
 
+    def in_order(self) -> str:
+        """The station page's next-tide line as built (docs/DECISIONS.md
+        0038): "Friday, Nov 13, in order: high 2:25 AM, low 5:30 AM.", or
+        "Friday, Nov 13: no high or low tide predicted." It names the date,
+        not "today", so it is true whenever it is read; the page's script
+        replaces it with the next of these times when it can."""
+        when = f"{self.date.strftime('%A')}, {short_date(self.date)}"
+        if not self.events:
+            return f"{when}: no high or low tide predicted."
+        return f"{when}, in order: " + ", ".join(f"{e.kind.lower()} {e.time}" for e in self.events) + "."
+
 
 def local_midnight(d: dt.date, zone: ZoneInfo) -> float:
     return dt.datetime.combine(d, dt.time(), zone).timestamp()

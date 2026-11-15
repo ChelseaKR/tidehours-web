@@ -226,7 +226,11 @@ def test_a_rebuild_of_the_same_day_announces_nothing_and_the_next_day_only_chang
     assert ix.select_changed(first, again) == []
     changed = ix.select_changed(first, next_day)
     assert changed, "a new day must change the station pages, or this check proves nothing"
-    assert all("/stations/" in u for u in changed)
+    # Station pages, and since 0039 the region pages, whose rows carry the
+    # day's times; nothing else.
+    region = re.compile(r"https://tidehours\.com/states/[a-z]+/[^/]+/$")
+    assert all("/stations/" in u or region.match(u) for u in changed)
+    assert any(region.match(u) for u in changed)
     assert len(changed) < len(next_day)
 
 

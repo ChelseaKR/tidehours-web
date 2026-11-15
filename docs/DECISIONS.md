@@ -2036,3 +2036,630 @@ sentences in `copy/calendar_link.json` from 0035.
 Update, 2026-11-13 (night): with the twelve calendars added to 0035's list,
 the page lists 40 towns and 46 listings. The page and its checks are
 unchanged.
+
+## 0038: Station pages: the next tide, and the chart above the table (owner, 2026-11-13)
+
+On 2026-11-13 the owner approved the phase 2 layout proposal "all as
+recommended". This is its first part, 2a, the station page (Q1, Q2, Q3 and
+Q7, option A each). It changes the layout of the first screen and adds one
+line. It does not change the look from PR #19, the H1, the two questions,
+the king-tide callout's place or words, or the printable sentences' words,
+place or count.
+
+**The answer box** (amends 0032's first screen). The H1 and the two
+questions keep 0032's exact wording, set smaller, in one box with both
+days. Each listed time is wrapped (`span.times`, `span.ev`) so the script
+can mark it; the text around the times, "Sunday, Nov 1: " and the
+heights, is unchanged.
+
+**The next-tide line** (amends 0002's role for the page's script). At
+build time, `p#next` opens the answer box with the first day's highs and
+lows in order, by date: "Friday, Nov 13, in order: high 2:25 AM, low
+5:30 AM, high 11:34 AM, low 7:35 PM." A day with neither says "Friday,
+Nov 13: no high or low tide predicted." It names the date, not "today"
+(0032's rule for descriptions), so it is true whenever it is read; it is
+what crawlers and readers without the script get (`Day.in_order`).
+
+The script that already labels the days (0002) now also takes the first
+high or low after the reader's clock from the times the build wrote in the
+day tables, and replaces the line: "Next low tide: 7:35 PM (0.0 ft), in
+2 h 5 min. The predicted tide is falling until then." After the day's last
+tide it names tomorrow's first: "Next high tide: 3:29 AM tomorrow (3.7 ft),
+in 7 h 29 min. The predicted tide is rising until then." It marks each time
+in the answer that has passed (dimmed, with "passed: " for screen readers).
+It never computes a tide, a height or a curve: the times, heights and
+direction all come from the build's own table, and "in" is the clock's
+difference to that time, so it is right across a daylight saving change.
+When the next tide on the page is not the station's today or tomorrow, when
+every tide on it has passed, or when the zone is unknown to the browser,
+the build's line stays. The wording is the proposal's Appendix A; on
+2026-11-13 the owner approved each line as written: the build sentence, the
+absence sentence, the "tomorrow" form and the spoken "passed: ".
+
+**The day cards.** The chart comes before the table in each day's card,
+then the sun and moon line. From 60rem wide, the table and the sun and moon
+sit beside the chart, and the two questions side by side. At 390×844 in
+king-tide season, today's chart now starts about 1,065 px down Monterey's
+page (the proposal measured 1,532 px before, on its mockup).
+
+**King tides** (0015 unchanged). The callout keeps its place before day 1
+and its words, with less padding and smaller type; its two links share a
+line.
+
+**The printable sentences** (0030, 0035, 0037 unchanged). A hairline and a
+little space before the first of them, so they do not read as part of "The
+rest of the week". No box, heading, icon or color.
+
+**Header.** One row from 360 px wide; it wraps below that, as before.
+
+**Weight.** Monterey's page grows by 3,514 bytes (1,090 gzip) and
+`style.css` by 3,650 bytes (902 gzip). The largest station page in a
+California build is 37,831 bytes, under check_site's 120,000.
+
+**Checks.** `check_site.check_next`: every station page has exactly one
+`p#next`, inside the answer box, and it is the first day's table's highs and
+lows in order, written out in the check itself, or the absence sentence,
+with no placeholder. `tests/test_next_tide.py` holds its negative controls
+(the line removed, doubled, moved out of the box, reordered, a wrong time,
+tomorrow's date, "Today", a placeholder, and a table that no longer
+matches), each asserting first that its sabotage changed the page.
+`tests/test_today.py` runs the shipped script under Node against the
+built rows: before the first tide, between tides, at the minute of a tide,
+after today's last (the "tomorrow" form), after every tide, a missed build
+and a clock behind the build, an unknown zone, and the fall-back day in New
+York. `test_station_title_shape_and_lead_answer` passes as written and
+asserts the line.
+
+**Not changed.** A high or low that rounds to midnight stays in the day
+the table already lists it under, so the line can end "low 12:00 AM." as
+the answer and the table do (for example station 9414811 on 2026-11-13).
+
+**Reversible.** Yes: drop `p#next` and the wrappers, the script's
+`tidehoursNext`, `check_next`, the new style rules, and put the chart back
+after the table.
+
+**For the app:** nothing changes.
+
+## 0039: Hubs in coast order, with the day's tides on region pages (owner, 2026-11-14)
+
+Phase 2b of the layout proposal the owner approved on 2026-11-13 (Q4 and
+Q5, option A each). On 2026-11-14 she approved the California order and
+every line of wording below as written. The look from PR #19 is unchanged.
+
+**State pages: coast order** (`copy/region_order.json`, `site.coast_order`).
+A state listed in the file has its regions in the file's order, and the
+file must name each of its regions exactly once; the build stops on an
+unknown or missing region, a region listed twice, a state the site does not
+name, or the "other" group. Only California is listed, in the owner's
+order: down the north coast, into San Francisco Bay and the Delta rivers,
+then back out to the coast and south (Outer Coast, San Francisco; Humboldt
+Bay; San Francisco Bay; San Pablo Bay; Carquinez Strait; Suisun Bay;
+Sacramento River; San Joaquin River; Mokelumne River; Outer Coast, Port
+San Luis; Monterey Bay; Santa Barbara Channel; Santa Barbara Islands; San
+Pedro Channel; Southern California). Every other state's regions go north
+to south by the average latitude of their stations; on Florida's page, that
+interleaves the Atlantic and Gulf regions. The "other" group keeps its
+alphabetical order. Stations without a region stay last.
+
+- The lead ends ", north to south." when a state has more than one region.
+- With more than three regions, a collapsed "Jump to a region, north to
+  south (15)" lists them, linking to each region's section.
+- Each region heading gains its count, "20 places" or "1 place".
+- A find box, "Find a place in California", filters the names already on
+  the page as you type: "1 place matches “half moon”.", "12 places match
+  “bay”.", or "No place on this page matches “xyz”. Try the town, beach or
+  bay name." It ignores case, accents and the ʻokina, and also matches a
+  station's searched name from `copy/place_names.json` ("Maui"). The
+  page's script adds the box, so a page read without the script has none.
+  No request is made, and nothing typed leaves the page. The "other"
+  group's page has no box, jump list or lead change.
+
+**Region pages: the day's highs and lows.** Under the lead, "High and low
+tides, Friday, November 13, 2026 (Pacific Time; heights on each place's
+page)", then each place's row adds its times for that day, computed at
+build time from the same `Day` as its station page: "High 2:25 AM, 11:34 AM
+Low 5:30 AM, 7:35 PM". Times only, so no height appears without its datum.
+A day without either says "no high or low tide predicted", and one without
+a high or a low says "no high tide" or "no low tide", as the descriptions
+do (0032). The 11 regions whose stations span two zones (on the Florida
+panhandle, in Alaska and one in Texas) say "(local time at each place; heights on
+each place's page)". A region whose stations have different dates gets no
+heading and no times, as before; at 11:20 UTC no region does (0002). The
+rows stay alphabetical.
+
+**Amends 0028:** region pages now change every day, so their sitemap
+`lastmod` moves daily and IndexNow announces the 304 indexable region pages
+each day, about 3,560 URLs a day against its 10,000 limit. Whether that
+changes how often search engines crawl them was not studied.
+
+**Weight,** on a full build pinned to 2026-11-13: the largest region page,
+Florida Keys, goes from 24,300 to 60,352 bytes (3,779 to 7,048 gzip). The
+California state page goes from 19,186 to 23,003 bytes, and `style.css`
+grows by 2,475 bytes (503 gzip). The largest page of the build is still
+the Spanish king-tide page, at 96,591 bytes, under 120,000.
+
+**Checks.** `check_site.check_hubs`: each state page lists every region once,
+in `coast_order`'s order, with the stations without a region last; each
+region page lists exactly its stations; and under a dated heading each
+row's times are its station page's first-day highs and lows, written out in
+the check itself. The station page's date must be the heading's. Without a
+heading, no row shows times. `tests/test_hubs.py`: the owner's order, the
+order file's refusals, north to south for the rest, the built pages' words,
+the find script under Node (matches, no match, an empty box, case and
+spaces, accents and the ʻokina, a searched name), and eight negative
+controls for `check_hubs`. `tests/test_indexnow.py` now expects a new day to
+change the region pages as well as the station pages, and nothing else.
+
+**Reversible.** Yes: drop the order file, `coast_order`, the hub heading and
+times, the find script and their styles and checks, and the state and
+region pages are as before.
+
+**For the app:** nothing changes.
+
+**Added later (2026-11-14, wording pending the owner's approval): a passed
+day says so.** A region page holds one day, its stations' date at 11:20
+UTC, so from midnight at its stations until the next build that day has
+passed: for a few hours before dawn on the mainland, and for about 21
+hours a day in Guam and the Northern Mariana Islands. The station pages
+already say so (0038); a region page now does too. An empty status box
+above the dated heading carries the region's zones (`data-tz`, space
+separated), and the page's script fills it when the date has passed in
+every one of them (so a region in two zones waits for the later midnight):
+"Today, Sunday, November 15, 2026, is not on this page yet. The times below
+are for Saturday, November 14, 2026, which has passed. The site updates
+once a day; each place's page also has the next day's tides." The heading
+and times stay as built; a clock behind the build, an unknown zone or no
+script shows nothing. `tests/test_today.py` runs the script under Node.
+
+## 0040: A find box over a static list, and the home page by coast (owner, 2026-11-14)
+
+Phase 2c of the layout proposal the owner approved on 2026-11-13 (Q6, option
+A). On 2026-11-14 she approved every line of wording below as written.
+
+**States by coast** (`site.COAST_GROUPS`). Under "Choose a state or
+territory", the home page groups the states: "Pacific coast, north to
+south" (Washington, Oregon, California); "Alaska"; "Hawaii and the Pacific
+islands" (Hawaii, Guam, the Northern Mariana Islands, American Samoa, the
+U.S. Minor Outlying Islands); "Atlantic coast, north to south" (Maine to
+Florida, with Pennsylvania and the District of Columbia where their rivers
+meet the coast); "Gulf Coast, east to west" (Florida to Texas); "Caribbean"
+(Puerto Rico, the U.S. Virgin Islands); and "Other" (stations without a
+state). Florida has a coast in two groups and is listed in both, with the
+same link. A state in no group stops the build, so none can fall off the
+page. Each group is an `h3` naming its `ul.states`.
+
+**Find a tide station** (amends 0034's "the site has no search": the home
+page now filters a static list, but there is still no search page and no
+`SearchAction`). The build
+writes `/places.json`: one row per station page, `[id, display name]`,
+with the searched-for name from `copy/place_names.json` as a third item for
+the five stations that have one. It is 132,997 bytes, 40,283 gzip (CloudFront
+compresses it, `infra/site.yaml`), and is not in the sitemap. The home
+page's script puts a box, "Find a tide station by town, beach or bay", under
+the lead. It fetches `/places.json` from this site the first time the box
+is focused, never before, and filters it in the browser. Nothing typed
+leaves the page. From two letters on, it lists at most 12 stations, each
+linking to its page, and says "1 station matches.", "2 stations match.",
+"The first 12 of 40 stations that match. Type more to narrow them.", or
+"No station name matches “xyz”. Try a nearby town, or pick a state below."
+If the list does not load: "The list of places did not load. The states
+below list every station." It ignores case, accents and the ʻokina, as the
+state pages' box does (0039). Without the script, or without `fetch`, there
+is no box, and the states list every station as before.
+
+**Weight.** The home page goes from 7,195 to 10,985 bytes (2,097 to 3,497
+gzip) with the groups and the script; the list costs nothing until someone
+uses the box.
+
+**Checks.** `check_site.check_places`: `/places.json` is exactly the
+station pages of the build, in id order, each with its display name and
+its searched name when it has one; and the home page shows
+`site.coast_groups` for the states of the build. `tests/test_home_find.py`:
+every state in a group and Florida in two, the built home page, the list,
+the find script under Node with the full catalog's list (two matches for
+"half moon", "Maui" by its searched name, nothing for one letter, the
+first 12 for "bay", no match, a list that fails to load, and one fetch,
+on first use), and seven negative controls for `check_places`.
+`test_jsonld` still refuses `SearchAction`.
+
+**Reversible.** Yes: drop the groups, the anchor, the script, the list and
+their styles and checks, and the home page is as before.
+
+## 0041: A tide gifts page lists every Tide Hours product, by kind and by town (2026-11-14)
+
+The owner asked for more
+Google visitors to the Tide Hours products for holiday gift searches ("tide
+chart gift", "Bar Harbor tide calendar 2027", "tide art print"). The site
+already had `tide-calendars/` (0037), which lists the printable calendars
+and posters by state for a reader who wants a town's calendar. This page is
+for a reader who wants a gift: every product the site can link to, grouped
+by kind, and by town within a kind. The owner approved the page and its
+wording on 2026-11-14 with two changes, both below: the Maine Coast
+hardcover waits until she has checked her author copy, and the products
+listed that day (two more tide rings prints and the winter solstice print)
+are added. The listings were not fetched for this change.
+
+**Nothing forbids it.** No decision here freezes the site or rules out a
+new page. 0029 kept shop links off station, state and region pages, and
+0037 added one footer link to a page of this site on the owner's request;
+this change adds a second footer link of the same kind and no link to a
+shop from any page that did not have one, apart from the new page.
+
+**The page.** `tide-gifts/` (the address follows `tide-calendars/` and
+`king-tides/`), from `gifts.py`, `copy/gifts_page.json` and
+`templates/gifts.html.jinja`. Title and heading "Tide chart gifts and tide
+art prints" ("Tide chart gifts" when the build has no art print). A lead
+that says each one is made by Tide Hours and that the tide gifts are "art,
+not for navigation, and not a NOAA product", a sentence on how the page is
+listed, then one section per kind, in this order, each with a sentence on
+what the thing is:
+
+- **Custom tide chart prints:** the print shop's made-to-order print
+  (0029), with one link to the shop's own address. Shown only when
+  `PRINT_SHOP_URL` is set, as it is on the live site. It links to the shop
+  and not to a listing, because the listing ids of the custom print and its
+  occasion versions are not marked live in the product notes the owner
+  keeps for each listing.
+- **Winter solstice print:** the made-to-order daylight print for the
+  solstice of December 21, 2026, one line with its listing. Its sentence is
+  the wording already approved on its live Etsy listing, with only its first
+  two sentences of the second paragraph joined ("Made to order as a digital
+  file" and the places it works): "The winter solstice in your city,
+  December 21, 2026: the shortest day of the year, and the first bar on the
+  page. After it come the 364 days to December 20, 2027, one thin bar for
+  each, from midnight at the top to midnight at the bottom, so you can
+  watch the light come back through spring to the long days of June and
+  out again. Made to order as a digital file, for any city in the 50
+  states, Puerto Rico or the U.S. Virgin Islands; not interior or northern
+  Alaska, Guam, the Northern Mariana Islands or American Samoa." It shows
+  sun, not tide, so the page's tide wording does not describe it.
+- **Tide rings art prints, year-of-tides posters, printable calendars and
+  tide blanket patterns:** one line per town, alphabetical: the town's
+  name linked to its station page, the state, and the listing linked by
+  its title.
+- **Printed tide tables:** each book, linked by its cover title, with the
+  towns it covers, each linked to its station page.
+- **Moon phase calendars:** one line each, no town. The sentence says they
+  show the moon, not the tide.
+
+**The lists.** The calendars and posters are exactly the ones the station
+pages of this build link to (0035, 0037); this page adds no id to them. The
+other products are in `copy/gifts.json`, a list of entries of five kinds
+(`daylight`, `rings`, `blanket`, `moon`, `book`) with the Etsy listing id or
+ASIN, the year, a title in a fixed shape ("2026 Winter Solstice Print: The
+Light Returns", "2027 Tide Rings: Bar Harbor", "2027 Tide Blanket Pattern:
+Half Moon Bay", "2027 Moon Phase Poster: US Time Zones", "2027 Tide
+Tables: Maine Coast"), the station for a town-bound entry, the format and
+the towns for a book, **`live`, the date its listing was marked live**,
+and, optionally, **`until`, the first day it no longer shows**, read in
+Pacific time (the shop's own). A solstice print must carry `until`, and a
+list may hold at most one, since its sentence names its dates. An entry without a `live` date, or with anything but a date
+there ("draft", "LISTED", an empty string), stops the build, as do a slug,
+a whole address, a claim word, a price, an unknown kind or key, a listing
+listed twice or also in the calendar or poster list, and a station the
+catalog does not have, an `until` that is not a date or not after `live`,
+and a second solstice print. As committed it holds the ten entries marked
+live in the owner's product notes on 2026-11-13 and 2026-11-14: the winter
+solstice print (`until` 2026-12-22, the day the owner delists it), tide
+rings for Bar Harbor, Half Moon Bay, Monterey and San Francisco, tide
+blanket patterns for Bar Harbor and Half Moon Bay, and the three moon phase
+calendars. The hardcover "2027 Tide Tables: Maine Coast" (ASIN B0HRP6Z64Q,
+marked live) is left out until the owner has checked her author copy, so
+the "Printed tide tables" section, the privacy page's "Book links" section
+and Amazon's name on the terms page do not render; adding its entry back
+brings all three. `booklets.json` (0030) is still empty. `--gifts FILE` on the build and
+on `check_site.py` names another list; it is for tests.
+
+**The links.** Exactly `https://www.etsy.com/listing/ID` or
+`https://www.amazon.com/dp/ASIN`, `rel="noopener"`, as on the station pages
+(0030, 0035): no slug, query string, Associates tag (even with 0016's
+switch on), tracking parameter or click event. No price, sale, discount,
+image, rating or claim anywhere on the page. The Etsy shop's 20% sale
+(November 20 to December 2) is left out: the site states no prices, and the
+daily build at 11:20 UTC would keep a sale sentence up for hours after the
+sale ends in Pacific time, or longer if a publish failed.
+
+**Structured data.** None added. The page carries the `dateModified` every
+sitemap page has (0034) and no JSON-LD: there is nothing on it that
+schema.org can describe accurately without `Product` and `Offer`, which
+0034 rules out, and a `Book` or `ItemList` of other sites' pages would be
+markup for things this site does not hold. Etsy and Amazon are never in
+its JSON-LD.
+
+**When it exists.** Only while an entry of `gifts.json` shows: its year is
+not over by the build's date (UTC), its `until`, if any, has not come by
+the build's date in Pacific time, and a town-bound one's station has a page
+in the build. The solstice print leaves with the first build on or after
+midnight, December 22, 2026, Pacific: the daily build of December 22 at
+11:20 UTC. The December 21 build stays up until then, so the page lists it
+for about three hours after midnight Pacific on December 22. The calendars, posters and custom print alone make no
+page, because `tide-calendars/` and the print shop's own link already list
+them. So the build of January 1, 2028 has no gifts page and no footer link
+to one, with nobody editing a file; the About and king-tide pages keep the
+shop link.
+
+**Links to it.** The footer of every English page, the 404 page included,
+links to it after "Tide calendars and posters": "Tide gifts". That is the
+link from the home page and from every town's station page. The Spanish
+king-tide page's footer does not (0029, 0037). No page body links to it,
+and it is not in `llms.txt`, which says nothing about Etsy or Amazon.
+
+**Indexing.** In the sitemap and `lastmod.json`. The footer link changes
+the HTML of every English page once, so the first build with it gives every
+page that build's `lastmod` and IndexNow announces every page once (0011,
+0028), as 0037's footer link did.
+
+**Privacy and terms.** The privacy page's Etsy section (`/privacy/#shop`)
+names the new page while it links to Etsy (`gifts.shop_notice`); every
+earlier case is unchanged. As published: "The About and king tides pages,
+the tide calendars and posters page, the tide gifts page, and the station
+pages of towns with a printable calendar or poster, link to the Tide Hours
+shop on Etsy. This site sends nothing to Etsy. The link takes you to Etsy,
+where Etsy's own privacy policy applies." While the page lists a book (none
+as committed), the
+Amazon section (`/privacy/#booklets`) reads, under "Book links": "The tide
+gifts page links to printed tide tables that Tide Hours publishes and sells
+on Amazon. They are plain links, not affiliate links, and this site sends
+nothing to Amazon. A link takes you to Amazon, where Amazon's own privacy
+notice applies." (with "Some station pages, and the tide gifts page, link
+to ..." when a station booklet also shows). The terms page then names
+Amazon and Etsy among the trademarks. The "no ads" sentence is unchanged.
+
+**Checked.** `check_site.py` works out from the build what the page must
+list (`gift_listing`: the calendars and posters due on the station pages,
+the live entries whose year is not over on the date the station pages say
+the build was made and whose `until` has not come on the date a Pacific
+station page shows, and the custom print when the shop address is set),
+and `check_gifts` fails the build if the page is missing or present when it
+should not be; if its title, heading, two paragraphs, section headings or
+section sentences differ; if its lines or their links differ or are out of
+order; **if it links to any Etsy listing or Amazon book that it does not
+list, which covers one not marked live**, or to one twice; if a link's rel
+is not `noopener` or it has a click event; if Etsy or Amazon is in its
+JSON-LD; if it names a price, sale, discount or claim; or if an English
+page does not link to it exactly once or the Spanish page links to it.
+0016's and 0029's rules leave this page to `check_gifts`, and still hold
+for every other page; the privacy and terms pages may name Amazon and Etsy
+in words while the page links to them, never with a link. The privacy
+page's Amazon section must be exactly `gifts.book_notice`'s.
+
+**Accessibility sample.** `scripts/site_sample.py` adds the page when the
+build has it. It is a heading, two paragraphs, and a heading, a sentence
+and a list for each kind, styled as `ul.printables`; no new CSS and no
+script.
+
+**Tests.** `tests/test_gifts.py`: the committed list is exactly the ten
+listings marked live, with no book; 27 bad entries are refused, six of them
+a missing or non-date `live` and six about `until` or the solstice print; the
+published page word for word, its 57 outbound links (40 calendars, 6
+posters, 10 gifts and the shop), towns in order; with no book entry, no
+file of the published build links to or names Amazon; the solstice print
+shown at 23:59 on December 21 Pacific and gone at midnight, and check_site
+failing a page that still lists it past its `until`; no price, sale, rating
+or product markup; the footer of every English page and not the Spanish
+one; the sitemap and not `llms.txt`; the privacy and terms pages; the shop
+off; a one-town book; a moon calendar alone; the 2028
+build; an empty list, and calendars, posters and the custom print with no
+gift, both without a page; the affiliate switch on; the accessibility sample;
+and 25 negative controls, three of them links to a listing or book that is
+not marked live. `tests/conftest.py` points `gifts.load()` with no path at
+an empty list for the whole test session, so the other test modules stay
+about what they test; `test_gifts.py` names the committed list wherever it
+means the site as published.
+
+**Not checked.** The listings themselves: their ids are from the owner's
+notes, and Etsy and Amazon were not asked. The link titles are this
+change's, written to match the calendars' and posters'; the listings' own
+titles are longer. The Maine hardcover waits for the owner's author copy.
+
+**Reversible.** Yes: empty `gifts.json` and the next build has no page and
+no footer link. To remove the code, drop `gifts.py`,
+its two copy files and template, the footer link, the privacy and terms
+cases in `gifts.shop_notice` and `gifts.book_notice`, the sample line,
+`check_gifts` and `tests/conftest.py`.
+
+**For the app:** nothing changes.
+
+Update, 2026-11-14 (evening): four more products went live and are added
+at the owner's request ("Yes, add them"), with two new kinds in
+`copy/gifts.json`:
+
+- **`custom`**, a made-to-order print with no year and no town: "Your Year
+  In Tides" (Etsy 4617340915) and "Beach Wedding Welcome Sign"
+  (4617341518). They are listed under "Custom tide chart prints", after the
+  print shop's own sentence and shop link when that link is on, and alone
+  under the heading when it is off. With no year, only an `until` would take
+  one off the page, so the page no longer leaves on January 1, 2028: from
+  then it lists the custom prints alone.
+- **`stitch`**, a cross-stitch pattern of a town's tide rings, one station
+  each: San Francisco (4617334117, station 9414290) and Bar Harbor
+  (4617336719, 8413320), under a new section, "Cross-stitch patterns",
+  after the blanket patterns. The meta description's list of kinds gains
+  "cross-stitch patterns".
+
+Each entry of the two kinds carries `about`, one or two sentences shown
+after its link, and each is the listing's own approved description, word
+for word: the first sentence of the custom prints', the first two of the
+patterns'. The section sentence for the patterns joins three sentences of
+their shared description, word for word. `about` is refused if it is not
+plain sentences or carries a price, a claim word or markup. `check_site.py`
+now also checks each line's words (`gifts.line_text`), so a changed or
+dropped `about` fails the build, as does a link to either new kind's
+listing that the list does not carry. No new decision number: like 0035's
+and 0037's later lists, this adds listings, and the two kinds follow this
+decision's rules.
+
+Update, 2026-11-14 (late): more listings went live that afternoon
+and are linked at the owner's request, each id from the line "LISTED
+2026-11-14 as ID" in its product notes. The listings were not fetched.
+
+- **Seven in `copy/gifts.json`**, each marked live on 2026-11-14: tide
+  rings for Ogunquit (station 8419317), Cape May (8536110), Myrtle Beach
+  (8661070), Tybee Island (8670870), Newport (9435380) and Long Beach
+  (9440581), and the made-to-order year-of-daylight print. Each town's station is
+  the one its calendar is listed under, and the one its listing names as
+  the NOAA station it is computed for; `test_gifts.py` now checks that a
+  town is under one station in every list.
+- **A new kind, `sun`**, a year-of-daylight print: no town, a year, a
+  title "YEAR Year of Daylight Print: Place" ("Any City" for the
+  made-to-order one) and `about`. It has its own section, "Year-of-daylight
+  prints", after the solstice print, with the sentence "The 2027 hours of
+  daylight in one city, day by day. They show the sun, not the tide.", as
+  the moon calendars' sentence says they show the moon. The entry's
+  `about` is the first two sentences of its listing's description, word
+  for word. The meta description's list of kinds gains "year-of-daylight
+  prints". The six one-city year-of-daylight prints of the same afternoon
+  (Anchorage, Seattle, New York, San Francisco, Singapore, Sydney) are
+  not listed: the site has station pages, not city pages, and the brief
+  was to list only the made-to-order one.
+- **Two in `copy/posters.json`** (0037): San Francisco (9414290) and Half
+  Moon Bay (9414131). Their station pages carry the poster sentence, and
+  `tide-calendars/` lists them, now 41 towns and 48 listings. San
+  Francisco has no calendar, so its page has the poster sentence alone
+  and its line on `tide-calendars/` the poster alone; 0037's code already
+  handled a poster without a calendar, though its six towns all had one.
+  The gifts page lists both under "Year-of-tides posters".
+
+Station pages still link only their calendar and poster (0029, 0035,
+0037): a tide rings print is linked from the gifts page, which every station page's footer links to, and not from its town's
+station page. A sentence for those on station pages would be a new
+decision.
+
+Update, 2026-11-14 (evening): the owner paused every knit, crochet and
+cross-stitch pattern listing on Etsy, to be sold elsewhere later, so
+`copy/gifts.json` no longer lists the tide blanket patterns (Bar Harbor,
+Half Moon Bay, Newport, Ogunquit, Tybee Island, Fernandina Beach) or the
+cross-stitch patterns (San Francisco, Bar Harbor, Monterey, Half Moon Bay,
+and the custom one), and the page's two pattern sections and their words
+in its description leave with them; the `blanket` and `stitch` kinds stay
+in the code for when they are listed again.
+
+Update, 2026-11-14 (night): seven more digital listings went live that
+day and are linked at the owner's request, each id from the line "LISTED
+2026-11-14 as ID" in its product notes. The listings were not fetched.
+Three new kinds in `copy/gifts.json`, none bound to a town and none on a
+station page (the site has station pages, not city or river pages):
+
+- **`sunrise`**, a printable sunrise and sunset calendar for one city: a
+  year, a title "YEAR Sunrise and Sunset Calendar: Place" and `about`.
+  Anchorage (4617494392) and Seattle (4617485993), of 2027, under a new
+  section, "Sunrise and sunset calendars", after the year-of-daylight
+  prints, with the sentence "The 2027 sunrise and sunset times in one
+  city, a month to a page. They show the sun, not the tide." They are not
+  put under "Year-of-daylight prints": they are calendars, not prints, and
+  that heading would not describe them.
+- **`sky`**, a night sky print for one city: a year, a title "YEAR Night
+  Sky Print: Place" and `about`. New York (4617489617) and Seattle
+  (4617500424), of 2027, under a new section, "Night sky prints", after
+  the moon phase calendars, with the sentence "The 2027 night sky over one
+  city. They show the sky, not the tide. Not a USNO or NASA product."
+- **`river`**, a river year print: a title "Water Year YEAR Print: River"
+  and `about`, and no `year`. Yellowstone River (4617481843), Russian
+  River (4617492188) and Mississippi River (4617493412), each of the 2026
+  water year (October 1, 2025 to September 30, 2026), under a new and last
+  section, "River year prints" (the listings' own Etsy section is "River
+  Year Prints"), with the sentence "Art from USGS daily streamflow data.
+  They show a river, not the tide. Not a USGS product." A river print's
+  water year is over before it is sold, so a year would take a live
+  listing off the page on January 1, 2027; like a custom print, only an
+  `until` ends it, and the build of January 1, 2028 lists the custom
+  prints and the river prints.
+
+Each entry's `about` is the first sentence of its listing's own
+description, word for word. The source notes in the section sentences
+("Not a USNO or NASA product", "Art from USGS daily streamflow data", "Not
+a USGS product") are the listings' own words; the rest of those sentences
+and the three headings are this change's, put to the owner in its pull request. The meta
+description's list of kinds gains "sunrise and sunset calendars", "night
+sky prints" and "river year prints". The page's title, intro and footer
+link are unchanged: its intro already says the tide gifts are drawn from
+the site's predictions, and each new section's sentence says what it
+shows instead. The four other sunrise and sunset calendars (New York, San
+Francisco, Singapore, Sydney) are drafts, not live, and are not listed.
+
+Update, 2026-11-14 (late night): eight more river year prints went live
+that day and are linked at the owner's request ("Add all 8"), each id
+checked against the line "LISTED 2026-11-14 as ID" in its product notes.
+The listings were not fetched. All are `river` entries after the first
+three, in this order: Potomac River (4617545168), Delaware River
+(4617536713), Merrimack River (4617547222), American River (4617564366),
+Sacramento River (4617556217), "American and Sacramento" (4617567212, the
+two rivers side by side), "American and Sacramento Map" (4617572373, the
+Sacramento "Where They Meet" map) and "Arkansas and Little Arkansas Map"
+(4617637616, the Wichita "Where They Meet" map). The titles after
+"Water Year 2026 Print: " are the owner's; each `about` is the first
+sentence of its listing's own description, word for word. No new kind,
+section or sentence: a print of two rivers, or a map of where they meet,
+is still a river year print of the 2026 water year, and the section's
+sentence ("They show a river, not the tide") reads as well for two. The
+page now lists eleven river prints, and the build of January 1, 2028
+lists the custom prints and those eleven.
+
+Update, 2026-11-15: the Harpers Ferry "Where They Meet" map, of the
+Potomac and the Shenandoah, went live that day and is linked after the
+Wichita map, its id checked against the line "LISTED 2026-11-15 ... as
+Etsy listing 4617656280" in its product notes. The listing was not
+fetched. Its title is "Water Year 2026 Print: Potomac and Shenandoah Map",
+proposed for the owner's approval with this change, and its `about` is
+the first sentence of its listing's own description, word for word. No
+new kind, section or sentence. The page now lists twelve river prints,
+and the build of January 1, 2028 lists the custom prints and those
+twelve.
+
+## 0042: A share image and home-screen icons (2026-11-14)
+
+A link to tidehours.com shared in a message or a post showed no picture,
+and a page saved to a phone's home screen had no icon of its own: the site
+had `og:title`, `og:description` and `og:url`, and `/favicon.svg`, and
+nothing else. The owner asked for one site-wide share image and the
+icons, in the Tide Hours style.
+
+**The share image.** `/share.png`, 1200 x 630, about 70 KB, in the print
+shop's Night palette (night #0f2238, cream #f4efe2, water #1d4468, light
+blue #9cc6ea) with Bitter for the wordmark and Archivo for the rest, as on
+the shop's prints. It shows the Tide Hours mark (the clock-over-wave image
+approved for Author Central on 2026-11-14), "Tide Hours", the line "Free
+tide times for today and tomorrow at every NOAA tide prediction station in
+the US.", which is the home page's description without its station count
+and method, and "tidehours.com". Under them, the water is a real curve:
+this engine's predicted tide at Bar Harbor, Maine (8413320), from local
+midnight to midnight on January 1, 2027, drawn to fill the width, with the
+caption "The predicted tide at Bar Harbor, Maine, on January 1, 2027". No
+number is printed on it. Its alt text (`og:image:alt`) is "Tide Hours,
+tidehours.com: the predicted tide at Bar Harbor, Maine, on January 1,
+2027, drawn as a curve.", in English on the Spanish page too.
+
+It is drawn once and committed, not built: `scripts/share_image.py` writes
+the page that headless Chrome draws (its docstring has the commands), with
+the fonts and the mark passed in from outside the repository. The build
+only copies the files in `src/tidehours/static/` to the root. One image for
+every page, not one per station: a per-station image would add 3,256 files
+and a renderer to the daily build, and a station's day changes daily while
+a shared picture is cached for weeks.
+
+**The tags.** Every page, from `base.html.jinja`: `og:image` (absolute),
+its type, width, height and alt, and `twitter:card`
+`summary_large_image`; X reads the `og:` title, description and image. The
+`og:title` and `og:description` are the page's own `<title>` and
+description, as before.
+
+**The icons.** `/apple-touch-icon.png` (180 x 180), and `/icon-192.png`
+and `/icon-512.png` named by a small `/manifest.json` (name "Tide Hours",
+`start_url` "/", `display` "browser", so a home-screen icon opens the site
+in the browser and nothing presents it as the app). All three are the
+Author Central mark scaled down. `/favicon.ico` (16, 32 and 48 px) is
+`/favicon.svg` drawn small, for browsers and crawlers that ask for the
+.ico; the SVG is still linked and unchanged. The manifest is `.json`, not
+`.webmanifest`, so `deploy.sh`'s upload by extension serves it as
+`application/json` without a type of its own. Nothing here is a script,
+a request to another site or a font the site loads.
+
+**Checked.** `check_site.py` fails a page without these tags, whose
+`og:title` or `og:description` is not its own title or description, or
+whose `og:url` is not its canonical URL, and a build whose images are not
+at their sizes or are over 200 KB, or whose manifest names an icon at the
+wrong size. `tests/test_site.py` checks the same on its build.
+
+**Indexing.** The tags change every page's HTML once, so the first build
+with them gives every page that build's `lastmod` and IndexNow announces
+every page once (0011, 0028), as 0037's and 0041's footer links did.

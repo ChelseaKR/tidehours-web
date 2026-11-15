@@ -9,7 +9,8 @@ split-region page, the station pages of the golden-test fixtures (a
 harmonic and a subordinate station in every state), the station pages
 of the committed booklet, calendar and poster lists, which carry a link no
 other station page has (DECISIONS 0030, 0035 and 0037), and the page that
-lists the calendars and posters when the build has one (0037).
+lists the calendars and posters when the build has one (0037), and the
+tide gifts page when the build has one (0041).
 
 A moved region page that redirects (a meta refresh to its new page,
 DECISIONS 0017 and 0018) is left out: it is noindex, has nothing of its own
@@ -25,7 +26,7 @@ import json
 import sys
 from pathlib import Path
 
-from tidehours import booklets, calendars, posters, printables
+from tidehours import booklets, calendars, gifts, posters, printables
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "tests" / "fixtures"
@@ -47,6 +48,8 @@ def sample(site: Path) -> list[str]:
     pages = ["./", "about/", "privacy/", "king-tides/", "es/king-tides/", "404.html"]
     if (site / printables.PATH / "index.html").is_file():
         pages.append(printables.PATH)
+    if (site / gifts.PATH / "index.html").is_file():
+        pages.append(gifts.PATH)
     states = sorted(p.parent.relative_to(site).as_posix() + "/" for p in site.glob("states/*/index.html"))
     region_files = sorted(site.glob("states/*/*/index.html"))
     regions = [p.parent.relative_to(site).as_posix() + "/" for p in region_files if not redirects(p)]

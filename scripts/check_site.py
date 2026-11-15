@@ -33,13 +33,31 @@ calendar or poster link, tide-calendars/ lists exactly those towns, by
 state and town, each with a link to its station page and the same plain
 link to each listing, and every English page's footer links to it once;
 otherwise there is no such page and no link to one (0037).
+While a live entry of src/tidehours/copy/gifts.json shows (its year not
+over), tide-gifts/ lists exactly those entries, the calendars and posters
+above, and the custom print when the shop address is set, by kind and
+town, each with the same plain link; a link to any listing it does not list, which covers one not marked
+live, fails the build. Every English page's footer links to it once, and
+the privacy page names it among the pages that link to Etsy and Amazon
+(0041).
 Every station page has a sun and moon line for each of its two days, and it
 is the one sky.py computes for that station and date: a day without a
 sunrise, sunset, civil twilight, moonrise or moonset says so in words, and
-no line shows "00:00" (0019).
+no line shows "00:00" (0019). Every station page has one next-tide line, in
+its answer box, and it is the first day's highs and lows as that day's table
+lists them, in order, by date, or says in words that the day has none (0038).
+Each state page lists its regions once each, in coast order, and each region
+page's row for a station shows that station page's first-day highs and lows,
+for the date its heading names (0039). /places.json, the home page's find
+list, names every station page of the build once, by its display name, and
+the home page lists every state under its coast groups (0040).
+Every page carries the share card (its own title and description, the
+one 1200 x 630 share image, a large-image Twitter card) and links
+favicon.ico, the apple-touch-icon and manifest.json, and those files are
+at the root at their exact sizes, each under 200 KB (0042).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
-                                       [--calendars FILE] [--posters FILE]
+                                       [--calendars FILE] [--posters FILE] [--gifts FILE]
 """
 
 from __future__ import annotations
@@ -54,7 +72,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, booklets, calendars, kingtides, ktformat, posters, printables, printshop, site
+from tidehours import affiliate, booklets, calendars, gifts, kingtides, ktformat, posters, printables, printshop, site
 from tidehours.catalog import Catalog, Station, load
 from tidehours.days import sky_text
 from tidehours.sky import moon_day, moon_times, sun_day
@@ -87,6 +105,43 @@ H1 = re.compile(r"<h1>(.*?)</h1>", re.S)
 MAIN_P = re.compile(r"<p(?: [^>]*)?>(.*?)</p>", re.S)
 ANY_A = re.compile(r"<a\b[^>]*>", re.I)
 HREF_ATTR = re.compile(r'\bhref="([^"]*)"')
+NEXT_P = re.compile(r'<p class="next" id="next">(.*?)</p>', re.S)
+DAY_SECTION = re.compile(r'<section class="day"[^>]*\bdata-date="(\d{4}-\d{2}-\d{2})">(.*?)</section>', re.S)
+EVENT_ROW = re.compile(
+    r'<tr class="ev-(high|low)"><th scope="row">(High|Low)</th><td><time datetime="([^"]*)">([^<]*)</time></td>'
+)
+GIFT_ITEM = re.compile(r'<(li|p) data-gift="([^"]*)">(.*?)</\1>', re.S)
+H2_TEXT = re.compile(r"<h2[^>]*>(.*?)</h2>", re.S)
+BUILT = re.compile(r"page built (\d{4}-\d{2}-\d{2}) \(UTC\)")
+# What no word on the gifts page may be: a price, a discount, a rating or a
+# claim (0029, 0030, 0041).
+GIFT_FORBIDDEN = re.compile(r"[$%\u2605]|\b(sale|discount|free shipping|best|cheap|deals?|rated|official)\b", re.I)
+# The share and icon tags every page carries, and the files they name, at
+# their exact pixel sizes and each under MAX_IMAGE_BYTES (0042).
+SHARE_TAGS = (
+    '<meta property="og:image:type" content="image/png">',
+    '<meta property="og:image:width" content="1200">',
+    '<meta property="og:image:height" content="630">',
+    '<meta property="og:image:alt" content="',
+    '<meta name="twitter:card" content="summary_large_image">',
+    '<link rel="icon" href="/favicon.ico" sizes="32x32">',
+    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">',
+    '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
+    '<link rel="manifest" href="/manifest.json">',
+)
+OG_IMAGE = re.compile(r'<meta property="og:image" content="https://[^/"]+/share\.png">')
+OG_TITLE = re.compile(r'<meta property="og:title" content="([^"]*)">')
+OG_DESCRIPTION = re.compile(r'<meta property="og:description" content="([^"]*)">')
+OG_URL = re.compile(r'<meta property="og:url" content="https://[^/"]+/([^"]*)">')
+DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">')
+SHARE_IMAGES = {
+    "share.png": (1200, 630),
+    "apple-touch-icon.png": (180, 180),
+    "icon-192.png": (192, 192),
+    "icon-512.png": (512, 512),
+}
+FAVICON_ICO_SIZES = [(16, 16), (32, 32), (48, 48)]
+MAX_IMAGE_BYTES = 200_000
 
 
 def check_page(root: Path, f: Path) -> list[str]:
@@ -103,10 +158,77 @@ def check_page(root: Path, f: Path) -> list[str]:
         problems.append(f"{rel}: no NOAA credit")
     body = SCRIPT.sub("", text)
     problems += [f"{rel}: contains {b!r}" for b in BAD if b in body]
+    problems += check_share_tags(rel, text)
     for link in HREF.findall(text):
         target = root / link.lstrip("/")
         if not (target.is_file() or (target / "index.html").is_file()):
             problems.append(f"{rel}: broken link {link}")
+    return problems
+
+
+def check_share_tags(rel: str, text: str) -> list[str]:
+    """The page's share card is its own title and description with the one
+    share image, its og:url is its canonical URL (none on the 404 page), and
+    it links the icons and the manifest (0042)."""
+    problems = [f"{rel}: no {tag!r}" for tag in SHARE_TAGS if text.count(tag) != 1]
+    if len(OG_IMAGE.findall(text)) != 1:
+        problems.append(f"{rel}: no og:image of the share image")
+    title, description = TITLE.findall(text), DESCRIPTION.findall(text)
+    if OG_TITLE.findall(text) != title[:1] or len(title) != 1:
+        problems.append(f"{rel}: og:title is not the page's title")
+    if OG_DESCRIPTION.findall(text) != description[:1] or len(description) != 1:
+        problems.append(f"{rel}: og:description is not the page's description")
+    if OG_URL.findall(text) != CANONICAL.findall(text):
+        problems.append(f"{rel}: og:url is not the canonical URL")
+    return problems
+
+
+def png_size(data: bytes) -> tuple[int, int] | None:
+    """A PNG's width and height from its header, or None if it is not a PNG."""
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        return None
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+def ico_sizes(data: bytes) -> list[tuple[int, int]]:
+    """The sizes in an .ico file's directory (0 means 256), or [] if it is
+    not one."""
+    if data[:4] != b"\x00\x00\x01\x00":
+        return []
+    count = int.from_bytes(data[4:6], "little")
+    entries = [data[6 + 16 * i : 8 + 16 * i] for i in range(count)]
+    return [(e[0] or 256, e[1] or 256) for e in entries if len(e) == 2]
+
+
+def check_share_files(root: Path) -> list[str]:
+    """The share image and the icons are at the root at their exact sizes,
+    each under MAX_IMAGE_BYTES, and the manifest names the two home-screen
+    icons by their real sizes (0042)."""
+    problems: list[str] = []
+    for name, size in SHARE_IMAGES.items():
+        f = root / name
+        if not f.is_file():
+            problems.append(f"no /{name}")
+            continue
+        data = f.read_bytes()
+        if png_size(data) != size:
+            problems.append(f"/{name} is {png_size(data)}, not {size}")
+        if len(data) > MAX_IMAGE_BYTES:
+            problems.append(f"/{name} is {len(data)} bytes")
+    ico = root / "favicon.ico"
+    if not ico.is_file() or ico_sizes(ico.read_bytes()) != FAVICON_ICO_SIZES:
+        problems.append(f"/favicon.ico does not hold {FAVICON_ICO_SIZES}")
+    elif ico.stat().st_size > MAX_IMAGE_BYTES:
+        problems.append(f"/favicon.ico is {ico.stat().st_size} bytes")
+    manifest = root / "manifest.json"
+    icons = json.loads(manifest.read_text(encoding="utf-8")).get("icons", []) if manifest.is_file() else []
+    for icon in icons:
+        f = root / str(icon.get("src", "")).lstrip("/")
+        named = tuple(int(n) for n in re.findall(r"\d+", str(icon.get("sizes", ""))))
+        if not f.is_file() or png_size(f.read_bytes()) != named:
+            problems.append(f"manifest.json: icon {icon} does not match its file")
+    if sorted(str(i.get("src")) for i in icons) != ["/icon-192.png", "/icon-512.png"]:
+        problems.append("manifest.json does not name /icon-192.png and /icon-512.png")
     return problems
 
 
@@ -239,6 +361,167 @@ def check_sky(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
+def next_sentence(date: dt.date, events: list[tuple[str, str]]) -> str:
+    """The next-tide line a station page is built with, from its first
+    day's (kind, time) rows: "Friday, Nov 13, in order: high 2:25 AM, low
+    5:30 AM." or "Friday, Nov 13: no high or low tide predicted." Written
+    out here, not taken from days.py, so the check does not trust the code
+    it checks."""
+    when = f"{date.strftime('%A')}, {date.strftime('%b')} {date.day}"
+    if not events:
+        return f"{when}: no high or low tide predicted."
+    return f"{when}, in order: " + ", ".join(f"{kind.lower()} {time}" for kind, time in events) + "."
+
+
+def check_next(root: Path, cat: Catalog) -> list[str]:
+    """Each station page has exactly one next-tide line (p#next), inside its
+    answer box, and it says the first day's highs and lows exactly as that
+    day's table lists them, in order, with no placeholder (docs/DECISIONS.md
+    0038). The page's script may replace it in the browser; the build's
+    words are what crawlers and readers without the script get."""
+    problems: list[str] = []
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if not f.exists():
+            continue
+        body = SCRIPT.sub("", f.read_text(encoding="utf-8"))
+        where = f"stations/{s.id}"
+        lines = list(NEXT_P.finditer(body))
+        if len(lines) != 1:
+            problems.append(f"{where}: {len(lines)} next-tide lines, exactly 1 expected")
+            continue
+        line = lines[0]
+        answer = body.find('<div class="answer">')
+        if not 0 <= answer < line.start() < line.end() <= body.find("</div>", answer):
+            problems.append(f"{where}: the next-tide line is not in the answer box")
+        dated = STATION_DATE.findall(body)
+        first = DAY_SECTION.search(body)
+        if len(dated) != 1 or first is None or first.group(1) != dated[0]:
+            problems.append(f"{where}: no first day to check the next-tide line against")
+            continue
+        date = dt.date.fromisoformat(first.group(1))
+        rows = EVENT_ROW.findall(first.group(2))
+        bad_rows = [r for r in rows if r[0] != r[1].lower()]
+        if bad_rows or len(rows) != first.group(2).count('<tr class="ev-'):
+            problems.append(f"{where}: the first day's table has rows the check cannot read: {bad_rows}")
+        shown = " ".join(htmllib.unescape(TAG.sub("", line.group(1))).split())
+        want = next_sentence(date, [(kind, time) for _, kind, _, time in rows])
+        if shown != want:
+            problems.append(f"{where}: next-tide line {shown!r}, expected {want!r}")
+        problems += [f"{where}: the next-tide line contains {b!r}" for b in BAD if b in shown]
+    return problems
+
+
+HUB_DAY = re.compile(r'<h2 class="hub-day" data-date="(\d{4}-\d{2}-\d{2})">')
+HUB_ROW = re.compile(r'<li data-station="([^"]+)">(.*?)</li>', re.S)
+REGION_SECTION = re.compile(r'<section aria-labelledby="(r-[^"]+)">')
+
+
+def hub_times(events: list[tuple[str, str]]) -> str:
+    """A region page row's times, as its text reads, from a station page's
+    first-day (kind, time) rows: "High 2:25 AM, 11:34 AM Low 5:30 AM",
+    "High 2:25 AM no low tide", or "no high or low tide predicted". Written
+    out here, not taken from the template."""
+    if not events:
+        return "no high or low tide predicted"
+    parts = []
+    for kind in ("High", "Low"):
+        times = [t for k, t in events if k == kind]
+        parts.append(f"{kind} {', '.join(times)}" if times else f"no {kind.lower()} tide")
+    return " ".join(parts)
+
+
+def check_hubs(root: Path, cat: Catalog) -> list[str]:
+    """Each state page lists every one of its regions once, in the order
+    site.coast_order gives (copy/region_order.json, else north to south),
+    with the stations without a region last. Each region page lists exactly
+    its stations; when it has a dated heading, every station page's date is
+    that date, and each row's times are that station page's first-day
+    highs and lows, in order; without one, no row shows times
+    (docs/DECISIONS.md 0039)."""
+    problems: list[str] = []
+    order = site.region_order()
+    for st in site.group(cat.stations):
+        f = root / st.path / "index.html"
+        if not f.is_file():
+            continue
+        want = ["r-" + r.slug for r in site.coast_order(st, order)] + (["r-none"] if st.unregioned else [])
+        shown = REGION_SECTION.findall(f.read_text(encoding="utf-8"))
+        if shown != want:
+            problems.append(f"{st.path}: regions {shown}, expected {want}")
+        for r in st.regions:
+            g = root / r.path / "index.html"
+            if g.is_file():
+                problems += _check_hub(r, g.read_text(encoding="utf-8"), root)
+    return problems
+
+
+def _check_hub(r: site.Region, text: str, root: Path) -> list[str]:
+    problems: list[str] = []
+    rows = HUB_ROW.findall(text)
+    if sorted(sid for sid, _ in rows) != sorted(s.id for s in r.stations) or len(rows) != len(r.stations):
+        problems.append(f"{r.path}: rows {[sid for sid, _ in rows]}, expected the region's {len(r.stations)} stations")
+    dated = HUB_DAY.findall(text)
+    if len(dated) > 1:
+        problems.append(f"{r.path}: {len(dated)} dated headings")
+    for sid, row in rows:
+        times = row.split('<span class="hub-times">', 1)
+        if not dated:
+            if len(times) > 1:
+                problems.append(f"{r.path}: {sid}: times under no dated heading")
+            continue
+        station = root / "stations" / sid / "index.html"
+        if not station.is_file():
+            continue
+        page = SCRIPT.sub("", station.read_text(encoding="utf-8"))
+        first = DAY_SECTION.search(page)
+        if first is None or first.group(1) != dated[0]:
+            problems.append(f"{r.path}: {sid}: its page's first day is not {dated[0]}")
+            continue
+        want = hub_times([(kind, time) for _, kind, _, time in EVENT_ROW.findall(first.group(2))])
+        got = " ".join(htmllib.unescape(TAG.sub(" ", times[1])).split()) if len(times) > 1 else "none"
+        if got != want:
+            problems.append(f"{r.path}: {sid}: times {got!r}, expected {want!r}")
+        problems += [f"{r.path}: {sid}: contains {b!r}" for b in BAD if b in got]
+    return problems
+
+
+HOME_GROUP = re.compile(r'<h3 class="coast" id="c-\d+">([^<]*)</h3>\s*<ul class="states"[^>]*>(.*?)</ul>', re.S)
+
+
+def check_places(root: Path, cat: Catalog) -> list[str]:
+    """/places.json has one row for each station page of the build, in id
+    order: [id, display name], plus the station's searched name from
+    copy/place_names.json when it has one, and no other row. The home page
+    shows site.coast_groups for the states of the build, each state linked
+    under its groups (docs/DECISIONS.md 0040)."""
+    problems: list[str] = []
+    f = root / "places.json"
+    if not f.is_file():
+        return ["places.json: missing"]
+    try:
+        rows = json.loads(f.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return [f"places.json: not JSON ({e})"]
+    searched = site.place_names()
+    built = [s for s in cat.stations if (root / "stations" / s.id / "index.html").is_file()]
+    want = [
+        [s.id, s.display_name] + ([n] if (n := site.place_name(s, searched)) != s.display_name else [])
+        for s in sorted(built, key=lambda s: s.id)
+    ]
+    if rows != want:
+        extra = [r for r in rows if r not in want][:5]
+        missing = [w for w in want if w not in rows][:5]
+        problems.append(f"places.json: {len(rows)} rows for {len(want)} station pages; not due {extra}, due {missing}")
+    states = [st for st in site.group(cat.stations) if (root / st.path / "index.html").is_file()]
+    home = (root / "index.html").read_text(encoding="utf-8")
+    shown = [(name, re.findall(r'<a href="/(states/[^"]+/)">', inner)) for name, inner in HOME_GROUP.findall(home)]
+    expect = [(name, [st.path for st in sts]) for name, sts in site.coast_groups(states)]
+    if shown != expect:
+        problems.append(f"index.html: state groups {shown}, expected {expect}")
+    return problems
+
+
 def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
     """Each state's winter king-tide calendar lists every month of the
     window, in order, and in each exactly the runs computed for it; a month
@@ -321,7 +604,11 @@ def _check_booklet(rel: str, text: str, want: booklets.Booklet | None) -> tuple[
 
 
 def check_affiliate(
-    root: Path, html: list[Path], tag: str, booklet_links: dict[str, booklets.Booklet] | None = None
+    root: Path,
+    html: list[Path],
+    tag: str,
+    booklet_links: dict[str, booklets.Booklet] | None = None,
+    gift_books: bool = False,
 ) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
     king-tide page links to Amazon: at most MAX_LINKS links, each a plain
@@ -335,9 +622,12 @@ def check_affiliate(
     That sentence is checked on its own (_check_booklet) and taken out of
     the page before the rules above run on the rest, so they hold for
     everything else, tag or no tag. While any page is due one, the privacy
-    and terms pages may name Amazon in words, never with a link."""
+    and terms pages may name Amazon in words, never with a link.
+
+    The same holds while the tide gifts page lists a book (`gift_books`,
+    docs/DECISIONS.md 0041): that page is left to check_gifts."""
     want = booklet_links or {}
-    named = {p + "index.html" for p in booklets.MENTION_PAGES} if want else set()
+    named = {p + "index.html" for p in booklets.MENTION_PAGES} if want or gift_books else set()
     problems: list[str] = []
     for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
@@ -345,6 +635,8 @@ def check_affiliate(
             problems.append(f"{name}: mentions amazon")
     for f in html:
         rel = f.relative_to(root).as_posix()
+        if gift_books and rel == gifts.PATH + "index.html":
+            continue
         page = f.read_text(encoding="utf-8")
         text, found = _check_booklet(rel, page, want.get(rel))
         problems += found
@@ -596,12 +888,185 @@ def _check_printables_page(rel: str, text: str, listing: dict[str, Any]) -> list
     return problems
 
 
+def build_date(root: Path, cat: Catalog) -> dt.date | None:
+    """The day the build was made (UTC), as its station pages say it."""
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if f.is_file():
+            found = BUILT.findall(f.read_text(encoding="utf-8"))
+            return dt.date.fromisoformat(found[0]) if found else None
+    return None
+
+
+def until_day(root: Path, cat: Catalog, built: dt.date) -> dt.date:
+    """The build's date in gifts.UNTIL_ZONE, which an entry's `until` is
+    read in: the date a station page in that zone shows, or the build's
+    UTC date when the build has none (the daily build runs at 11:20 UTC,
+    when the two are the same day)."""
+    zone = str(gifts.UNTIL_ZONE)
+    for s in cat.stations:
+        f = root / "stations" / s.id / "index.html"
+        if s.tz == zone and f.is_file():
+            found = STATION_DATE.findall(f.read_text(encoding="utf-8"))
+            if len(found) == 1:
+                return dt.date.fromisoformat(found[0])
+    return built
+
+
+def gift_listing(
+    root: Path,
+    cat: Catalog,
+    listed: list[gifts.Gift],
+    url: str,
+    calendar_links: dict[str, calendars.Calendar] | None = None,
+    poster_links: dict[str, posters.Poster] | None = None,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """What tide-gifts/ must show for this build, worked out from the
+    build itself: the calendars and posters its station pages are due, the
+    entries of `listed` whose year is not over on the build's date, whose
+    `until`, if any, has not come, and whose station, if any, has a page,
+    and the custom print when the shop address is set (docs/DECISIONS.md
+    0041)."""
+    stations = {s.id: s for s in cat.stations if (root / "stations" / s.id / "index.html").is_file()}
+    built = build_date(root, cat)
+    if built is None:
+        return None, ["no station page says when the build was made"]
+    today = until_day(root, cat, built)
+    shown = [g for g in listed if gifts.shown(g, built, today) and (g.station is None or g.station in stations)]
+    listing = gifts.block(
+        _station_ids(calendar_links), _station_ids(poster_links), shown, stations, printshop.block(url)
+    )
+    return listing, []
+
+
+def check_gifts(root: Path, html: list[Path], listing: dict[str, Any] | None) -> list[str]:
+    """While an entry of copy/gifts.json shows (`listing`, from
+    gift_listing), tide-gifts/ exists and is exactly the page gifts.py
+    gives: its title, heading, two paragraphs, sections and their words,
+    and each line's links in order. Every link from it to Etsy or Amazon is
+    one it lists, once, with rel="noopener" and no click event, so a link to
+    a listing that no list carries, or that is not marked live, fails. No
+    price, discount or rating, and Etsy and Amazon are not in its JSON-LD.
+    Every English page links to it once, in the footer, and the Spanish
+    page does not. With nothing to list, there is no such page and no link
+    to one (docs/DECISIONS.md 0041)."""
+    rel = gifts.PATH + "index.html"
+    f = root / rel
+    problems: list[str] = []
+    if listing is None:
+        if f.is_file():
+            problems.append(f"{rel}: a gifts page in a build with nothing to list")
+    elif not f.is_file():
+        problems.append(f"{rel}: no page, though the build has gifts to list")
+    else:
+        problems += _check_gifts_page(rel, f.read_text(encoding="utf-8"), listing)
+    href = f'href="/{gifts.PATH}"'
+    for page in html:
+        text = page.read_text(encoding="utf-8")
+        want = 1 if listing is not None and '<html lang="en">' in text else 0
+        if text.count(href) != want:
+            where = page.relative_to(root).as_posix()
+            problems.append(f"{where}: {text.count(href)} links to {gifts.PATH}, exactly {want} expected")
+    return problems
+
+
+def _gift_lines(listing: dict[str, Any]) -> list[tuple[str, list[tuple[str, str]]]]:
+    """Each line the page must show, as (data-gift, its links in order)."""
+    out: list[tuple[str, list[tuple[str, str]]]] = []
+    for sec in listing["sections"]:
+        if sec.link:
+            out.append(("custom", [(sec.link["url"], sec.link["text"])]))
+        out += [(e.key, gifts.links_of(e)) for e in sec.entries]
+    return out
+
+
+def _check_gift_words(rel: str, main: str, listing: dict[str, Any]) -> list[str]:
+    """Each line's words, as gifts.line_text gives them: the town, the
+    title, and for a custom print or a pattern the listing's own words."""
+    shown = [
+        " ".join(htmllib.unescape(TAG.sub("", inner)).split())
+        for tag, _, inner in GIFT_ITEM.findall(main)
+        if tag == "li"
+    ]
+    want = [gifts.line_text(e) for sec in listing["sections"] for e in sec.entries]
+    return [] if shown == want else [f"{rel}: the gift lines read {shown}, expected {want}"]
+
+
+def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    main = text[text.find("<main") : text.find("</main>")]
+    shown = [
+        (key, [(htmllib.unescape(h), htmllib.unescape(TAG.sub("", t))) for h, t in LINK_TEXT.findall(inner)])
+        for _, key, inner in GIFT_ITEM.findall(main)
+    ]
+    want = _gift_lines(listing)
+    if shown != want:
+        extra = [x for x in shown if x not in want]
+        missing = [w for w in want if w not in shown]
+        problems.append(
+            f"{rel}: the gifts listed differ, or their order: shown but not due {extra}, due but not shown {missing}"
+        )
+    problems += _check_gift_words(rel, main, listing)
+    allowed = [h for _, links in want for h, _ in links if h.startswith("http")]
+    outbound = [*ETSY_A.finditer(text), *AMAZON_A.finditer(text)]
+    hrefs = [htmllib.unescape(m.group(1)) for m in outbound]
+    problems += [f"{rel}: {h} is not a live listing this build lists" for h in hrefs if h not in allowed]
+    if sorted(hrefs) != sorted(allowed):
+        problems.append(f"{rel}: {len(hrefs)} links to Etsy or Amazon, one for each of the {len(allowed)} listed")
+    for m in outbound:
+        rel_attr = REL_ATTR.search(m.group(0))
+        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+        if tokens != set(listing["rel"].split()):
+            problems.append(f"{rel}: {htmllib.unescape(m.group(1))} rel is {sorted(tokens)}")
+        if "data-ga" in m.group(0):
+            problems.append(f"{rel}: a gift link carries a click event")
+    if any(w in block.lower() for block in JSON_LD.findall(text) for w in ("etsy", "amazon")):
+        problems.append(f"{rel}: etsy or amazon in JSON-LD")
+    title = [htmllib.unescape(t) for t in TITLE.findall(text)]
+    if title != [f"{listing['title']} | Tide Hours"]:
+        problems.append(f"{rel}: title {title}")
+    words = [htmllib.unescape(x) for x in (*H1.findall(main), *MAIN_P.findall(main)[:2])]
+    if words != [listing["heading"], listing["intro"], listing["how"]]:
+        problems.append(f"{rel}: the heading and the two paragraphs are {words}")
+    headings = [htmllib.unescape(h) for h in H2_TEXT.findall(main)]
+    if headings != [sec.heading for sec in listing["sections"]]:
+        problems.append(f"{rel}: the section headings are {headings}")
+    plain = [" ".join(htmllib.unescape(TAG.sub("", p)).split()) for p in MAIN_P.findall(main)[2:]]
+    want_p = [
+        f"{sec.text} {sec.link['text']}{sec.link['after']}" if sec.link else sec.text
+        for sec in listing["sections"]
+        if sec.link or sec.text
+    ]
+    if plain != want_p:
+        problems.append(f"{rel}: the section paragraphs are {plain}")
+    bad = GIFT_FORBIDDEN.findall(htmllib.unescape(TAG.sub(" ", main)))
+    if bad:
+        problems.append(f"{rel}: a price, sale or claim word: {bad}")
+    return problems
+
+
+def _check_book_notice(root: Path, booklet_links: dict[str, booklets.Booklet], gift_books: bool) -> list[str]:
+    """The privacy page's section on the Amazon book links is exactly the one
+    gifts.book_notice gives for this build (docs/DECISIONS.md 0030, 0041)."""
+    f = root / "privacy" / "index.html"
+    if not f.is_file():
+        return []
+    expect = gifts.book_notice(booklets.notice(bool(booklet_links)), gift_books)
+    pattern = re.compile(r'<h2 id="booklets">(.*?)</h2>\s*<p>(.*?)</p>', re.S)
+    found = [(htmllib.unescape(h), htmllib.unescape(p)) for h, p in pattern.findall(f.read_text(encoding="utf-8"))]
+    want = [(expect["heading"], expect["body"])] if expect else []
+    if found != want:
+        return [f"privacy/index.html: the book section is {found or 'missing'}, expected {want or 'none'}"]
+    return []
+
+
 def check_print_shop(
     root: Path,
     html: list[Path],
     url: str,
     calendar_links: dict[str, calendars.Calendar] | None = None,
     poster_links: dict[str, posters.Poster] | None = None,
+    gift_etsy: bool = False,
 ) -> list[str]:
     """With no shop address, "etsy" appears nowhere. With one, the About page
     and the English king-tide page each link to it exactly once, with that
@@ -621,11 +1086,13 @@ def check_print_shop(
     The same holds for `poster_links`, from poster_pages, and the poster
     sentence (_check_poster). While any page is due either sentence, the
     page that lists them all, tide-calendars/, is left to check_printables
-    and is not held to the rules above (docs/DECISIONS.md 0037)."""
+    and is not held to the rules above (docs/DECISIONS.md 0037). So is the
+    tide gifts page while it links to Etsy (`gift_etsy`), which is left to
+    check_gifts (0041)."""
     want = calendar_links or {}
     want_poster = poster_links or {}
     which = printables.kind(bool(want), bool(want_poster))
-    named = {p + "index.html" for p in printshop.MENTION_PAGES} if which else set()
+    named = {p + "index.html" for p in printshop.MENTION_PAGES} if which or gift_etsy else set()
     problems: list[str] = []
     for name in ("sitemap.xml", "robots.txt", "lastmod.json", "llms.txt"):
         f = root / name
@@ -640,6 +1107,8 @@ def check_print_shop(
         problems += found
         if which and rel == printables.PATH + "index.html":
             continue
+        if gift_etsy and rel == gifts.PATH + "index.html":
+            continue
         if "etsy" not in text.lower():
             if url and rel in link_pages:
                 problems.append(f"{rel}: no shop link with a shop address set")
@@ -649,24 +1118,24 @@ def check_print_shop(
                 problems.append(f"{rel}: mentions etsy with no shop address set")
         else:
             problems += _check_print_shop_page(rel, text, url, rel in link_pages)
-    problems += _check_shop_notice(root, url, which)
+    problems += _check_shop_notice(root, url, which, gift_etsy)
     return problems
 
 
 SHOP_NOTICE = re.compile(r'<h2 id="shop">(.*?)</h2>\s*<p>(.*?)</p>', re.S)
 
 
-def _check_shop_notice(root: Path, url: str, which: str | None) -> list[str]:
+def _check_shop_notice(root: Path, url: str, which: str | None, gift_etsy: bool = False) -> list[str]:
     """The privacy page's section on the Etsy links is exactly the one
     printables.notice gives for this build: none with no Etsy link, the print
     shop's own sentence with only the shop link, and the sentence that names
     the list of calendars and posters and the station pages while a calendar
-    or poster link shows (docs/DECISIONS.md 0035, 0037). `which` is
-    printables.kind's value."""
+    or poster link shows (docs/DECISIONS.md 0035, 0037), and the tide gifts
+    page while it links to Etsy (0041). `which` is printables.kind's value."""
     f = root / "privacy" / "index.html"
     if not f.is_file():
         return []
-    expect = printables.notice(which, printshop.block(url))
+    expect = gifts.shop_notice(which, printshop.block(url), gift_etsy)
     found = [(htmllib.unescape(h), htmllib.unescape(p)) for h, p in SHOP_NOTICE.findall(f.read_text(encoding="utf-8"))]
     want = [(expect["heading"], expect["body"])] if expect else []
     if found != want:
@@ -706,6 +1175,7 @@ def main(
     booklets_file: Path | None = None,
     calendars_file: Path | None = None,
     posters_file: Path | None = None,
+    gifts_file: Path | None = None,
 ) -> int:
     problems: list[str] = []
     cat = load()
@@ -723,14 +1193,22 @@ def main(
     problems += check_king_calendar(root, cat)
     booklet_links, undated = booklet_pages(root, booklets.load(booklets_file))
     problems += undated
-    problems += check_affiliate(root, html, amazon_tag, booklet_links)
     calendar_links, undated = calendar_pages(root, calendars.load(calendars_file))
     problems += undated
     poster_links, undated = poster_pages(root, posters.load(posters_file))
     problems += undated
-    problems += check_print_shop(root, html, print_shop_url, calendar_links, poster_links)
+    gift_page, undated = gift_listing(root, cat, gifts.load(gifts_file), print_shop_url, calendar_links, poster_links)
+    problems += undated
+    problems += check_affiliate(root, html, amazon_tag, booklet_links, gifts.has_books(gift_page))
+    problems += _check_book_notice(root, booklet_links, gifts.has_books(gift_page))
+    problems += check_print_shop(root, html, print_shop_url, calendar_links, poster_links, gifts.has_etsy(gift_page))
     problems += check_printables(root, html, cat, calendar_links, poster_links)
+    problems += check_gifts(root, html, gift_page)
     problems += check_sky(root, cat)
+    problems += check_next(root, cat)
+    problems += check_hubs(root, cat)
+    problems += check_places(root, cat)
+    problems += check_share_files(root)
     for p in problems[:50]:
         print(p, file=sys.stderr)
     locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))
@@ -748,5 +1226,16 @@ if __name__ == "__main__":
         "--calendars", type=Path, help="the calendar list the site was built with, if not the committed one"
     )
     ap.add_argument("--posters", type=Path, help="the poster list the site was built with, if not the committed one")
+    ap.add_argument("--gifts", type=Path, help="the gift list the site was built with, if not the committed one")
     args = ap.parse_args()
-    sys.exit(main(args.site_dir, args.amazon_tag, args.print_shop_url, args.booklets, args.calendars, args.posters))
+    sys.exit(
+        main(
+            args.site_dir,
+            args.amazon_tag,
+            args.print_shop_url,
+            args.booklets,
+            args.calendars,
+            args.posters,
+            args.gifts,
+        )
+    )

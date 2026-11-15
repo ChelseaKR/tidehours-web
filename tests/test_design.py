@@ -145,3 +145,26 @@ def test_tokens_meet_wcag_aa(scheme: str) -> None:
         assert _ratio(t[fg], t[bg]) >= 4.5, (scheme, fg, bg, round(_ratio(t[fg], t[bg]), 2))
     for fg, bg in GRAPHIC_PAIRS:
         assert _ratio(t[fg], t[bg]) >= 3.0, (scheme, fg, bg, round(_ratio(t[fg], t[bg]), 2))
+
+
+def test_station_tables_keep_times_and_heights_whole(built: Path) -> None:
+    """On a 320px phone a time stays with its AM or PM and a height with its
+    unit; where the table is narrow, the meters take their own line."""
+    css = CSS.read_text(encoding="utf-8")
+    assert ".day .events td { white-space: nowrap; }" in css
+    assert ".answer-days .ev { white-space: nowrap; }" in css
+    assert re.search(
+        r"@media \(max-width: 24\.99rem\), \(min-width: 60rem\) \{\s*\.day \.events \.m \{ display: block; \}", css
+    )
+    html = (built / "stations/1612340/index.html").read_text(encoding="utf-8")
+    assert '<section class="day"' in html and '<table class="events">' in html and '<span class="m">(' in html
+    assert '<span class="ev"><strong><time datetime=' in html
+
+
+def test_print_keeps_each_day_whole_and_leaves_out_the_link_lists(built: Path) -> None:
+    printed = CSS.read_text(encoding="utf-8").split("@media print {", 1)[1]
+    assert ".answer, .day, .chart, table.events { break-inside: avoid; }" in printed
+    assert 'section[aria-labelledby="near"], section[aria-labelledby="derived"], .find { display: none; }' in printed
+    # The selectors name the station page's own sections.
+    html = (built / "stations/1612340/index.html").read_text(encoding="utf-8")
+    assert '<section aria-labelledby="near">' in html and '<section aria-labelledby="derived">' in html

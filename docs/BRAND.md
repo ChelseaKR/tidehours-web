@@ -71,6 +71,11 @@ A clock ring with hands at about 10 past, over a tide wave. It's the same drawin
 - `/favicon.svg` is the mark in cream on a navy rounded square, with the wave in light blue.
 - At small sizes, keep the ring, one hand and the wave. Drop the second hand first.
 
+## Share image and icons
+
+- **Share image** (`/share.png`, 1200 x 630): the print shop's Night style, not the site's, because it is seen beside the shop's prints in feeds. Night #0f2238, cream #f4efe2, water #1d4468 under a light-blue (#9cc6ea) curve; Bitter for "Tide Hours", Archivo for the rest. The fonts are drawn into the image; the site still loads none. The curve is a real predicted day (DECISIONS 0042), never a made-up wave.
+- **Home-screen icons** (`/apple-touch-icon.png`, `/icon-192.png`, `/icon-512.png`): the clock-over-wave mark as approved for Author Central, navy with a cream ring and a light-blue wave over cream. `/favicon.ico` is `/favicon.svg` drawn at 16, 32 and 48 px.
+
 ## Motifs
 
 Each motif carries information, except the wave rule.

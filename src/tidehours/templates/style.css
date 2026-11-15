@@ -153,6 +153,14 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; fon
 .events thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--line); }
 .events caption:not(.vh) { text-align: start; font-family: var(--serif); font-weight: 600; padding-block: 0.3rem; }
 .events td:first-of-type time { font-weight: 600; }
+/* A station day's table on a phone: a time never breaks from its AM or PM,
+   nor a height from its unit. Where the table is narrow (below 400px, and
+   beside the chart from 60rem) the meters take their own line under the
+   feet, so the three columns fit at 320px. */
+.day .events td { white-space: nowrap; }
+@media (max-width: 24.99rem), (min-width: 60rem) {
+  .day .events .m { display: block; }
+}
 /* High and low are told apart by shape as well as color: a rising or
    falling triangle, drawn, so nothing extra is read aloud. */
 .ev-high th, .ev-low th { white-space: nowrap; }
@@ -189,6 +197,50 @@ table.events { border-collapse: collapse; width: 100%; margin-block: 0.4rem; fon
 .tide-chart .dot-L { fill: var(--low); }
 figcaption { font-size: 0.875rem; color: var(--muted); margin-top: 0.3rem; }
 
+/* Station page, first screen (docs/DECISIONS.md 0038): the answer as one
+   almanac box with 0032's H1 and two questions, set smaller; the next-tide
+   line on top of it. */
+.answer { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand); border-radius: 0.5rem; padding: 0.15rem 0.9rem 0.55rem; margin-block: 0.7rem 0.6rem; }
+.answer h2 { font-size: 1rem; line-height: 1.3; margin: 0.6rem 0 0.1rem; color: var(--brand); }
+.answer-days { list-style: none; margin: 0; padding: 0; font-variant-numeric: tabular-nums lining-nums; }
+.answer-days li { padding-block: 0.1rem; font-size: 0.9375rem; }
+.answer-days .times { display: block; }
+.answer-days strong { font-weight: 600; }
+.answer-days .ev { white-space: nowrap; }
+.answer-days .past, .answer-days .past strong { color: var(--muted); font-weight: 400; }
+/* The next tide: a sentence at build time, replaced by the page's script. */
+.next { margin: 0.6rem 0 0; padding-bottom: 0.55rem; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums lining-nums; }
+.next b { font-family: var(--serif); font-size: 1.3rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.next .kind { font-weight: 600; white-space: nowrap; }
+.next .kind.ev-high { color: var(--high); }
+.next .kind.ev-low { color: var(--low); }
+.next .kind::before { content: ""; display: inline-block; width: 0.62em; height: 0.55em; margin-inline-end: 0.4em; background: currentColor; }
+.next .kind.ev-high::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.next .kind.ev-low::before { clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.next .trend { color: var(--muted); font-size: 0.875rem; }
+.answer + .lead { font-size: 0.875rem; color: var(--muted); }
+/* King tides in season: the same place and words (0015), less height. */
+.callout.kt-link { padding-block: 0.4rem 0.55rem; }
+.kt-link h2 { font-size: 1.05rem; margin: 0.25rem 0 0.1rem; }
+.kt-link p { font-size: 0.875rem; margin: 0.15rem 0; }
+.kt-link p:has(> a:only-child) { display: inline; }
+.kt-link p:has(> a:only-child) + p:has(> a:only-child)::before { content: " · "; color: var(--muted); }
+/* A day: the chart comes first in the card (template order), then the table. */
+.day .chart { margin-top: 0.2rem; }
+/* The printable sentences (0030, 0035, 0037), the only paragraphs that
+   follow "The rest of the week" directly: a hairline, so they do not read
+   as part of it. Same words, same place. Not named by class, so a build
+   without them carries no trace of them (the tests look for one). */
+.upsell + p { margin-top: 1.2rem; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+.upsell ~ p { margin-block: 0.5rem; }
+/* Header: one row from 360px wide (it wraps, as before, below that). */
+@media (max-width: 33.99rem) {
+  .site-header .wrap { gap: 0 0.75rem; }
+  .site-header ul { gap: 0 0.8rem; font-size: 0.9375rem; }
+  .brand { font-size: 1.2rem; gap: 0.4rem; }
+  .brand::before { width: 1.75rem; height: 1.75rem; }
+}
+
 ul.states, ul.stations, ul.near, ul.printables { list-style: none; padding: 0; margin: 0; display: grid; gap: 0 1.25rem; grid-template-columns: 1fr; }
 ul.states li, ul.stations li, ul.near li, ul.printables li { padding-block: 0.45rem; border-bottom: 1px solid var(--line); }
 ul.states li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
@@ -197,15 +249,65 @@ ul.states a { font-weight: 500; }
 ul.states .count { white-space: nowrap; }
 ul.derived { padding-inline-start: 1.1rem; }
 ul.derived li { margin-block: 0.25rem; }
+/* Finding a place (docs/DECISIONS.md 0039): a filter the script adds under
+   the lead. Without the script there is no box. */
+.find { margin: 0.9rem 0 0.5rem; }
+.find label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.find input { font: inherit; width: 100%; max-width: 26rem; min-height: 44px; padding: 0.5rem 0.7rem; border: 1px solid var(--muted); border-radius: 0.4rem; background: var(--surface); color: var(--fg); }
+.find input:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.find output { display: block; min-height: 1.4em; color: var(--muted); font-size: 0.875rem; margin-top: 0.3rem; }
+.find-results { list-style: none; margin: 0.2rem 0 0; padding: 0; }
+.find-results li { padding-block: 0.45rem; border-bottom: 1px solid var(--line); }
+.find-results a { display: inline-block; min-height: 24px; font-weight: 500; }
+ul.stations a, ul.near a, .find-results a { overflow-wrap: anywhere; }
+/* Home: states grouped by coast (0040). */
+.coast { font-size: 1.05rem; margin: 1.3rem 0 0.3rem; color: var(--brand); }
+/* State page: jump to a region, in coast order, and each region's count. */
+.regions-jump { margin: 0.6rem 0 0.2rem; }
+.regions-jump summary { padding-block: 0.4rem; font-weight: 500; }
+.regions-jump ul { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0.3rem 0 0.4rem; padding: 0; }
+.regions-jump a { display: inline-block; padding: 0.3rem 0.65rem; min-height: 24px; border: 1px solid var(--panel-line); border-radius: 999px; background: var(--panel); text-decoration: none; font-size: 0.875rem; }
+.regions-jump a:hover { text-decoration: underline; }
+section[aria-labelledby^="r-"] h2 .count { font-family: var(--sans); font-weight: 400; margin-inline-start: 0.35rem; }
+/* Region page: each place with the day's highs and lows (build time). */
+main[data-region] ul.stations { grid-template-columns: 1fr; }
+main[data-region] ul.stations li { display: grid; gap: 0.05rem 1rem; }
+.hub-day { font-size: 1.1rem; margin: 1.1rem 0 0.3rem; }
+.hub-day .meta { font-family: var(--sans); font-weight: 400; }
+.hub-times { font-size: 0.9375rem; font-variant-numeric: tabular-nums lining-nums; }
+.hub-times .grp { display: inline-block; margin-inline-end: 1rem; }
+.hub-times .hi, .hub-times .lo { font-weight: 600; white-space: nowrap; }
+.hub-times .hi { color: var(--high); }
+.hub-times .lo { color: var(--low); }
+.hub-times .hi::before, .hub-times .lo::before { content: ""; display: inline-block; width: 0.62em; height: 0.55em; margin-inline-end: 0.35em; background: currentColor; }
+.hub-times .hi::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.hub-times .lo::before { clip-path: polygon(0 0, 100% 0, 50% 100%); }
 dl.glossary dt { font-family: var(--serif); font-weight: 600; margin-top: 0.9rem; }
 dl.glossary dd { margin: 0.15rem 0 0; }
 @media (min-width: 34rem) {
   ul.states, ul.stations { grid-template-columns: 1fr 1fr; }
   h1 { font-size: 2.25rem; }
   .day { padding-inline: 1.2rem; }
+  .answer-days .times { display: inline; }
+}
+@media (min-width: 40rem) {
+  main[data-region] ul.stations li { grid-template-columns: minmax(14rem, 1fr) auto; align-items: baseline; }
 }
 @media (min-width: 60rem) {
   .wrap { max-width: 50rem; }
+  /* The two questions side by side under the next tide; in a day's card,
+     the table and the sun and moon beside the chart. */
+  .answer { display: grid; grid-template-columns: 1fr 1fr; column-gap: 2rem; padding-inline: 1.2rem; }
+  .answer .next { grid-column: 1 / -1; }
+  #q-high { grid-area: 2 / 1; }
+  #q-high + ul { grid-area: 3 / 1; }
+  #q-low { grid-area: 2 / 2; }
+  #q-low + ul { grid-area: 3 / 2; }
+  .answer-days .times { display: block; }
+  .day { display: grid; grid-template-columns: minmax(17rem, 2fr) 3fr; column-gap: 1.5rem; align-items: start; }
+  .day > h2 { grid-column: 1 / -1; }
+  .day > .chart { grid-column: 2; grid-row: 2 / span 2; margin-top: 0.4rem; }
+  .day > table.events, .day > .sky, .day > .none { grid-column: 1; }
 }
 details { margin-block: 0.4rem; }
 summary { cursor: pointer; color: var(--link); }
@@ -224,6 +326,11 @@ button { font: inherit; }
 }
 @media print {
   .site-header nav, .wave-rule, .site-footer .app { display: none; }
+  /* A station page on paper: each day's chart and table on one sheet, and
+     not the lists of links to other stations, which are only for following
+     on screen (they ran to four extra pages for San Francisco). */
+  .answer, .day, .chart, table.events { break-inside: avoid; }
+  section[aria-labelledby="near"], section[aria-labelledby="derived"], .find { display: none; }
   .site-footer { background: none; color: var(--fg); }
   .site-footer a { color: var(--fg); }
 }

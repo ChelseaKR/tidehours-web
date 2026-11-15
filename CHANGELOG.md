@@ -9,6 +9,108 @@
   Isle of Wight Bay pages, added to `src/tidehours/copy/place_names.json`
   with the Search Console query and what ties each name to its station
   (DECISIONS 0032).
+- The tide gifts page lists the "Where They Meet" map of the Potomac and
+  the Shenandoah at Harpers Ferry, a river year print of the 2026 water
+  year, after the Wichita map (DECISIONS 0041).
+- The tide gifts page lists eight more river year prints of the 2026
+  water year: the Potomac, Delaware, Merrimack, American and Sacramento
+  rivers, the American and Sacramento side by side, and the two "Where
+  They Meet" maps of Sacramento and of the Arkansas and Little Arkansas at
+  Wichita (DECISIONS 0041).
+- Links to the site share with a picture, and it has home-screen icons.
+  Every page names one share image, `/share.png` (1200 x 630, in the print
+  shop's Night colors: the Tide Hours mark, "Tide Hours", a line from the
+  home page's description and "tidehours.com" over the predicted tide at
+  Bar Harbor on January 1, 2027), with a large-image card for X, and its
+  own title and description as before. `/apple-touch-icon.png`, a
+  `/manifest.json` with 192 and 512 px icons, and `/favicon.ico` beside
+  `/favicon.svg`. The images are drawn once and committed
+  (`scripts/share_image.py`); `check_site.py` checks the tags on every
+  page and the files' sizes (DECISIONS 0042).
+- Region pages say when their day has passed. From midnight at the
+  region's stations until the next build (before dawn on the East Coast,
+  most of the day in Guam), the page's script puts a notice above the dated
+  heading: "Today, Sunday, November 15, 2026, is not on this page yet. The
+  times below are for Saturday, November 14, 2026, which has passed. The
+  site updates once a day; each place's page also has the next day's
+  tides." A region in two zones waits for the later midnight. The heading
+  and the times are unchanged, and without the script nothing is shown
+  (DECISIONS 0039; the station pages have said this since 0038).
+- Station pages on a phone: in each day's table a time no longer breaks
+  from its AM or PM, nor a height from its unit, and where the table is
+  narrow (below 400px, and beside the chart from 60rem) the meters sit on
+  their own line under the feet. In the answer box each time stays with its
+  height, and the next-tide line keeps "0.1 ft" together.
+- Printing a station page keeps each day's chart and table on one sheet
+  and leaves out the "Nearby" and "Stations predicted from this one" lists
+  of links: San Francisco's page goes from six letter pages to four. The
+  disclaimers still print.
+- The find boxes on the home and state pages: Enter, or a phone keyboard's
+  Search key, moves focus to the first match, which closes the keyboard over
+  the list. The state pages' box is now described by its status line, as
+  the home page's is.
+
+- Seven more listings of 2026-11-14 are linked. `/tide-gifts/` has three
+  new sections, each line ending with its listing's own description:
+  "Sunrise and sunset calendars" (Anchorage and Seattle, 2027), "Night sky
+  prints" (New York and Seattle, 2027) and "River year prints" (the
+  Yellowstone, Russian and Mississippi rivers, water year 2026). A river
+  print has no year, so it stays until it is delisted (DECISIONS 0041).
+- Pattern listings paused on Etsy; links removed. `/tide-gifts/` no
+  longer lists the tide blanket or cross-stitch patterns, and its
+  "Tide blanket patterns" and "Cross-stitch patterns" sections and their
+  words in the description are gone (DECISIONS 0041).
+- Nine more listings of 2026-11-14 are linked. `/tide-gifts/` lists tide
+  rings prints for Ogunquit, Cape May, Myrtle Beach, Tybee Island, Newport
+  and Long Beach, each town linked to its station page, and a new section, "Year-of-daylight prints", with the made-to-order "2027
+  Year of Daylight Print: Any City", its line ending with its listing's
+  own description. The San Francisco and Half Moon Bay station pages link
+  to their 2027 year-of-tides posters, and `/tide-calendars/` lists both
+  (41 towns, 48 listings); San Francisco has a poster and no calendar
+  (DECISIONS 0037, 0041).
+- `/tide-gifts/` lists four more products: the made-to-order "Your Year In
+  Tides" print and "Beach Wedding Welcome Sign" under the custom prints,
+  and a new section, "Cross-stitch patterns", with the San Francisco and
+  Bar Harbor tide rings patterns. Each line ends with its listing's own
+  description. Made-to-order prints have no year, so from January 1, 2028
+  the page lists them alone instead of leaving (DECISIONS 0041).
+- A new page, `/tide-gifts/` ("Tide chart gifts and tide art prints"),
+  lists every Tide Hours product the site links to, by kind and by town
+  within a kind: the custom tide chart print (a link to the shop, while
+  the print shop link is on), the winter solstice print (until December
+  22, 2026), tide rings art prints, year-of-tides posters, printable 2027
+  tide calendars, tide blanket patterns and moon phase calendars. The
+  calendars and posters are the station pages' own; the rest are in
+  `src/tidehours/copy/gifts.json`, where an entry without the date its
+  listing was marked live stops the build, and an optional `until` date
+  (Pacific) takes an entry off the page. Books on Amazon can be listed
+  there too; none is yet, so nothing on the site names Amazon. Plain links only: no
+  price, sale, tag, click event or product markup. The page exists only
+  while an entry of that list shows, so it leaves with the 2027 entries
+  on January 1, 2028. It is in the sitemap,
+  and every English footer links to it ("Tide gifts"). The privacy page
+  names it among the pages that link to Etsy (and Amazon, once a book is
+  listed). `check_site.py`
+  checks the page and fails a link from it to any listing it does not
+  list (DECISIONS 0041).
+- The home page groups the states by coast, Florida under both the Atlantic
+  and the Gulf, and has a find box for every station by name. Its list,
+  `/places.json` (about 40 KB compressed), is fetched only when someone
+  uses the box. `check_site.py` checks the list and the groups (DECISIONS
+  0040).
+- State pages list their regions in coast order: California's in the
+  owner's order (`copy/region_order.json`), the rest north to south, with a
+  jump list, a count per region and a find box over the names on the page.
+  Region pages show each place's highs and lows for the day, times only,
+  from the same numbers as its station page. `check_site.py` checks both
+  (DECISIONS 0039).
+- Station pages answer first in one box: a next-tide line ("Friday, Nov 13,
+  in order: high 2:25 AM, low 5:30 AM, ..."), which the page's script turns
+  into "Next low tide: 7:35 PM (0.0 ft), in 2 h 5 min." from the build's own
+  times, then 0032's two questions, set smaller. Passed times are dimmed.
+  Each day's chart comes before its table, the king-tide callout is
+  shorter, a hairline sets off the printable sentences, and the header is
+  one row on phones. `check_site.py` checks the line (DECISIONS 0038).
 - A look of its own: a tide almanac on chart paper. Cream and navy, with
   a navy night chart in dark mode; serif headings and tabular numbers; the
   app icon's clock over a wave as the mark and `/favicon.svg`. High and low

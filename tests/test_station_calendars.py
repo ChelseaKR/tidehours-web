@@ -492,19 +492,22 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
             found = ETSY_A.findall(f.read_text(encoding="utf-8"))
             if found:
                 links[f.relative_to(committed).as_posix()] = found
-    # The six towns with a poster (0037) link to it after the calendar, and
-    # the page that lists them all carries every listing once.
+    # The towns with a poster (0037) link to it after the calendar, San
+    # Francisco, which has no calendar, to its poster alone, and the page
+    # that lists them all carries every listing once.
     poster_of = {sid: poster.url for sid, poster in posters.load().items()}
-    assert len(poster_of) == 6 and set(poster_of) <= set(COMMITTED)
+    poster_only = {"9414290"}
+    assert len(poster_of) == 8 and set(poster_of) - poster_only <= set(COMMITTED)
+    assert not poster_only & set(COMMITTED)
     want = {
         f"stations/{sid}/index.html": [
             f"https://www.etsy.com/listing/{listing}",
             *([poster_of[sid]] if sid in poster_of else []),
         ]
         for sid, (listing, _) in COMMITTED.items()
-    }
+    } | {f"stations/{sid}/index.html": [poster_of[sid]] for sid in poster_only}
     every = sorted(url for urls in want.values() for url in urls)
-    assert len(every) == 46 and sorted(links.pop(HUB)) == every
+    assert len(every) == 48 and sorted(links.pop(HUB)) == every
     assert links == want | {"about/index.html": [SHOP], "king-tides/index.html": [SHOP]}
     for sid, (listing, title) in COMMITTED.items():
         html = read(committed, f"stations/{sid}")

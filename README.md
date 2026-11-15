@@ -38,6 +38,7 @@ constants for the highs and lows of the first 30 minutes of the next
     make verify        # the gate: format, lint, types, tests (incl. NOAA accuracy), full build + checks, audit, secrets, hygiene
     make site-checks   # axe-core and pa11y-ci on a sample of 161 pages (needs Node 22 and Chrome)
     make site          # build with today's numbers into ./site
+    uv run python scripts/share_image.py --fonts DIR --logo PNG --out share.html   # the share image's page, drawn once with Chrome (DECISIONS 0042)
     uv run python scripts/refresh_data.py --app-checkout ~/portfolio/tide-app   # refresh NOAA data (network)
     uv run python scripts/fetch_golden.py [--month | --add | --year-boundary]    # refresh the NOAA fixtures (network)
 
@@ -49,7 +50,9 @@ list of printed booklets in place of `src/tidehours/copy/booklets.json`,
 for tests; DECISIONS 0030), `--calendars FILE` (a list of printable
 calendars in place of `src/tidehours/copy/calendars.json`, for tests;
 DECISIONS 0035), `--posters FILE` (the same for the printable posters,
-`src/tidehours/copy/posters.json`; DECISIONS 0037).
+`src/tidehours/copy/posters.json`; DECISIONS 0037), `--gifts FILE` (the
+same for the other products the tide gifts page lists,
+`src/tidehours/copy/gifts.json`; DECISIONS 0041).
 
 ## CI
 
@@ -96,3 +99,16 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
    Poster: Place") to `src/tidehours/copy/posters.json` in a pull request.
    That station's page then links to it, and `/tide-calendars/` lists it
    with every other calendar and poster, until the poster's year is over.
+9. Other products (DECISIONS 0041): when a tide rings print, a tide
+   blanket pattern, a cross-stitch pattern, a moon phase calendar, a
+   solstice print, a year-of-daylight print, a sunrise and sunset
+   calendar, a night sky print, a river year print, a made-to-order custom
+   print or a multi-town book is live,
+   add it to `src/tidehours/copy/gifts.json` in a pull request with its
+   Etsy listing id or ASIN, year (none for a custom print or a river
+   print), title, station or towns, `about` for a custom print,
+   year-of-daylight print, sunrise and sunset calendar, night sky print,
+   river print or pattern (the listing's own description, word for word), and `live`, the date it was marked live; add `until` (YYYY-MM-DD, Pacific) for one that
+   is delisted on a known day. `/tide-gifts/` then lists it until its year
+   is over or its `until` comes. Calendars and posters go in their own lists (7 and 8) and appear
+   there too.

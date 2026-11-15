@@ -28,6 +28,7 @@ from . import (
     affiliate,
     booklets,
     calendars,
+    gifts,
     indexnow,
     kingtides,
     ktformat,
@@ -127,6 +128,11 @@ def station_title(name: str) -> str:
 
 
 PLACE_NAMES_FILE = Path(__file__).parent / "copy" / "place_names.json"
+
+# Copied to the site's root unchanged (docs/DECISIONS.md 0042). The images are
+# drawn once and committed (scripts/share_image.py); the build draws nothing.
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_FILES = ("share.png", "favicon.ico", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "manifest.json")
 
 
 def place_names(path: Path = PLACE_NAMES_FILE) -> dict[str, dict[str, str]]:
@@ -273,6 +279,10 @@ class Config:
     # the committed list, copy/posters.json; a test passes its own
     # (docs/DECISIONS.md 0037).
     posters_file: Path | None = None
+    # The other Tide Hours products the tide gifts page lists. None (the
+    # default) reads the committed list, copy/gifts.json; a test passes its
+    # own (docs/DECISIONS.md 0041).
+    gifts_file: Path | None = None
 
 
 @dataclass
@@ -327,6 +337,135 @@ def group(stations: list[Station]) -> list[State]:
         if name is None:
             raise ValueError(f"no name for state code {code!r}")
         out.append(State(code, name, sorted(regions.values(), key=lambda r: r.name.lower()), unregioned))
+    return out
+
+
+REGION_ORDER_FILE = Path(__file__).parent / "copy" / "region_order.json"
+
+
+def region_order(path: Path = REGION_ORDER_FILE) -> dict[str, list[str]]:
+    """State code -> its regions' URL slugs in coast order, from
+    copy/region_order.json (docs/DECISIONS.md 0039). Refuses a state code
+    the site does not name, the "other" group, a slug listed twice, and
+    anything that is not a list of slugs."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if set(data) != {"about", "states"} or not isinstance(data["states"], dict):
+        raise ValueError(f"{path.name}: expected exactly 'about' and 'states'")
+    order: dict[str, list[str]] = {}
+    for code, slugs in data["states"].items():
+        if code not in STATE_NAMES or code == OTHER:
+            raise ValueError(f"{path.name}: {code!r} is not a state on this site")
+        if not isinstance(slugs, list) or not all(isinstance(x, str) and x == slug(x) for x in slugs):
+            raise ValueError(f"{path.name}: {code}: expected a list of region URL slugs")
+        if len(slugs) != len(set(slugs)):
+            raise ValueError(f"{path.name}: {code}: a region is listed twice")
+        order[code] = slugs
+    return order
+
+
+def coast_order(state: State, order: dict[str, list[str]]) -> list[Region]:
+    """A state's regions in the order its state page lists them (0039): the
+    order in copy/region_order.json when the state is listed there, which
+    must name each of its regions exactly once; otherwise north to south by
+    the average latitude of each region's stations, then by name. The
+    "other" group keeps its alphabetical order."""
+    if state.code == OTHER:
+        return list(state.regions)
+    listed = order.get(state.code)
+    if listed is None:
+        return sorted(state.regions, key=lambda r: (-sum(s.lat for s in r.stations) / len(r.stations), r.name.lower()))
+    by_slug = {r.slug: r for r in state.regions}
+    unknown = [x for x in listed if x not in by_slug]
+    missing = [x for x in by_slug if x not in listed]
+    if unknown or missing:
+        raise ValueError(f"region_order.json: {state.code}: unknown regions {unknown}, regions not listed {missing}")
+    return [by_slug[x] for x in listed]
+
+
+def hub_day(region: Region, first_days: dict[str, Day]) -> dt.date | None:
+    """The date a region page's times are for (0039): its stations' first
+    day as built, which is the same date for every US station at 11:20 UTC
+    (0002). None when the stations' dates differ, and then the page shows
+    names only, as before."""
+    dates = {first_days[s.id].date for s in region.stations}
+    return dates.pop() if len(dates) == 1 else None
+
+
+def hub_zone(region: Region) -> str | None:
+    """The zone a region page's times are in, as the station pages name it
+    without the abbreviation ("Pacific Time"), since the heading already
+    sets it in parentheses; None when its stations span two zones or the
+    zone has no name."""
+    zones = {s.tz for s in region.stations}
+    if len(zones) != 1:
+        return None
+    label = zone_label(zones.pop())
+    return None if label == ZONE_UNKNOWN else re.sub(r" \([^()]*\)$", "", label)
+
+
+# The home page's groups of states (docs/DECISIONS.md 0040), each in coast
+# order. Florida has a coast in two groups and is listed in both.
+COAST_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Pacific coast, north to south", ("WA", "OR", "CA")),
+    ("Alaska", ("AK",)),
+    ("Hawaii and the Pacific islands", ("HI", "GU", "MP", "AS", "UM")),
+    (
+        "Atlantic coast, north to south",
+        ("ME", "NH", "MA", "RI", "CT", "NY", "NJ", "PA", "DE", "MD", "DC", "VA", "NC", "SC", "GA", "FL"),
+    ),
+    ("Gulf Coast, east to west", ("FL", "AL", "MS", "LA", "TX")),
+    ("Caribbean", ("PR", "VI")),
+    ("Other", (OTHER,)),
+)
+
+
+def coast_groups(states: list[State]) -> list[tuple[str, list[State]]]:
+    """The home page's groups, each with the states of this build in the
+    group's order; a group with none is left out. A state in no group stops
+    the build, so none can fall off the home page."""
+    by_code = {st.code: st for st in states}
+    grouped = {code for _, codes in COAST_GROUPS for code in codes}
+    lost = sorted(set(by_code) - grouped)
+    if lost:
+        raise ValueError(f"states in no home page group: {lost}")
+    out = [(name, [by_code[c] for c in codes if c in by_code]) for name, codes in COAST_GROUPS]
+    return [(name, sts) for name, sts in out if sts]
+
+
+def places_json(stations: list[Station], searched: dict[str, dict[str, str]]) -> str:
+    """/places.json, the home page's find list (0040): one row per station
+    page, [id, display name], with the searched-for name from
+    copy/place_names.json as a third item when the station has one. Compact,
+    in id order."""
+    rows: list[list[str]] = []
+    for s in sorted(stations, key=lambda s: s.id):
+        name = place_name(s, searched)
+        rows.append([s.id, s.display_name] + ([name] if name != s.display_name else []))
+    return json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
+
+
+def both_days(cat: Catalog, stations: list[Station], now: dt.datetime) -> dict[str, list[Day]]:
+    """Each station's date at build time and the next, computed once: the
+    station pages show both, and the region pages each station's first day
+    (0039). The page's script says which of them is "today" when it is
+    read (0002)."""
+    out: dict[str, list[Day]] = {}
+    for s in stations:
+        first = local_today(s, now)
+        p = cat.predictor(s.id)
+        out[s.id] = [station_day(s, p, first), station_day(s, p, first + dt.timedelta(days=1))]
+    return out
+
+
+def searched_names(state: State, searched: dict[str, dict[str, str]]) -> dict[str, str]:
+    """Station id -> the searched-for name its page leads with (0032), for
+    the stations of a state that have one: the state page's find box
+    matches it too (0039)."""
+    out: dict[str, str] = {}
+    for s in [*(s for r in state.regions for s in r.stations), *state.unregioned]:
+        name = place_name(s, searched)
+        if name != s.display_name:
+            out[s.id] = name
     return out
 
 
@@ -682,6 +821,48 @@ def printables_page(
         page(printables.PATH, "printables.html.jinja", listing=listing)
 
 
+def gifts_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> list[gifts.Gift]:
+    """The entries of copy/gifts.json that show in this build: a year that
+    is not over by the build's date (UTC), a day before its `until` (in
+    gifts.UNTIL_ZONE) for an entry that has one, and for a town-bound entry, its
+    station among the build's (docs/DECISIONS.md 0041). A station the
+    catalog does not have stops the build, and so does a listing that is
+    also in the calendar or poster list."""
+    listed = gifts.load(cfg.gifts_file)
+    named = {g.station for g in listed if g.station} | {sid for g in listed for _, sid in g.towns}
+    unknown = sorted(sid for sid in named if cat.station(sid) is None)
+    if unknown:
+        raise ValueError(f"gifts: no station {', '.join(unknown)} in the catalog")
+    elsewhere = {c.listing for c in calendars.load(cfg.calendars_file).values()}
+    elsewhere |= {p.listing for p in posters.load(cfg.posters_file).values()}
+    twice = sorted(g.ref for g in listed if g.ref in elsewhere)
+    if twice:
+        raise ValueError(f"gifts: listing {', '.join(twice)} is in the calendar or poster list too")
+    built, today = now.astimezone(dt.UTC).date(), gifts.until_day(now)
+    ids = {s.id for s in stations}
+    return [g for g in listed if gifts.shown(g, built, today) and (g.station is None or g.station in ids)]
+
+
+def gifts_listing(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, Any] | None:
+    """What the tide gifts page shows in this build, or None when it has
+    nothing to list (docs/DECISIONS.md 0041)."""
+    by_id = {s.id: s for s in stations}
+    return gifts.block(
+        calendars_shown(cat, stations, cfg, now),
+        posters_shown(cat, stations, cfg, now),
+        gifts_shown(cat, stations, cfg, now),
+        by_id,
+        printshop.block(cfg.print_shop_url),
+    )
+
+
+def gifts_page(page: Callable[..., None], listing: dict[str, Any] | None) -> None:
+    """The tide gifts page, when the build has something to list
+    (docs/DECISIONS.md 0041)."""
+    if listing is not None:
+        page(gifts.PATH, "gifts.html.jinja", gifts_page=listing)
+
+
 def selected(cat: Catalog, cfg: Config) -> list[Station]:
     """The stations this build makes pages for."""
     return [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
@@ -708,6 +889,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     poster_of = posters_shown(cat, stations, cfg, now)
     printed = printables.kind(bool(calendar_of), bool(poster_of))
     shop = printshop.block(cfg.print_shop_url)
+    gift_page = gifts_listing(cat, stations, cfg, now)
     base = cfg.base_url if cfg.base_url.endswith("/") else cfg.base_url + "/"
     common: dict[str, Any] = {
         "ui": {lang: kt["copy"][lang]["chrome"] for lang in ("en", "es")},
@@ -717,9 +899,10 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "app_store_url": cfg.app_store_url,
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": shop,
-        "booklet_links": booklets.notice(bool(booklet_of)),
-        "shop_links": printables.notice(printed, shop),
+        "booklet_links": gifts.book_notice(booklets.notice(bool(booklet_of)), gifts.has_books(gift_page)),
+        "shop_links": gifts.shop_notice(printed, shop, gifts.has_etsy(gift_page)),
         "printables": printables.link(printed),
+        "gifts": gifts.link(gift_page),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),
         "station_count": len(cat.stations),
@@ -758,11 +941,12 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "king_states": kt_states,
         "kc": kt["copy"]["en"],
     }
-    page("", "index.html.jinja", states=states, partial=cfg.states is not None, **king_common)
+    page("", "index.html.jinja", groups=coast_groups(states), partial=cfg.states is not None, **king_common)
     page("about/", "about.html.jinja")
     page("privacy/", "privacy.html.jinja")
     page("terms/", "terms.html.jinja")
     printables_page(page, calendar_of, poster_of, by_id)
+    gifts_page(page, gift_page)
     for lang in ("en", "es"):
         page(
             "king-tides/" if lang == "en" else "es/king-tides/",
@@ -781,11 +965,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             **{k: v for k, v in king_common.items() if k != "kc"},
         )
     king_calendar_pages(page, kt, states, king_common)
+    days_of = both_days(cat, stations, now)
+    first_days = {sid: d[0] for sid, d in days_of.items()}
+    order = region_order()
     for st in states:
         page(
             st.path,
             "state.html.jinja",
             state=st,
+            regions=coast_order(st, order),
+            akas=searched_names(st, searched),
             king=kt_states.get(st.code),
             king_calendar=kingtides.calendar_path_for(st.code),
             **king_common,
@@ -797,16 +986,16 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
                 index=region_indexable(r),
                 state=st,
                 region=r,
+                hub_date=hub_day(r, first_days),
+                hub_zone=hub_zone(r),
+                first_days=first_days,
                 region_king=region_king(r, links, kt_up),
                 **king_common,
             )
     pages += moved_pages(e.get_template("moved.html.jinja"), common, states)
     for s in stations:
-        today = local_today(s, now)
-        p = cat.predictor(s.id)
-        # The station's date at build time and the next; the page's script
-        # says which of them is "today" when it is read.
-        days: list[Day] = [station_day(s, p, today), station_day(s, p, today + dt.timedelta(days=1))]
+        days = days_of[s.id]
+        today = days[0].date
         st, region = region_of[s.id]
         ref = cat.station(s.reference_id) if s.reference_id else None
         season = kt_by_id.get(s.id)
@@ -940,6 +1129,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": printshop.block(cfg.print_shop_url),
         "printables": printables.link(printed),
+        "gifts": gifts.link(gifts_listing(cat, stations, cfg, now)),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),
@@ -952,7 +1142,13 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
+    # The share image, favicon.ico, the home-screen icons and their manifest
+    # (0042), served from the root as they are committed.
+    for f in STATIC_FILES:
+        shutil.copyfile(STATIC_DIR / f, out / f)
     (out / "lastmod.json").write_text(page_manifest(pages), encoding="utf-8")
+    # The home page's find list (0040), fetched only when someone uses the box.
+    (out / "places.json").write_text(places_json(stations, place_names()), encoding="utf-8")
     # The IndexNow ownership file (indexnow.py), served from the domain's
     # root. Public by design. Only a build for tidehours.com carries it,
     # because the key proves ownership of that one host; find_key reads the

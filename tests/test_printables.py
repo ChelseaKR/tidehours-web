@@ -56,6 +56,7 @@ LISTED = {
         "Half Moon Bay": "9414131",
         "La Jolla": "9410230",
         "Monterey": "9413450",
+        "San Francisco": "9414290",
     },
     "Delaware": {"Lewes": "8557380"},
     "Florida": {"Fernandina Beach": "8720030", "New Smyrna Beach": "8721164", "St. Augustine": "8720587"},
@@ -91,11 +92,19 @@ LISTED = {
         "Westport": "9441102",
     },
 }
-WITH_POSTER = {"Bar Harbor", "Eastport", "Homer", "Provincetown", "La Jolla", "Monterey"}
+WITH_POSTER = {
+    "Bar Harbor", "Eastport", "Homer", "Provincetown", "La Jolla", "Monterey", "San Francisco", "Half Moon Bay",
+}  # fmt: skip
+# San Francisco has a poster and no calendar.
+POSTER_ONLY = {"San Francisco"}
 BAR_HARBOR = (
     '<li data-printable="8413320"><a href="/stations/8413320/">Bar Harbor</a>: '
     '<a href="https://www.etsy.com/listing/4614956632" rel="noopener">2027 Tide Calendar: Bar Harbor</a>, '
     '<a href="https://www.etsy.com/listing/4616234122" rel="noopener">2027 Tide Poster: Bar Harbor</a></li>'
+)
+SAN_FRANCISCO = (
+    '<li data-printable="9414290"><a href="/stations/9414290/">San Francisco</a>: '
+    '<a href="https://www.etsy.com/listing/4617418953" rel="noopener">2027 Tide Poster: San Francisco</a></li>'
 )
 SEWARD = (
     '<li data-printable="9455090"><a href="/stations/9455090/">Seward</a>: '
@@ -292,7 +301,7 @@ def test_the_page_lists_the_committed_calendars_and_posters(committed: Path, che
     # By state, then by town: each town once, with its station page first.
     assert [plain(h) for h in H2.findall(main)] == list(LISTED)
     want = [
-        (station_id, town, 3 if town in WITH_POSTER else 2)
+        (station_id, town, 3 if town in WITH_POSTER - POSTER_ONLY else 2)
         for towns in LISTED.values()
         for town, station_id in towns.items()
     ]
@@ -302,11 +311,11 @@ def test_the_page_lists_the_committed_calendars_and_posters(committed: Path, che
         for item in items
         if (m := re.match(r'<li data-printable="(\d+)"><a href="/stations/\1/">(.*?)</a>: ', item))
     ]
-    assert found == want and len(found) == 40
-    assert BAR_HARBOR in main and SEWARD in main
-    # Exactly the 46 listings the station pages link to, each once, plain.
+    assert found == want and len(found) == 41
+    assert BAR_HARBOR in main and SEWARD in main and SAN_FRANCISCO in main
+    # Exactly the 48 listings the station pages link to, each once, plain.
     listed = [c.url for c in calendars.load().values()] + [p.url for p in posters.load().values()]
-    assert len(listed) == 46
+    assert len(listed) == 48
     assert sorted(ETSY_A.findall(html)) == sorted(listed)
     for a in re.findall(r"<a\b[^>]*etsy[^>]*>", html):
         assert re.fullmatch(r'<a href="https://www\.etsy\.com/listing/[1-9][0-9]{9}" rel="noopener">', a), a

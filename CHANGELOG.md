@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+- The tide gifts page lists eight more river year prints of the 2026
+  water year: the Potomac, Delaware, Merrimack, American and Sacramento
+  rivers, the American and Sacramento side by side, and the two "Where
+  They Meet" maps of Sacramento and of the Arkansas and Little Arkansas at
+  Wichita (DECISIONS 0041).
 - Links to the site share with a picture, and it has home-screen icons.
   Every page names one share image, `/share.png` (1200 x 630, in the print
   shop's Night colors: the Tide Hours mark, "Tide Hours", a line from the

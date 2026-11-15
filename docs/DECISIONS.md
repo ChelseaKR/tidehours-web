@@ -2559,6 +2559,24 @@ the site's predictions, and each new section's sentence says what it
 shows instead. The four other sunrise and sunset calendars (New York, San
 Francisco, Singapore, Sydney) are drafts, not live, and are not listed.
 
+Update, 2026-11-14 (late night): eight more river year prints went live
+that day and are linked at the owner's request ("Add all 8"), each id
+checked against the line "LISTED 2026-11-14 as ID" in its product notes.
+The listings were not fetched. All are `river` entries after the first
+three, in this order: Potomac River (4617545168), Delaware River
+(4617536713), Merrimack River (4617547222), American River (4617564366),
+Sacramento River (4617556217), "American and Sacramento" (4617567212, the
+two rivers side by side), "American and Sacramento Map" (4617572373, the
+Sacramento "Where They Meet" map) and "Arkansas and Little Arkansas Map"
+(4617637616, the Wichita "Where They Meet" map). The titles after
+"Water Year 2026 Print: " are the owner's; each `about` is the first
+sentence of its listing's own description, word for word. No new kind,
+section or sentence: a print of two rivers, or a map of where they meet,
+is still a river year print of the 2026 water year, and the section's
+sentence ("They show a river, not the tide") reads as well for two. The
+page now lists eleven river prints, and the build of January 1, 2028
+lists the custom prints and those eleven.
+
 ## 0042: A share image and home-screen icons (2026-11-14)
 
 A link to tidehours.com shared in a message or a post showed no picture,

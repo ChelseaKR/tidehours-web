@@ -44,7 +44,8 @@ TITLE = "Tide chart gifts and tide art prints | Tide Hours"
 HEADING = "Tide chart gifts and tide art prints"
 DESCRIPTION = (
     "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, a winter solstice print, "
-    "year-of-daylight prints, tide art prints, tide posters, 2027 tide calendars and moon phase calendars."
+    "year-of-daylight prints, sunrise and sunset calendars, tide art prints, tide posters, 2027 tide calendars, "
+    "moon phase calendars, night sky prints and river year prints."
 )
 INTRO = (
     "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, "
@@ -58,10 +59,13 @@ SECTIONS = [
     "Custom tide chart prints",
     "Winter solstice print",
     "Year-of-daylight prints",
+    "Sunrise and sunset calendars",
     "Tide rings art prints",
     "Year-of-tides posters",
     "Printable 2027 tide calendars",
     "Moon phase calendars",
+    "Night sky prints",
+    "River year prints",
 ]
 # The made-to-order prints of the list: each line's words after the link
 # are the listing's own approved description.
@@ -86,6 +90,37 @@ ANY_CITY = (
     "as a band of gold (or coral) around it. Made to order for any city in the world with a sunrise and a sunset "
     "every day of the year.</li>"
 )
+# The sunrise and sunset calendars, the night sky prints and the river
+# prints: each section's sentence, then its first line, whose words after
+# the link are the first sentence of its listing's own description.
+SUNRISE = (
+    '<h2 id="g-sunrise">Sunrise and sunset calendars</h2>\n  <p>The 2027 sunrise and sunset times in one city, a '
+    'month to a page. They show the sun, not the tide.</p>\n  <ul class="printables">\n    <li '
+    'data-gift="4617494392"><a href="https://www.etsy.com/listing/4617494392" rel="noopener">2027 Sunrise and '
+    "Sunset Calendar: Anchorage</a>. A printable 2027 sunrise and sunset calendar for Anchorage, Alaska: every day "
+    "of the year, a month to a page, with its sunrise, its sunset and how long the sun is up.</li>"
+)
+SKY = (
+    '<h2 id="g-sky">Night sky prints</h2>\n  <p>The 2027 night sky over one city. They show the sky, not the tide. '
+    'Not a USNO or NASA product.</p>\n  <ul class="printables">\n    <li data-gift="4617489617"><a '
+    'href="https://www.etsy.com/listing/4617489617" rel="noopener">2027 Night Sky Print: New York</a>. The night '
+    "sky of 2027 over New York, New York, on one sheet: every full and new moon, the year&#39;s five eclipses, the "
+    "peaks of seven meteor showers, and when each of the five bright planets is up after dusk or before dawn.</li>"
+)
+RIVER = (
+    '<h2 id="g-river">River year prints</h2>\n  <p>Art from USGS daily streamflow data. They show a river, not the '
+    'tide. Not a USGS product.</p>\n  <ul class="printables">\n    <li data-gift="4617481843"><a '
+    'href="https://www.etsy.com/listing/4617481843" rel="noopener">Water Year 2026 Print: Yellowstone River</a>. A '
+    "whole year of the Yellowstone River at Corwin Springs, Montana, drawn as one river running down the page: "
+    "every day of the 2026 water year, October 1, 2025 to September 30, 2026, with the river&#39;s width each day "
+    "set by that day&#39;s mean flow.</li>"
+)
+# The river prints' lines, in list order.
+RIVERS = [
+    "Water Year 2026 Print: Yellowstone River",
+    "Water Year 2026 Print: Russian River",
+    "Water Year 2026 Print: Mississippi River",
+]
 # The solstice print's sentence: the wording of its live Etsy listing,
 # adapted only to join its first two sentences of the second paragraph.
 SOLSTICE = (
@@ -145,6 +180,8 @@ LIVE = {
     "4617341518": ("custom", "Beach Wedding Welcome Sign", "2026-11-14"),
     "4616980007": ("daylight", "2026 Winter Solstice Print: The Light Returns", "2026-11-13"),
     "4617410905": ("sun", "2027 Year of Daylight Print: Any City", "2026-11-14"),
+    "4617494392": ("sunrise", "2027 Sunrise and Sunset Calendar: Anchorage", "2026-11-14"),
+    "4617485993": ("sunrise", "2027 Sunrise and Sunset Calendar: Seattle", "2026-11-14"),
     "4617246732": ("rings", "2027 Tide Rings: Bar Harbor", "2026-11-14"),
     "4617240419": ("rings", "2027 Tide Rings: Monterey", "2026-11-14"),
     "4617280124": ("rings", "2027 Tide Rings: San Francisco", "2026-11-14"),
@@ -158,6 +195,11 @@ LIVE = {
     "4616888829": ("moon", "2027 Moon Phase Poster: US Time Zones", "2026-11-13"),
     "4616911593": ("moon", "2027 Moon Phase Calendar: US Time Zones", "2026-11-13"),
     "4616923752": ("moon", "2027 Moon Phase Poster: Southern Hemisphere", "2026-11-13"),
+    "4617489617": ("sky", "2027 Night Sky Print: New York", "2026-11-14"),
+    "4617500424": ("sky", "2027 Night Sky Print: Seattle", "2026-11-14"),
+    "4617481843": ("river", "Water Year 2026 Print: Yellowstone River", "2026-11-14"),
+    "4617492188": ("river", "Water Year 2026 Print: Russian River", "2026-11-14"),
+    "4617493412": ("river", "Water Year 2026 Print: Mississippi River", "2026-11-14"),
 }
 NEW_STATIONS = {
     "4617388180": "8419317", "4617381055": "8536110", "4617393736": "8661070", "4617387277": "8670870",
@@ -186,6 +228,12 @@ TEST_GIFTS: list[dict[str, Any]] = [
      "station": GU, "about": "A counted cross-stitch pattern of the 2027 tide year at Apra Harbor.", "live": "2026-11-14"},
     {"kind": "sun", "listing": "1234567898", "year": 2027, "title": "2027 Year of Daylight Print: Any City",
      "about": "Every day of 2027 in your city, drawn as light, made to order.", "live": "2026-11-14"},
+    {"kind": "sunrise", "listing": "1234567899", "year": 2027, "title": "2027 Sunrise and Sunset Calendar: Hagatna",
+     "about": "A printable 2027 sunrise and sunset calendar for Hagatna, Guam.", "live": "2026-11-14"},
+    {"kind": "sky", "listing": "1234567880", "year": 2027, "title": "2027 Night Sky Print: Hagatna",
+     "about": "The night sky of 2027 over Hagatna, Guam, on one sheet.", "live": "2026-11-14"},
+    {"kind": "river", "listing": "1234567881", "title": "Water Year 2026 Print: Talofofo River",
+     "about": "A whole year of the Talofofo River, drawn as one river running down the page.", "live": "2026-11-14"},
 ]  # fmt: skip
 ETSY_OR_AMAZON = re.compile(r'<a\b[^>]*href="(https?://[^"]*(?:etsy|amazon)\.[^"]*)"', re.I)
 H2 = re.compile(r"<h2 id=\"g-[^\"]*\">(.*?)</h2>")
@@ -290,7 +338,10 @@ def test_the_committed_list_is_exactly_the_listings_marked_live() -> None:
     listed = gifts.load(COMMITTED)
     assert {g.ref: (g.kind, g.title, g.live.isoformat()) for g in listed} == LIVE
     by_ref = {g.ref: g for g in listed}
-    assert all(g.year == 2027 for g in listed if g.kind not in ("daylight", "custom"))
+    assert all(g.year == 2027 for g in listed if g.kind not in ("daylight", "custom", "river"))
+    # A river print's water year is over before it is sold: no year ends it.
+    assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "river")
+    assert all(g.station is None and g.about for g in listed if g.kind in ("sunrise", "sky"))
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "custom")
     assert by_ref["4617246732"].station == "8413320" and by_ref["4617240419"].station == "9413450"
     assert by_ref["4617280124"].station == "9414290" and by_ref["4617279303"].station == "9414131"
@@ -374,6 +425,18 @@ BAD = {
     "a daylight print with a station": [{**TEST_GIFTS[7], "station": GU}],
     "a daylight print's other title": [{**TEST_GIFTS[7], "title": "2027 Sun Print: Any City"}],
     "a daylight print not marked live": [without(TEST_GIFTS[7], "live")],
+    "a sunrise calendar without about": [without(TEST_GIFTS[8], "about")],
+    "a sunrise calendar without a year": [without(TEST_GIFTS[8], "year")],
+    "a sunrise calendar with a station": [{**TEST_GIFTS[8], "station": GU}],
+    "a sunrise calendar's other title": [{**TEST_GIFTS[8], "title": "2027 Sun Calendar: Hagatna"}],
+    "a sky print without about": [without(TEST_GIFTS[9], "about")],
+    "a sky print's other year": [{**TEST_GIFTS[9], "title": "2028 Night Sky Print: Hagatna"}],
+    "a sky print with a claim": [{**TEST_GIFTS[9], "about": "The best night sky of 2027 over Hagatna, Guam."}],
+    "a river print with a year": [{**TEST_GIFTS[10], "year": 2026}],
+    "a river print without about": [without(TEST_GIFTS[10], "about")],
+    "a river print with a station": [{**TEST_GIFTS[10], "station": GU}],
+    "a river print's other title": [{**TEST_GIFTS[10], "title": "2026 River Print: Talofofo River"}],
+    "a river print not marked live": [without(TEST_GIFTS[10], "live")],
 }
 
 
@@ -399,14 +462,15 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     assert H2.findall(main) == SECTIONS
     for line in (
         CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, ANY_CITY, OGUNQUIT_RINGS,
+        SUNRISE, SKY, RIVER,
     ):  # fmt: skip
         assert line in main
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 8 + 17 listings and the shop.
+    # once each: 40 + 8 + 24 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 17 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 24 + 1
     # Within a kind, by town.
     section = main[main.find('id="g-calendars"') : main.find('id="g-moon"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
@@ -495,8 +559,9 @@ def test_a_one_town_book_and_the_guam_list(guam: Path, lists: dict[str, Path], c
     text = read(guam, PAGE)
     assert GU_BOOK in text
     assert H2.findall(text) == [
-        "Custom tide chart prints", "Winter solstice print", "Year-of-daylight prints", "Tide rings art prints",
-        "Tide blanket patterns", "Cross-stitch patterns", "Printed tide tables", "Moon phase calendars",
+        "Custom tide chart prints", "Winter solstice print", "Year-of-daylight prints", "Sunrise and sunset calendars",
+        "Tide rings art prints", "Tide blanket patterns", "Cross-stitch patterns", "Printed tide tables",
+        "Moon phase calendars", "Night sky prints", "River year prints",
     ]  # fmt: skip
     assert (
         '<li data-gift="1234567898"><a href="https://www.etsy.com/listing/1234567898" rel="noopener">2027 Year of '
@@ -521,20 +586,26 @@ def test_only_a_moon_calendar_names_no_art_and_no_amazon(tmp_path: Path, lists: 
     assert 'id="booklets"' not in read(root, "privacy/index.html")
 
 
-def test_in_2028_the_page_lists_only_the_made_to_order_prints(tmp_path: Path, check_site: Any) -> None:
+def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, check_site: Any) -> None:
     """Every dated entry of the committed lists is of 2026 or 2027, so the
-    build of January 1, 2028 lists only the custom prints, which have no
-    year: the shop's own sentence and the two made-to-order listings. The
-    made-to-order year-of-daylight print is of 2027 and leaves."""
+    build of January 1, 2028 lists only the entries with no year: the
+    custom prints (the shop's own sentence and the two made-to-order
+    listings) and the three river prints. The made-to-order
+    year-of-daylight print, the sunrise and sunset calendars and the night
+    sky prints are of 2027 and leave."""
     root = build(tmp_path / "on", "--print-shop-url", SHOP, "--gifts", str(COMMITTED),
                  now="2028-01-01T11:20:00Z", states="ME")  # fmt: skip
     text = read(root, PAGE)
-    assert H2.findall(text) == ["Custom tide chart prints"]
+    assert H2.findall(text) == ["Custom tide chart prints", "River year prints"]
+    assert re.findall(r'rel="noopener">(Water Year[^<]*)</a>', text) == RIVERS
     assert sorted(ETSY_OR_AMAZON.findall(text)) == sorted(
         [
             SHOP,
             "https://www.etsy.com/listing/4617340915",
             "https://www.etsy.com/listing/4617341518",
+            "https://www.etsy.com/listing/4617481843",
+            "https://www.etsy.com/listing/4617492188",
+            "https://www.etsy.com/listing/4617493412",
         ]
     )
     assert "amazon" not in "".join(f.read_text(encoding="utf-8").lower() for f in pages(root))
@@ -699,6 +770,15 @@ SABOTAGE: dict[str, Callable[[Path], None]] = {
         PAGE, "https://www.etsy.com/listing/1234567898", NOT_LIVE
     ),
     "the daylight section's sentence": edit(PAGE, " They show the sun, not the tide.", ""),
+    "a sunrise calendar's words changed": edit(PAGE, "calendar for Hagatna, Guam.", "calendar for Guam."),
+    "the sky section's sentence": edit(PAGE, " Not a USNO or NASA product.", ""),
+    "a sky print's listing swapped for one not marked live": edit(
+        PAGE, "https://www.etsy.com/listing/1234567880", NOT_LIVE
+    ),
+    "the river section's sentence": edit(PAGE, " Not a USGS product.", ""),
+    "a river print's words dropped": edit(
+        PAGE, ". A whole year of the Talofofo River, drawn as one river running down the page.", ""
+    ),
     "no page": remove_page,
     "no footer link": edit("index.html", FOOTER, ""),
     "two footer links": edit("about/index.html", FOOTER, FOOTER + FOOTER),

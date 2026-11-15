@@ -2500,3 +2500,46 @@ cross-stitch patterns (San Francisco, Bar Harbor, Monterey, Half Moon Bay,
 and the custom one), and the page's two pattern sections and their words
 in its description leave with them; the `blanket` and `stitch` kinds stay
 in the code for when they are listed again.
+
+Update, 2026-11-14 (night): seven more digital listings went live that
+day and are linked at the owner's request, each id from the line "LISTED
+2026-11-14 as ID" in its product notes. The listings were not fetched.
+Three new kinds in `copy/gifts.json`, none bound to a town and none on a
+station page (the site has station pages, not city or river pages):
+
+- **`sunrise`**, a printable sunrise and sunset calendar for one city: a
+  year, a title "YEAR Sunrise and Sunset Calendar: Place" and `about`.
+  Anchorage (4617494392) and Seattle (4617485993), of 2027, under a new
+  section, "Sunrise and sunset calendars", after the year-of-daylight
+  prints, with the sentence "The 2027 sunrise and sunset times in one
+  city, a month to a page. They show the sun, not the tide." They are not
+  put under "Year-of-daylight prints": they are calendars, not prints, and
+  that heading would not describe them.
+- **`sky`**, a night sky print for one city: a year, a title "YEAR Night
+  Sky Print: Place" and `about`. New York (4617489617) and Seattle
+  (4617500424), of 2027, under a new section, "Night sky prints", after
+  the moon phase calendars, with the sentence "The 2027 night sky over one
+  city. They show the sky, not the tide. Not a USNO or NASA product."
+- **`river`**, a river year print: a title "Water Year YEAR Print: River"
+  and `about`, and no `year`. Yellowstone River (4617481843), Russian
+  River (4617492188) and Mississippi River (4617493412), each of the 2026
+  water year (October 1, 2025 to September 30, 2026), under a new and last
+  section, "River year prints" (the listings' own Etsy section is "River
+  Year Prints"), with the sentence "Art from USGS daily streamflow data.
+  They show a river, not the tide. Not a USGS product." A river print's
+  water year is over before it is sold, so a year would take a live
+  listing off the page on January 1, 2027; like a custom print, only an
+  `until` ends it, and the build of January 1, 2028 lists the custom
+  prints and the river prints.
+
+Each entry's `about` is the first sentence of its listing's own
+description, word for word. The source notes in the section sentences
+("Not a USNO or NASA product", "Art from USGS daily streamflow data", "Not
+a USGS product") are the listings' own words; the rest of those sentences
+and the three headings are this change's, put to the owner in its pull request. The meta
+description's list of kinds gains "sunrise and sunset calendars", "night
+sky prints" and "river year prints". The page's title, intro and footer
+link are unchanged: its intro already says the tide gifts are drawn from
+the site's predictions, and each new section's sentence says what it
+shows instead. The four other sunrise and sunset calendars (New York, San
+Francisco, Singapore, Sydney) are drafts, not live, and are not listed.

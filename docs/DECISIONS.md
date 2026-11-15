@@ -1472,6 +1472,14 @@ schema.org's vocabulary file (release 30.1): the type exists and each
 property's `domainIncludes` covers it or a supertype. Forbidden types fail
 the test. JSON-LD is written compactly (`schema.dumps`) to save page bytes.
 
+**Amended 2026-11-15:** a station page's `WebPage` node had kept the
+title from before 0032 ("{name} tide times") and the build date as its
+`dateModified`. It now carries the page's own title (with a searched name
+from `copy/place_names.json` where there is one) and the same
+`dateModified` as the page's other nodes, its sitemap `lastmod`.
+`tests/test_jsonld.py` checks the name on every station page, with a
+negative control. No visible text changes.
+
 **For the app:** nothing changes.
 
 ## 0035: A station page links to its own printable calendar on Etsy (owner, 2026-11-12)

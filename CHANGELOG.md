@@ -2,6 +2,10 @@
 
 ## 0.1.0 (unreleased)
 
+- A station page's `WebPage` structured data is named by the page's own
+  title, not the title it had before DECISIONS 0032, and its
+  `dateModified` is the page's sitemap `lastmod`, as on its other nodes.
+  No visible text changes (DECISIONS 0034).
 - Six more station pages lead their title, H1 and questions with the
   name people search for: Crystal River (Kings Bay, FL), Piankatank
   River (Dixie, VA), Tybee Island (Tybee Light, GA), Folly Beach (Folly

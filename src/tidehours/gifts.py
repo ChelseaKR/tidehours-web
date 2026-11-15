@@ -5,14 +5,16 @@ Two kinds come from the lists the station pages already use: the printable
 calendars (`copy/calendars.json`, 0035) and posters (`copy/posters.json`,
 0037), exactly as the station pages of this build show them. The rest come
 from `copy/gifts.json`: made-to-order custom prints (no town, no year),
-the winter solstice print, year-of-daylight prints (no town), tide rings
-art prints, tide blanket patterns and cross-stitch patterns (one town
-each), moon phase calendars (no town) and printed tide tables on Amazon
-(one or more towns). Every entry there carries `live`, the date its
-listing was marked live; an entry without one stops the build, so a draft
-cannot be linked. A custom print, year-of-daylight print or cross-stitch
-pattern also carries `about`, the listing's own approved words for it,
-shown after its link. The one-day custom tide chart print is the print shop's own
+the winter solstice print, year-of-daylight prints and sunrise and sunset
+calendars (no town), tide rings art prints, tide blanket patterns and
+cross-stitch patterns (one town each), moon phase calendars, night sky
+prints and river year prints (no town; a river print, of a water year
+already over, has no year) and printed tide tables on Amazon (one or more
+towns). Every entry there carries `live`, the date its listing was marked
+live; an entry without one stops the build, so a draft cannot be linked. A
+custom print, year-of-daylight print, sunrise and sunset calendar, night
+sky print, river print or cross-stitch pattern also carries `about`, the
+listing's own approved words for it, shown after its link. The one-day custom tide chart print is the print shop's own
 (0029): its sentence shows only when the shop address is set, and links to
 the shop.
 
@@ -55,7 +57,10 @@ PATH = "tide-gifts/"
 LIST = Path(__file__).parent / "copy" / "gifts.json"
 COPY = Path(__file__).parent / "copy" / "gifts_page.json"
 # The order of the sections on the page.
-ORDER = ("custom", "daylight", "sun", "rings", "posters", "calendars", "blanket", "stitch", "book", "moon")
+ORDER = (
+    "custom", "daylight", "sun", "sunrise", "rings", "posters", "calendars", "blanket", "stitch", "book", "moon",
+    "sky", "river",
+)  # fmt: skip
 # The zone an entry's `until` date is read in: the shop's own.
 UNTIL_ZONE = ZoneInfo("America/Los_Angeles")
 # The kinds copy/gifts.json may list, with the keys an entry has and the
@@ -70,6 +75,11 @@ TITLES = {
     "stitch": re.compile(rf"(20[0-9]{{2}}) Tide Rings Cross Stitch Pattern: {_PLACE}"),
     # A year of daylight: one city, or "Any City" for the made-to-order one.
     "sun": re.compile(rf"(20[0-9]{{2}}) Year of Daylight Print: {_PLACE}"),
+    "sunrise": re.compile(rf"(20[0-9]{{2}}) Sunrise and Sunset Calendar: {_PLACE}"),
+    "sky": re.compile(rf"(20[0-9]{{2}}) Night Sky Print: {_PLACE}"),
+    # A river's water year (October to September), which ends before the
+    # print is sold: its year is in the title only, and no year ends it.
+    "river": re.compile(rf"Water Year (20[0-9]{{2}}) Print: {_PLACE}"),
     # A made-to-order print has no year: its title is the listing's own name
     # for it, in title case.
     "custom": re.compile(r"[A-Z][A-Za-z' ]{2,48}[a-z]"),
@@ -82,11 +92,16 @@ KEYS = {
     "daylight": {"kind", "listing", "year", "title", "live", "until"},
     "stitch": {"kind", "listing", "year", "title", "station", "about", "live"},
     "sun": {"kind", "listing", "year", "title", "about", "live"},
+    "sunrise": {"kind", "listing", "year", "title", "about", "live"},
+    "sky": {"kind", "listing", "year", "title", "about", "live"},
+    "river": {"kind", "listing", "title", "about", "live"},
     "custom": {"kind", "listing", "title", "about", "live"},
 }
 # The kinds bound to one town's station, and the kinds whose line carries
 # `about`: one or two sentences of the listing's own approved description.
 TOWN_KINDS = ("rings", "blanket", "stitch")
+# The kinds with no town, one line each, in list order.
+NO_TOWN = ("moon", "daylight", "sun", "sunrise", "sky", "river", "custom")
 ABOUT = re.compile(r"[A-Z][^<>{}$%\u2605]{19,398}[.]")
 # Every kind may carry `until`: the first day, in UNTIL_ZONE, on which the
 # entry no longer shows. A made-to-order seasonal print must carry one.
@@ -103,14 +118,14 @@ class Gift:
 
     kind: str
     ref: str  # the Etsy listing id, or the book's ASIN
-    year: int | None  # None for a made-to-order print, which no year ends
+    year: int | None  # None for a made-to-order print or a river print, which no year ends
     title: str
     live: dt.date  # the day its listing was marked live
     station: str | None = None  # rings and blanket: the town's station
     towns: tuple[tuple[str, str], ...] = ()  # book: (name, station id), in the book's order
     format: str | None = None  # book: hardcover or paperback
     until: dt.date | None = None  # the first day (UNTIL_ZONE) it no longer shows
-    about: str = ""  # custom, sun and stitch: the listing's own words for it
+    about: str = ""  # custom, sun, sunrise, sky, river and stitch: the listing's own words for it
 
     @property
     def url(self) -> str:
@@ -345,7 +360,7 @@ def sections(
     for g in listed:
         if g.kind == "book":
             add("book", g.year, _book_entry(g, stations, text["book"]))
-        elif g.kind in ("moon", "daylight", "sun", "custom"):
+        elif g.kind in NO_TOWN:
             add(g.kind, g.year, Entry(g.ref, g.title, g.url, about=g.about))
         elif g.station is not None and g.station in stations:
             entry = _town_entry(g.ref, g.title, g.url, stations[g.station])
@@ -358,7 +373,7 @@ def sections(
             out += [custom] if custom else []
         elif key in found:
             years, entries = found[key]
-            ordered = tuple(entries) if key in ("moon", "book", "daylight", "sun") else _by_town(entries)
+            ordered = tuple(entries) if key in NO_TOWN or key == "book" else _by_town(entries)
             text_ = _daylight_years(copy["text"], years) if key == "daylight" else copy["text"]
             out.append(Section(key, _one_year(set(years), copy["heading"]), _one_year(set(years), text_), ordered))
     return out
@@ -400,7 +415,7 @@ def block(
     text = _copy()
     years: set[int] = {c.year for c in calendar_of.values()}
     kinds = [_one_year(set(years), text["sections"][s.key]["short"]) for s in secs]
-    art = any(s.key in ("custom", "daylight", "sun", "rings", "posters") for s in secs)
+    art = any(s.key in ("custom", "daylight", "sun", "rings", "posters", "sky", "river") for s in secs)
     title = text["titleArt" if art else "title"]
     return {
         "rel": REL,

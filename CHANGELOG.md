@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+- Seven more listings of 2026-11-14 are linked. `/tide-gifts/` has three
+  new sections, each line ending with its listing's own description:
+  "Sunrise and sunset calendars" (Anchorage and Seattle, 2027), "Night sky
+  prints" (New York and Seattle, 2027) and "River year prints" (the
+  Yellowstone, Russian and Mississippi rivers, water year 2026). A river
+  print has no year, so it stays until it is delisted (DECISIONS 0041).
 - Pattern listings paused on Etsy; links removed. `/tide-gifts/` no
   longer lists the tide blanket or cross-stitch patterns, and its
   "Tide blanket patterns" and "Cross-stitch patterns" sections and their

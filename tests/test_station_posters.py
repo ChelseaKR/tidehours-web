@@ -322,10 +322,11 @@ def test_one_poster_puts_one_link_on_its_page_and_on_the_list(
 ) -> None:
     # Every English page's footer gains the link to the list. Apart from
     # that, nothing but that station's page, the privacy and terms pages,
-    # the list itself, the sitemap that names it and the record of
-    # fingerprints differs from the empty-list build.
+    # the list itself, the sitemap and llms.txt that name it (0046) and the
+    # record of fingerprints differs from the empty-list build.
     assert differing(off, on, ignoring=FOOTER) == [
         "lastmod.json",
+        "llms.txt",
         "privacy/index.html",
         "sitemap.xml",
         PAGE,

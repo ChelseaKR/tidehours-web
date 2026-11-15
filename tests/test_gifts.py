@@ -530,10 +530,16 @@ def test_every_english_footer_links_to_the_page_and_the_spanish_does_not(publish
     assert FOOTER not in read(published, "es/king-tides/index.html")
 
 
-def test_the_page_is_in_the_sitemap_and_not_in_llms_txt(published: Path) -> None:
+def test_the_page_is_in_the_sitemap_and_llms_txt(published: Path) -> None:
     assert "<loc>https://tidehours.com/tide-gifts/</loc>" in read(published, "sitemap.xml")
     assert '"/tide-gifts/"' in read(published, "lastmod.json")
-    assert "tide-gifts" not in read(published, "llms.txt")
+    # llms.txt lists the page (docs/DECISIONS.md 0046) and still never names Etsy or Amazon.
+    llms_txt = read(published, "llms.txt")
+    assert (
+        "- [Tide chart gifts and tide art prints](https://tidehours.com/tide-gifts/): "
+        "every Tide Hours product, by kind and by town\n"
+    ) in llms_txt
+    assert "etsy" not in llms_txt.lower() and "amazon" not in llms_txt.lower()
 
 
 def test_privacy_and_terms_name_the_page(published: Path) -> None:

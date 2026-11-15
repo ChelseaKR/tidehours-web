@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
 {% block title %}{{ region_title(region, state) }}{% endblock %}
-{% block description %}Today's tide times at {{ region.stations|length }} NOAA tide station{{ "s" if region.stations|length != 1 }} in {{ region_place(region, state) }}.{% endblock %}
+{% block description %}Today's high and low tide times and a tide chart for {% if region.stations|length != 1 %}each of {{ region.stations|length }} NOAA tide stations{% else %}1 NOAA tide station{% endif %} in {{ region_place(region, state) }}.{% endblock %}
 {% block jsonld %}
 {% with crumbs = [["Home", ""], [state.name, state.path]] %}{% include "_breadcrumb_jsonld.html.jinja" %}{% endwith %}
 {% endblock %}

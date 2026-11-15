@@ -347,13 +347,19 @@ def test_the_page_keeps_the_promises_and_the_gates(committed: Path, check_site: 
         assert labelled in ids, labelled
 
 
-def test_the_page_is_in_the_sitemap_and_not_in_llms_txt(committed: Path) -> None:
+def test_the_page_is_in_the_sitemap_and_llms_txt(committed: Path) -> None:
     sitemap = (committed / "sitemap.xml").read_text(encoding="utf-8")
     assert "<loc>https://tidehours.com/tide-calendars/</loc><lastmod>2026-11-01</lastmod>" in sitemap
     assert "/tide-calendars/" in json.loads((committed / "lastmod.json").read_text(encoding="utf-8"))["pages"]
-    for name in ("llms.txt", "robots.txt"):
-        body = (committed / name).read_text(encoding="utf-8")
-        assert "tide-calendars" not in body and "etsy" not in body.lower(), name
+    # llms.txt lists the page (docs/DECISIONS.md 0046) and still never names Etsy.
+    llms_txt = (committed / "llms.txt").read_text(encoding="utf-8")
+    assert (
+        "- [Printable 2027 tide calendars and posters](https://tidehours.com/tide-calendars/): "
+        "every printable calendar and poster, by state\n"
+    ) in llms_txt
+    assert "etsy" not in llms_txt.lower()
+    robots = (committed / "robots.txt").read_text(encoding="utf-8")
+    assert "tide-calendars" not in robots and "etsy" not in robots.lower()
 
 
 def test_every_english_footer_links_to_the_page(committed: Path) -> None:

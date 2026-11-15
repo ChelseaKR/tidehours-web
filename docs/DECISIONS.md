@@ -2816,3 +2816,34 @@ region pages already change daily (0039), so the first build announces the
 32 state pages once more than usual (0011, 0028).
 
 **Reversible.** Yes: drop the two lists, their styles and their check.
+## 0046: Region descriptions name the tide chart; llms.txt lists the calendars and gifts pages (owner, 2026-11-15)
+
+Two wording changes the owner approved on 2026-11-15.
+
+**Region page meta description.** It was "Today's tide times at {n} NOAA
+tide station(s) in {place}." It is now "Today's high and low tide times
+and a tide chart for each of {n} NOAA tide stations in {place}.", and for
+a region with one station "Today's high and low tide times and a tide
+chart for 1 NOAA tide station in {place}." `{place}` is
+`site.region_place`, as in the title (0032). The words say what a visitor
+finds a click away, the highs, lows and chart on each place's page, as the
+lead already does. Every region in the catalog fits in `DESCRIPTION_MAX`
+(155 characters, 0032); on 2026-11-15 the longest is 137 characters
+(Northern Marianas Islands). `tests/test_site.py` checks the wording on
+its build and the length for every region in the catalog.
+
+**`/llms.txt`.** Amends 0037 and 0041, which kept both pages out of it.
+Under "## Pages", after the California king-tide calendar:
+
+- "[Printable 2027 tide calendars and posters](https://tidehours.com/tide-calendars/):
+  every printable calendar and poster, by state"
+- "[Tide chart gifts and tide art prints](https://tidehours.com/tide-gifts/):
+  every Tide Hours product, by kind and by town"
+
+Each line is there only when the build has that page (`llms.render`'s
+`printables_page` and `gifts_page`), so the file never links to a page
+that is not built. The lines link to this site's pages only; `llms.txt`
+still never names Etsy or Amazon, and check_site still fails it if it
+does (0029, 0030). The year in the calendars line is the owner's wording;
+change it with the print shop's sentence when the year changes (README,
+owner step 7).

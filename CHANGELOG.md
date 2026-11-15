@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Region pages' meta description names what each place's page has:
+  "Today's high and low tide times and a tide chart for each of {n} NOAA
+  tide stations in {place}.", or "for 1 NOAA tide station" where a region
+  has one. Every region's fits in 155 characters; the longest is 137.
+  `/llms.txt` lists the printable calendars and posters page and the tide
+  gifts page after the California king-tide calendar, each only when the
+  build has that page (DECISIONS 0046).
 - State pages end with the other states along their coast, under the
   home page's group headings ("Atlantic coast, north to south"), and region
   pages end with their state's jump list of regions, linking each region's

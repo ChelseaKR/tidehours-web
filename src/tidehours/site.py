@@ -1248,6 +1248,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     printed = printables.kind(
         bool(calendars_shown(cat, stations, cfg, now)), bool(posters_shown(cat, stations, cfg, now))
     )
+    gift_page = gifts_listing(cat, stations, cfg, now)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
@@ -1265,7 +1266,7 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
         "amazon_links": bool(cfg.amazon_tag),
         "print_shop": printshop.block(cfg.print_shop_url),
         "printables": printables.link(printed),
-        "gifts": gifts.link(gifts_listing(cat, stations, cfg, now)),
+        "gifts": gifts.link(gift_page),
         "retrieved": cat.retrieved,
         "built": built,
         "station_count": len(cat.stations),
@@ -1275,7 +1276,14 @@ def write(cat: Catalog, cfg: Config, now: dt.datetime, out: Path, previous: Path
     (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {base}sitemap.xml\n", encoding="utf-8")
     # /llms.txt (llms.py); deploy.sh uploads non-HTML files with the type the
     # extension gives, text/plain for .txt, as it does for robots.txt.
-    (out / "llms.txt").write_text(llms.render(cat, base, app_store_url=cfg.app_store_url), encoding="utf-8")
+    llms_txt = llms.render(
+        cat,
+        base,
+        app_store_url=cfg.app_store_url,
+        printables_page=printed is not None,
+        gifts_page=gift_page is not None,
+    )
+    (out / "llms.txt").write_text(llms_txt, encoding="utf-8")
     shutil.copyfile(Path(__file__).parent / "templates" / "style.css", out / "style.css")
     shutil.copyfile(Path(__file__).parent / "templates" / "favicon.svg", out / "favicon.svg")
     # The share image, favicon.ico, the home-screen icons and their manifest

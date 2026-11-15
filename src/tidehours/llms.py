@@ -7,17 +7,28 @@ Station counts, the NOAA retrieval date and the king-tide calendars come from
 the catalog this build reads; nothing is listed from memory. The promises
 every page makes (predictions, not observations; not for navigation; not a
 NOAA product; NOAA CO-OPS credited) are made here too.
+
+The printable calendars page and the tide gifts page are listed when the
+build has them, so the file never links to a page that is not there.
 """
 
 from __future__ import annotations
 
+from . import gifts, printables
 from .catalog import Catalog
 from .kingtides import CALENDAR_STATES, calendar_path
 
 SPEC_URL = "https://llmstxt.org/"
 
 
-def render(cat: Catalog, base: str, *, app_store_url: str = "") -> str:
+def render(
+    cat: Catalog,
+    base: str,
+    *,
+    app_store_url: str = "",
+    printables_page: bool = False,
+    gifts_page: bool = False,
+) -> str:
     base = base.rstrip("/")
     total = len(cat.stations)
     subordinate = sum(1 for s in cat.stations if s.is_subordinate)
@@ -73,6 +84,15 @@ def render(cat: Catalog, base: str, *, app_store_url: str = "") -> str:
     for code, (name, _slug) in CALENDAR_STATES.items():
         lines.append(
             f"- [{name} king tides]({base}/{calendar_path(code)}): the season's calendar, month by month ({code})"
+        )
+    if printables_page:
+        lines.append(
+            f"- [Printable 2027 tide calendars and posters]({base}/{printables.PATH}): "
+            "every printable calendar and poster, by state"
+        )
+    if gifts_page:
+        lines.append(
+            f"- [Tide chart gifts and tide art prints]({base}/{gifts.PATH}): every Tide Hours product, by kind and by town"
         )
     lines += [
         f"- [Mareas reales (Spanish)]({base}/es/king-tides/): the king-tide page in Spanish",

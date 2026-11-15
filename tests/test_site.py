@@ -1200,6 +1200,39 @@ def test_region_pages_do_not_repeat_the_state() -> None:
         assert len(site.state_title(st)) <= site.TITLE_MAX, st.code
 
 
+def _region_description(count: int, place: str) -> str:
+    stations = f"each of {count} NOAA tide stations" if count != 1 else "1 NOAA tide station"
+    return f"Today's high and low tide times and a tide chart for {stations} in {place}."
+
+
+def test_region_description_wording(built: Path) -> None:
+    # The owner's wording of 2026-11-15, for several stations and for one.
+    sf = _meta_description((built / "states/ca/san-francisco-bay/index.html").read_text(encoding="utf-8"))
+    assert re.fullmatch(
+        r"Today's high and low tide times and a tide chart for each of \d+ NOAA tide stations "
+        r"in San Francisco Bay, California\.",
+        sf,
+    ), sf
+    one = _meta_description((built / "states/other/broad-river/index.html").read_text(encoding="utf-8"))
+    assert one == "Today's high and low tide times and a tide chart for 1 NOAA tide station in Broad River.", one
+    for f in built.glob("states/*/*/index.html"):
+        html = f.read_text(encoding="utf-8")
+        if 'content="noindex' in html:
+            continue  # a moved or split region's stub
+        d = _meta_description(html)
+        assert d.startswith("Today's high and low tide times and a tide chart for "), f
+        assert len(d) <= site.DESCRIPTION_MAX, (f, len(d))
+
+
+def test_every_region_description_fits() -> None:
+    # Every region in the catalog, not only the built states.
+    cat = load()
+    for st in site.group(cat.stations):
+        for r in st.regions:
+            d = _region_description(len(r.stations), site.region_place(r, st))
+            assert len(d) <= site.DESCRIPTION_MAX, (r.path, len(d))
+
+
 def test_every_station_description_can_fit() -> None:
     # The shortest description tier fits for every station's name (the
     # longest date is "Sep 30"), so no station page's meta description can

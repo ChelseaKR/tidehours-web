@@ -419,12 +419,13 @@ def test_the_empty_list_check_can_fail(off: Path, on: Path, empty: Path, tmp_pat
 def test_one_calendar_puts_one_link_on_one_page(off: Path, on: Path, listed: Path, check_site: Any) -> None:
     # Every English page's footer gains the link to the list (0037). Apart
     # from that, nothing but that station's page, the privacy and terms
-    # pages, the list itself, the sitemap that now names it and the record
-    # of fingerprints differs from the empty-list build.
+    # pages, the list itself, the sitemap and llms.txt that now name it
+    # (0046) and the record of fingerprints differs from the empty-list build.
     linking = {f.relative_to(on).as_posix() for f in pages(on) if FOOTER in f.read_text(encoding="utf-8")}
     assert linking == {f.relative_to(on).as_posix() for f in pages(on)} - {"es/king-tides/index.html"}
     assert differing(off, on, ignoring=FOOTER) == [
         "lastmod.json",
+        "llms.txt",
         "privacy/index.html",
         "sitemap.xml",
         PAGE,

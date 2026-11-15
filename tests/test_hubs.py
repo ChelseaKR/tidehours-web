@@ -151,7 +151,11 @@ def test_region_page_shows_each_places_times(built: Path) -> None:
     row = re.search(r'<li data-station="9413450">.*?</li>', mb)
     assert row and text(row.group(0)) == "Monterey, Monterey Bay High 2:25 AM, 11:34 AM Low 5:30 AM, 7:35 PM"
     assert " ft" not in mb[mb.index('<ul class="stations">') : mb.index("</ul>")]  # times only
-    assert mb.count("<p", mb.index("<h1>"), mb.index('<ul class="stations">')) == 1
+    # One paragraph, the lead, then the list; the empty status box above the
+    # dated heading is filled only by the script, once the day has passed.
+    top = mb[mb.index("<h1>") : mb.index('<ul class="stations">')]
+    assert top.count('<p class="stale" id="stale" role="status" data-tz="America/Los_Angeles" hidden></p>') == 1
+    assert top.count("<p") == 2
     # A region across two zones says so instead of naming one.
     pb = read(built, "states/fl/pensacola-bay")
     assert "(local time at each place; heights on each place's page)</span></h2>" in pb
@@ -246,17 +250,22 @@ def test_check_hubs_catches_regions_out_of_order(tmp_path: Path, built: Path) ->
 HARNESS = r"""
 const vm = require("node:vm");
 const input = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
+let focused = null;
 const items = input.items.map((it) => ({
   textContent: it.text, section: it.section, hidden: false,
   getAttribute: (n) => (n === "data-aka" ? it.aka : null),
+  querySelector: (q) => (q === "a" ? { focus: () => { focused = it.text; } } : null),
 }));
 const sections = input.sections.map((id) => ({
   id, hidden: false,
   querySelector: (q) => (q === "li:not([hidden])" ? items.find((i) => i.section === id && !i.hidden) || null : null),
 }));
 const jump = { hidden: false };
-let handler = null, added = null;
-const input_ = { value: "", addEventListener: (t, f) => { if (t === "input") handler = f; } };
+let handler = null, keydown = null, added = null;
+const input_ = {
+  value: "",
+  addEventListener: (t, f) => { if (t === "input") handler = f; else if (t === "keydown") keydown = f; },
+};
 const label = { textContent: "" }, output = { textContent: "" };
 const main = {
   getAttribute: (n) => (n === "data-find-label" ? input.label : null),
@@ -275,11 +284,20 @@ vm.runInNewContext(input.script, context);
 const results = input.queries.map((q) => {
   input_.value = q;
   handler();
+  // Another key does nothing; Enter moves focus to the first place shown.
+  const keys = [];
+  for (const key of ["Tab", "Enter"]) {
+    focused = null;
+    let prevented = false;
+    keydown({ key, preventDefault: () => { prevented = true; } });
+    keys.push([key, focused, prevented]);
+  }
   return {
     shown: items.filter((i) => !i.hidden).map((i) => i.textContent),
     sections: sections.filter((s) => !s.hidden).map((s) => s.id),
     status: output.textContent,
     jumpHidden: jump.hidden,
+    keys,
   };
 });
 process.stdout.write(JSON.stringify({
@@ -324,6 +342,8 @@ def test_find_filters_the_places_on_the_page(built: Path) -> None:
     ca = read(built, "states/ca")
     r = run_find(ca, ["half moon", "  HALF   Moon ", "xyz", "", "bay"])
     assert r["added"] and r["label"] == "Find a place in California"
+    # The box's status is its description, as on the home page.
+    assert 'aria-describedby="find-status"><output id="find-status" for="find">' in ca
     half, spaced, none, empty, bay = r["results"]
     assert half["shown"] == ["Pillar Point Harbor, Half Moon Bay"]
     assert half["sections"] == ["r-outer-coast-port-san-luis"] and half["jumpHidden"]
@@ -334,6 +354,11 @@ def test_find_filters_the_places_on_the_page(built: Path) -> None:
     assert len(empty["shown"]) == 205 and empty["status"] == "" and not empty["jumpHidden"]
     assert len(empty["sections"]) == 15
     assert bay["status"] == f"{len(bay['shown'])} places match “bay”." and len(bay["shown"]) > 1
+    # Enter (a phone keyboard's Search key) focuses the first place shown;
+    # with nothing typed or nothing shown it does nothing.
+    assert half["keys"] == [["Tab", None, False], ["Enter", "Pillar Point Harbor, Half Moon Bay", True]]
+    assert bay["keys"][1] == ["Enter", bay["shown"][0], True]
+    assert none["keys"] == empty["keys"] == [["Tab", None, False], ["Enter", None, False]]
 
 
 def test_find_ignores_accents_and_okina_and_reads_searched_names(tmp_path: Path) -> None:

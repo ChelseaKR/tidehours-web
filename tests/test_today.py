@@ -274,7 +274,9 @@ def test_next_tide_without_script_is_the_build_sentence(battery: str) -> None:
 
 def test_next_tide_before_the_first_tide(battery: str) -> None:
     r = run(battery, "2026-11-04T08:00:00Z")  # 3:00 AM
-    assert r["next"] == f"Next high tide: 3:59 AM (4.9 ft), in 59{NBSP}min. The predicted tide is rising until then."
+    assert (
+        r["next"] == f"Next high tide: 3:59 AM (4.9{NBSP}ft), in 59{NBSP}min. The predicted tide is rising until then."
+    )
     assert r["kind"] == "kind ev-high"
     assert r["past"] == []
 
@@ -282,20 +284,20 @@ def test_next_tide_before_the_first_tide(battery: str) -> None:
 def test_next_tide_between_tides(battery: str) -> None:
     r = run(battery, "2026-11-04T14:00:00Z")  # 9:00 AM, after the 3:59 AM high
     assert r["next"] == (
-        f"Next low tide: 10:18 AM (0.6 ft), in 1{NBSP}h{NBSP}18{NBSP}min. The predicted tide is falling until then."
+        f"Next low tide: 10:18 AM (0.6{NBSP}ft), in 1{NBSP}h{NBSP}18{NBSP}min. The predicted tide is falling until then."
     )
     assert r["kind"] == "kind ev-low"
     assert r["past"] == ["2026-11-04T03:59-05:00"] and r["said"] == PASSED
     # At the minute of a tide, that one has passed and the next is named.
     r = run(battery, "2026-11-04T15:18:00Z")
-    assert r["next"].startswith(f"Next high tide: 4:17 PM (4.8 ft), in 5{NBSP}h{NBSP}59{NBSP}min.")
+    assert r["next"].startswith(f"Next high tide: 4:17 PM (4.8{NBSP}ft), in 5{NBSP}h{NBSP}59{NBSP}min.")
     assert r["past"] == ["2026-11-04T03:59-05:00", "2026-11-04T10:18-05:00"]
 
 
 def test_next_tide_after_todays_last_is_tomorrows(battery: str) -> None:
     r = run(battery, "2026-11-05T04:00:00Z")  # 11:00 PM on Nov 4
     assert r["next"] == (
-        f"Next high tide: 4:56 AM tomorrow (5.1 ft), in 5{NBSP}h{NBSP}56{NBSP}min. The predicted tide is rising until then."
+        f"Next high tide: 4:56 AM tomorrow (5.1{NBSP}ft), in 5{NBSP}h{NBSP}56{NBSP}min. The predicted tide is rising until then."
     )
     assert sorted(r["past"]) == sorted(
         ["2026-11-04T03:59-05:00", "2026-11-04T16:17-05:00", "2026-11-04T10:18-05:00", "2026-11-04T22:47-05:00"]
@@ -317,7 +319,7 @@ def test_next_tide_after_a_missed_build_keeps_the_build_sentence(battery: str, g
     # A clock a day behind the build: the page's first day is the station's
     # tomorrow, and its first tide is named as tomorrow's.
     r = run(battery, "2026-11-03T12:00:00Z")  # 7:00 AM on Nov 3
-    assert r["next"].startswith(f"Next high tide: 3:59 AM tomorrow (4.9 ft), in 20{NBSP}h{NBSP}59{NBSP}min.")
+    assert r["next"].startswith(f"Next high tide: 3:59 AM tomorrow (4.9{NBSP}ft), in 20{NBSP}h{NBSP}59{NBSP}min.")
     # Two days behind: the next tide is not today's or tomorrow's.
     assert run(battery, "2026-11-02T12:00:00Z")["next"] == BUILT_LINE
 
@@ -342,7 +344,7 @@ def test_next_tide_on_a_daylight_saving_day(fall_back: str) -> None:
     r = run(fall_back, "2026-11-01T05:56:00Z")
     assert shown(r)[0] == ("2026-11-01", "Today, ")
     assert r["next"] == (
-        f"Next low tide: 6:53 AM (0.8 ft), in 5{NBSP}h{NBSP}57{NBSP}min. The predicted tide is falling until then."
+        f"Next low tide: 6:53 AM (0.8{NBSP}ft), in 5{NBSP}h{NBSP}57{NBSP}min. The predicted tide is falling until then."
     )
     assert r["past"] == ["2026-11-01T01:55-04:00"]
 
@@ -358,3 +360,100 @@ def test_until_says_hours_and_minutes(battery: str) -> None:
         f"1{NBSP}min",
         f"2{NBSP}h",
     ]
+
+
+# Region pages (docs/DECISIONS.md 0039) show one day: their stations' date at
+# the build. From midnight at the stations until the next build that day has
+# passed, and the page's script says so above the dated heading, which stays,
+# as do the times. These run that script under Node with a pinned clock.
+REGION_HARNESS = r"""
+const vm = require("node:vm");
+const input = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
+const RealDate = Date;
+const pinned = RealDate.parse(input.now);
+class PinnedDate extends RealDate {
+  constructor(...a) { if (a.length === 0) super(pinned); else super(...a); }
+  static now() { return pinned; }
+}
+const box = { hidden: true, textContent: "", getAttribute: (n) => (n === "data-tz" ? input.tz : null) };
+const day = { getAttribute: (n) => (n === "data-date" ? input.date : null) };
+const document = {
+  getElementById: (id) => (id === "stale" ? box : null),
+  querySelector: (q) => (q === "h2.hub-day[data-date]" ? day : null),
+};
+vm.runInNewContext(input.script, { document, Date: PinnedDate, Intl });
+process.stdout.write(JSON.stringify(box.hidden ? null : box.textContent));
+"""
+REGION_SCRIPT = re.compile(r"<script>\s*(// The day on this page.*?)</script>", re.S)
+REGION_DAY = re.compile(
+    r'<p class="stale" id="stale" role="status" data-tz="([^"]+)" hidden></p>\s*'
+    r'<h2 class="hub-day" data-date="(\d{4}-\d{2}-\d{2})">'
+)
+
+
+@pytest.fixture(scope="module")
+def regions(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    return build(tmp_path_factory.mktemp("regions"), "FL,GU")
+
+
+def run_region(root: Path, path: str, now: str, tz: str | None = None) -> str | None:
+    html = (root / path / "index.html").read_text(encoding="utf-8")
+    script, day = REGION_SCRIPT.search(html), REGION_DAY.search(html)
+    assert script and day
+    payload = {"script": script.group(1), "tz": tz or day.group(1), "date": day.group(2), "now": now}
+    out = subprocess.run(  # noqa: S603 - our own harness, fixed arguments
+        [node(), "-e", REGION_HARNESS],
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=60,
+    )
+    result: str | None = json.loads(out.stdout)
+    return result
+
+
+def passed(today: str, built: str = "Wednesday, November 4, 2026") -> str:
+    return (
+        f"Today, {today}, is not on this page yet. The times below are for {built}, which has passed. "
+        "The site updates once a day; each place's page also has the next day's tides."
+    )
+
+
+def test_region_page_names_its_zones_and_says_nothing_without_script(regions: Path) -> None:
+    keys = (regions / "states/fl/florida-keys/index.html").read_text(encoding="utf-8")
+    pensacola = (regions / "states/fl/pensacola-bay/index.html").read_text(encoding="utf-8")
+    assert REGION_DAY.findall(keys) == [("America/New_York", "2026-11-04")]
+    assert REGION_DAY.findall(pensacola) == [("America/Chicago America/New_York", "2026-11-04")]
+    assert keys.count('id="stale"') == 1 and '<p class="stale" id="stale" role="status" data-tz' in keys
+
+
+def test_region_day_east_coast(regions: Path) -> None:
+    keys = "states/fl/florida-keys"
+    assert run_region(regions, keys, "2026-11-04T14:00:00Z") is None  # 9:00 AM EST, after the build
+    assert run_region(regions, keys, "2026-11-05T04:59:00Z") is None  # 11:59 PM on Nov 4
+    assert run_region(regions, keys, "2026-11-05T05:00:00Z") == passed("Thursday, November 5, 2026")
+    # 3:41 AM on Nov 5, before the next build.
+    assert run_region(regions, keys, "2026-11-05T08:41:00Z") == passed("Thursday, November 5, 2026")
+
+
+def test_region_day_guam_most_of_the_day(regions: Path) -> None:
+    # Guam is UTC+10: built at 21:20 on Nov 4, and Nov 4 has passed from 14:00 UTC.
+    guam = "states/gu/guam"
+    assert run_region(regions, guam, "2026-11-04T13:59:00Z") is None
+    assert run_region(regions, guam, "2026-11-05T08:41:00Z") == passed("Thursday, November 5, 2026")
+
+
+def test_region_day_in_two_zones_waits_for_the_later_midnight(regions: Path) -> None:
+    # Pensacola Bay is in Eastern and Central Time: at 12:30 AM EST on Nov 5
+    # it is still 11:30 PM on Nov 4 in Central Time, so nothing is said.
+    bay = "states/fl/pensacola-bay"
+    assert run_region(regions, bay, "2026-11-05T05:30:00Z") is None
+    assert run_region(regions, bay, "2026-11-05T06:00:00Z") == passed("Thursday, November 5, 2026")
+
+
+def test_region_day_missed_build_clock_behind_and_unknown_zone(regions: Path) -> None:
+    keys = "states/fl/florida-keys"
+    assert run_region(regions, keys, "2026-11-07T15:00:00Z") == passed("Saturday, November 7, 2026")
+    assert run_region(regions, keys, "2026-11-03T12:00:00Z") is None  # a clock behind the build
+    assert run_region(regions, keys, "2026-11-05T08:41:00Z", tz="Not/AZone") is None

@@ -241,7 +241,8 @@ var tidehoursNext = (function () {
         date: iso.slice(0, 10),
         kind: tr.className === "ev-high" ? "high" : "low",
         time: t.textContent,
-        ft: tr.cells[2].firstChild.textContent.trim()
+        // "4.4 ft" with a non-breaking space, so the unit stays with its number.
+        ft: tr.cells[2].firstChild.textContent.trim().replace(/ /g, "\u00a0")
       };
     });
   }

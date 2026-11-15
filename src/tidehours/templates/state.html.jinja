@@ -73,7 +73,7 @@ var tidehoursFind = (function () {
   var text = items.map(function (li) { return norm(li.textContent + " " + (li.getAttribute("data-aka") || "")); });
   var box = document.createElement("div");
   box.className = "find";
-  box.innerHTML = '<label for="find"></label><input id="find" type="search" autocomplete="off" spellcheck="false"><output for="find"></output>';
+  box.innerHTML = '<label for="find"></label><input id="find" type="search" autocomplete="off" spellcheck="false" aria-describedby="find-status"><output id="find-status" for="find"></output>';
   box.querySelector("label").textContent = main.getAttribute("data-find-label");
   lead.after(box);
   var input = box.querySelector("input"), out = box.querySelector("output");
@@ -89,6 +89,15 @@ var tidehoursFind = (function () {
     var jump = main.querySelector(".regions-jump");
     if (jump) jump.hidden = q !== "";
     out.textContent = tidehoursFind.status(q === "" ? "" : input.value.trim(), shown);
+  });
+  // Enter, or a phone keyboard's Search key, moves to the first place that
+  // matches: the keyboard closes and the list shows, and Tab goes on down it.
+  input.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" || norm(input.value) === "") return;
+    var first = items.filter(function (li) { return !li.hidden; })[0];
+    if (!first) return;
+    e.preventDefault();
+    first.querySelector("a").focus();
   });
 })();
 </script>

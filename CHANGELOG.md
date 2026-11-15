@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- State pages end with the other states along their coast, under the
+  home page's group headings ("Atlantic coast, north to south"), and region
+  pages end with their state's jump list of regions, linking each region's
+  page. Words already on the site only; below the answer and left out of
+  print. A list of more places in a station's region is built but off:
+  the owner holds it until after the station-page indexing test
+  (DECISIONS 0043).
 - The king-tide calendars' titles and descriptions name the coming run's
   dates while it is in season, and move on to the next month's by
   themselves: built Nov 15, "Washington king tides Nov 23–Dec 1: Seattle,

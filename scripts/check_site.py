@@ -528,6 +528,56 @@ def check_places(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
+COAST_SECTION = re.compile(
+    r'<section class="coast-states" aria-labelledby="coast-\d+">\s*<h2 id="coast-\d+">([^<]*)</h2>\s*<ul class="states">(.*?)</ul>',
+    re.S,
+)
+REGION_JUMP = re.compile(r'<details class="regions-jump">.*?</details>', re.S)
+ENTRY = re.compile(r'<a href="/([^"]+)">[^<]*</a>|<span aria-current="page">[^<]*</span>')
+
+
+def _entries(html: str, here: str) -> list[str]:
+    """The paths a list links, in order, with `here` where it names the
+    page itself without a link; a link to the page itself is marked."""
+    return [
+        here if m.group(1) is None else m.group(1) + (" (linked)" if m.group(1) == here else "")
+        for m in ENTRY.finditer(html)
+    ]
+
+
+def check_links(root: Path, cat: Catalog) -> list[str]:
+    """Each state page ends with the home page's coast groups that hold it
+    and another state of the build, every state in the group's order, itself
+    unlinked; each region page ends with its state's regions in the state
+    page's order, itself unlinked, unless its state has one region or no
+    state (docs/DECISIONS.md 0043)."""
+    problems: list[str] = []
+    order = site.region_order()
+    states = [st for st in site.group(cat.stations) if (root / st.path / "index.html").is_file()]
+    groups = site.coast_groups(states)
+    for st in states:
+        page = (root / st.path / "index.html").read_text(encoding="utf-8")
+        shown = [(name, _entries(inner, st.path)) for name, inner in COAST_SECTION.findall(page)]
+        expect = [(name, [s.path for s in sts]) for name, sts in site.coast_neighbors(st, groups)]
+        if shown != expect:
+            problems.append(f"{st.path}: coast groups {shown}, expected {expect}")
+        regions = site.coast_order(st, order)
+        want = [r.path for r in site.sibling_regions(st, regions)]
+        for r in st.regions:
+            f = root / r.path / "index.html"
+            if not f.is_file():
+                continue
+            jumps = REGION_JUMP.findall(f.read_text(encoding="utf-8"))
+            if not want:
+                if jumps:
+                    problems.append(f"{r.path}: a list of regions where its state has none to list")
+                continue
+            got = _entries(jumps[0], r.path) if len(jumps) == 1 else [f"({len(jumps)} lists)"]
+            if got != want:
+                problems.append(f"{r.path}: regions {got}, expected {want}")
+    return problems
+
+
 def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
     """Each state's winter king-tide calendar lists every month of the
     window, in order, and in each exactly the runs computed for it; a month
@@ -1227,6 +1277,7 @@ def main(
     problems += check_next(root, cat)
     problems += check_hubs(root, cat)
     problems += check_places(root, cat)
+    problems += check_links(root, cat)
     problems += check_share_files(root)
     for p in problems[:50]:
         print(p, file=sys.stderr)

@@ -44,6 +44,18 @@
 {% if king_calendar %}
 <p><a href="/{{ king_calendar }}">{{ state.name }} king tides by month, November 2026 to February 2027</a>: each place's highest predicted tides of the winter.</p>
 {% endif %}
+{#- The other states along this coast, as the home page groups them
+    (docs/DECISIONS.md 0040, 0043). -#}
+{% for name, sts in coast %}
+<section class="coast-states" aria-labelledby="coast-{{ loop.index0 }}">
+  <h2 id="coast-{{ loop.index0 }}">{{ name }}</h2>
+  <ul class="states">
+  {% for s in sts %}
+    <li>{% if s.code == state.code %}<span aria-current="page">{{ s.name }}</span>{% else %}<a href="/{{ s.path }}">{{ s.name }}</a>{% endif %} <span class="count">{{ s.count }} station{{ "s" if s.count != 1 }}</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endfor %}
 {% endblock %}
 {% block scripts %}
 {% if finding %}

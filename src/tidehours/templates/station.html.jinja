@@ -121,6 +121,18 @@
   </ul>
 </section>
 {% endif %}
+{#- More of the station's region, past Nearby (docs/DECISIONS.md 0043): off
+    until copy/more_places.json, its heading, is approved and committed. -#}
+{% if more %}
+<section aria-labelledby="more">
+  <h2 id="more">{{ more_heading }}</h2>
+  <ul class="near">
+  {% for s, km in more %}
+    <li><a href="/stations/{{ s.id }}/">{{ s.display_name }}</a> <span class="dist">{{ "%.0f"|format(km * 0.621371) if km * 0.621371 >= 1 else "under 1" }} mi</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
 
 <section class="upsell" aria-labelledby="week">
   <h2 id="week">The rest of the week</h2>

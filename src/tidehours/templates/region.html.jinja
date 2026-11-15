@@ -33,6 +33,12 @@
   </ul>
 </section>
 {% endif %}
+{#- Every region of the state, in its state page's order and with its
+    jump list's words (docs/DECISIONS.md 0039, 0043). -#}
+{% if siblings %}
+<details class="regions-jump"><summary id="jump">Jump to a region, north to south ({{ siblings|length }})</summary>
+<nav aria-labelledby="jump"><ul>{% for r in siblings %}<li>{% if r.slug == region.slug %}<span aria-current="page">{{ r.name }}</span>{% else %}<a href="/{{ r.path }}">{{ r.name }}</a>{% endif %}</li>{% endfor %}</ul></nav></details>
+{% endif %}
 {% endblock %}
 {% block scripts %}
 {% if hub_date %}

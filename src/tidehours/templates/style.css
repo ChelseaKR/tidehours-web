@@ -268,6 +268,11 @@ ul.stations a, ul.near a, .find-results a { overflow-wrap: anywhere; }
 .regions-jump ul { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0.3rem 0 0.4rem; padding: 0; }
 .regions-jump a { display: inline-block; padding: 0.3rem 0.65rem; min-height: 24px; border: 1px solid var(--panel-line); border-radius: 999px; background: var(--panel); text-decoration: none; font-size: 0.875rem; }
 .regions-jump a:hover { text-decoration: underline; }
+/* Region page: the same list, with this region unlinked; state page: the
+   states along its coast, this one unlinked (0043). */
+.regions-jump span[aria-current] { display: inline-block; padding: 0.3rem 0.65rem; border: 1px solid transparent; font-size: 0.875rem; font-weight: 600; }
+main[data-region] .regions-jump { margin-top: 1.4rem; }
+.coast-states { margin-top: 1.4rem; }
 section[aria-labelledby^="r-"] h2 .count { font-family: var(--sans); font-weight: 400; margin-inline-start: 0.35rem; }
 /* Region page: each place with the day's highs and lows (build time). */
 main[data-region] ul.stations { grid-template-columns: 1fr; }
@@ -331,6 +336,7 @@ button { font: inherit; }
      on screen (they ran to four extra pages for San Francisco). */
   .answer, .day, .chart, table.events { break-inside: avoid; }
   section[aria-labelledby="near"], section[aria-labelledby="derived"], .find { display: none; }
+  section[aria-labelledby="more"], main[data-region] .regions-jump, .coast-states { display: none; }
   .site-footer { background: none; color: var(--fg); }
   .site-footer a { color: var(--fg); }
 }

@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Six more station pages lead their title, H1 and questions with the
+  name people search for: Crystal River (Kings Bay, FL), Piankatank
+  River (Dixie, VA), Tybee Island (Tybee Light, GA), Folly Beach (Folly
+  River Bridge, Folly Island, SC), and OCMD on the Ocean City Inlet and
+  Isle of Wight Bay pages, added to `src/tidehours/copy/place_names.json`
+  with the Search Console query and what ties each name to its station
+  (DECISIONS 0032).
 - The tide gifts page lists the "Where They Meet" map of the Potomac and
   the Shenandoah at Harpers Ferry, a river year print of the 2026 water
   year, after the Wichita map (DECISIONS 0041).

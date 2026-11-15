@@ -250,7 +250,12 @@ def test_find_box_matches_station_names(built: Path) -> None:
     assert len(bay["links"]) == 12
     assert none["status"] == "No station name matches “zzzz”. Try a nearby town, or pick a state below."
     assert none["links"] == []
-    assert ocmd["links"] == [["/stations/8570280/", "Ocean City (Fishing Pier), MD"]]
+    # The three Ocean City pages that carry "OCMD" (copy/place_names.json, DECISIONS 0032).
+    assert ocmd["links"] == [
+        ["/stations/8570280/", "Ocean City (Fishing Pier), MD"],
+        ["/stations/8570282/", "Ocean City (Isle of Wight Bay), MD"],
+        ["/stations/8570283/", "Ocean City Inlet, MD"],
+    ]
 
 
 NO_KEY = [["Tab", None, False], ["Enter", None, False]]

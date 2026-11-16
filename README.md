@@ -102,13 +102,17 @@ Done on 2026-10-31: the domain, the AWS member account, hosting and DNS
 9. Other products (DECISIONS 0041): when a tide rings print, a tide
    blanket pattern, a cross-stitch pattern, a moon phase calendar, a
    solstice print, a year-of-daylight print, a sunrise and sunset
-   calendar, a night sky print, a river year print, a made-to-order custom
+   calendar, a night sky print, a northern lights print, a river year
+   print, a sea level print, a sea temperature print, a land print, a
+   typical year print, a made-to-order custom
    print or a multi-town book is live,
    add it to `src/tidehours/copy/gifts.json` in a pull request with its
-   Etsy listing id or ASIN, year (none for a custom print or a river
-   print), title, station or towns, `about` for a custom print,
+   Etsy listing id or ASIN, year (none for a custom print, a typical year
+   print or a print of a record already made: a river, northern lights,
+   sea level, sea temperature or land print), title, station or towns,
+   `about` for a custom print,
    year-of-daylight print, sunrise and sunset calendar, night sky print,
-   river print or pattern (the listing's own description, word for word), and `live`, the date it was marked live; add `until` (YYYY-MM-DD, Pacific) for one that
+   pattern or any print that has no year (the listing's own description, word for word), and `live`, the date it was marked live; add `until` (YYYY-MM-DD, Pacific) for one that
    is delisted on a known day. `/tide-gifts/` then lists it until its year
    is over or its `until` comes. Calendars and posters go in their own lists (7 and 8) and appear
    there too.

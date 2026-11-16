@@ -45,7 +45,8 @@ HEADING = "Tide chart gifts and tide art prints"
 DESCRIPTION = (
     "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, a winter solstice print, "
     "year-of-daylight prints, sunrise and sunset calendars, tide art prints, tide posters, 2027 tide calendars, "
-    "moon phase calendars, night sky prints and river year prints."
+    "moon phase calendars, night sky prints, a northern lights print, river year prints, sea level prints, sea "
+    "temperature prints, land prints and typical year prints."
 )
 INTRO = (
     "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, "
@@ -65,7 +66,12 @@ SECTIONS = [
     "Printable 2027 tide calendars",
     "Moon phase calendars",
     "Night sky prints",
+    "Northern lights print",
     "River year prints",
+    "Sea level prints",
+    "Sea temperature prints",
+    "Land prints",
+    "Typical year prints",
 ]
 # The made-to-order prints of the list: each line's words after the link
 # are the listing's own approved description.
@@ -126,10 +132,81 @@ RIVERS = [
     "Water Year 2026 Print: American River",
     "Water Year 2026 Print: Sacramento River",
     "Water Year 2026 Print: American and Sacramento",
+    "Water Year 2026 Print: Two Rivers at Sacramento",
     "Water Year 2026 Print: American and Sacramento Map",
     "Water Year 2026 Print: Arkansas and Little Arkansas Map",
     "Water Year 2026 Print: Potomac and Shenandoah Map",
 ]
+# The Two Rivers ring, after the two rivers side by side and before the maps.
+TWO_RIVERS = (
+    '<li data-gift="4618068249"><a href="https://www.etsy.com/listing/4618068249" rel="noopener">Water Year 2026 '
+    "Print: Two Rivers at Sacramento</a>. The Sacramento River and the American River through one whole year, drawn "
+    "as a ring with one spoke for each day of the 2026 water year, October 1, 2025 to September 30, 2026.</li>"
+)
+# The prints of 2026-11-15, none of the tide: each section's sentence, then
+# its first line, whose words after the link are the first paragraph of its
+# listing's own description.
+AURORA = (
+    '<h2 id="g-aurora">Northern lights print</h2>\n  <p>A year of geomagnetic storm days, from NOAA Space Weather '
+    "Prediction Center data. It shows space weather, not the tide. A storm day does not mean the aurora was seen "
+    'anywhere in particular. A record of the past, not a forecast. Not a NOAA product.</p>\n  <ul class="printables">'
+    '\n    <li data-gift="4618073834"><a href="https://www.etsy.com/listing/4618073834" rel="noopener">Northern '
+    "Lights Print: Geomagnetic Storm Days Nov 2025 to Oct 2026</a>. A year of geomagnetic storms on one sheet: every "
+    "UTC day from November 1, 2025 to October 31, 2026, drawn as one spoke of a ring, with the storm days that can "
+    "bring the northern lights colored by their NOAA storm level.</li>"
+)
+SEA_LEVEL = (
+    '<h2 id="g-sealevel">Sea level prints</h2>\n  <p>Art from NOAA tide station data. They show monthly mean sea '
+    "level, not the tide. A picture of the record, not a chart for reading values. Not a NOAA product.</p>\n  "
+    '<ul class="printables">\n    <li data-gift="4618070585"><a href="https://www.etsy.com/listing/4618070585" '
+    'rel="noopener">Sea Level Print: New York</a>. The whole record of monthly mean sea level at The Battery, at the '
+    "southern tip of Manhattan in New York Harbor, from January 1856 to December 2025, drawn as one picture: one "
+    "line of ink for each decade, read like a page.</li>"
+)
+SEA_TEMP = (
+    '<h2 id="g-seatemp">Sea temperature prints</h2>\n  <p>Art from NOAA National Data Buoy Center data. They show '
+    "the temperature of the water, not the tide. Each shows what its station recorded in one year; it does not say "
+    'what the water will be on any day to come. Not a NOAA product.</p>\n  <ul class="printables">\n    <li '
+    'data-gift="4618086106"><a href="https://www.etsy.com/listing/4618086106" rel="noopener">2025 Sea Temperature '
+    "Print: Cape May</a>. All of 2025 in the water at Cape May, New Jersey: the mean water temperature of every day "
+    "of the year, drawn as one ring.</li>"
+)
+LAND = (
+    '<h2 id="g-land">Land prints</h2>\n  <p>Art made from U.S. Geological Survey elevation data. They show the '
+    'shape of the land, not the tide. Not a USGS product.</p>\n  <ul class="printables">\n    <li '
+    'data-gift="4618189896"><a href="https://www.etsy.com/listing/4618189896" rel="noopener">In Profile Print: '
+    "Crater Lake</a>. Crater Lake, Oregon, drawn as 80 stacked elevation profiles: the shape of the land, line by "
+    "line.</li>"
+)
+TYPICAL_YEAR = (
+    '<h2 id="g-normals">Typical year prints</h2>\n  <p>A year of normal weather in one U.S. town, made to order '
+    "from NOAA&#39;s 1991–2020 climate normals. They show the weather, not the tide. Not a forecast and not the "
+    'weather of any single year. Not a NOAA product.</p>\n  <ul class="printables">\n    <li '
+    'data-gift="4618178774"><a href="https://www.etsy.com/listing/4618178774" rel="noopener">Your Town&#39;s Typical '
+    "Year</a>. A year of normal weather in your town, drawn as one picture: 365 thin strokes, one for each day from "
+    "January 1 to December 31, each running from that day&#39;s normal low up to its normal high. Under them, a "
+    "second row shows each day&#39;s normal precipitation. Made to order from NOAA&#39;s 1991–2020 climate normals "
+    "for a weather station near your town.</li>"
+)
+# Each new section's lines, in list order: by place.
+SEA_LEVELS = ["Sea Level Print: New York", "Sea Level Print: San Francisco"]
+SEA_TEMPS = [
+    "2025 Sea Temperature Print: Cape May",
+    "2025 Sea Temperature Print: Lewes",
+    "2025 Sea Temperature Print: Myrtle Beach",
+    "2025 Sea Temperature Print: Tybee Island",
+    "2025 Sea Temperature Print: Wrightsville Beach",
+]
+LANDS = [
+    "In Profile Print: Crater Lake",
+    "In Profile Print: Grand Teton",
+    "In Profile Print: Lake Tahoe",
+    "In Profile Print: Mount Hood",
+    "In Profile Print: Mount Rainier",
+    "In Profile Print: Mount Shasta",
+]
+# The entries with no year, which the build of January 1, 2028 still lists.
+NO_YEAR = ("custom", "river", "aurora", "sealevel", "seatemp", "land", "normals")
 # The solstice print's sentence: the wording of its live Etsy listing,
 # adapted only to join its first two sentences of the second paragraph.
 SOLSTICE = (
@@ -180,6 +257,8 @@ BOOK_PRIVACY = (
 )
 # The committed list: each listing id, as marked "LISTED" in the owner's
 # product notes, with its kind, title and the day it was marked. The
+# sixteen of 2026-11-15 after the Harpers Ferry map are of five new kinds
+# and one more river print. The
 # town-bound ones of the afternoon of 2026-11-14 have their stations in
 # NEW_STATIONS. The tide blanket and cross-stitch pattern listings
 # (PAUSED) are paused on Etsy and not listed. The Maine Coast hardcover is
@@ -218,6 +297,22 @@ LIVE = {
     "4617572373": ("river", "Water Year 2026 Print: American and Sacramento Map", "2026-11-14"),
     "4617637616": ("river", "Water Year 2026 Print: Arkansas and Little Arkansas Map", "2026-11-14"),
     "4617656280": ("river", "Water Year 2026 Print: Potomac and Shenandoah Map", "2026-11-15"),
+    "4618073834": ("aurora", "Northern Lights Print: Geomagnetic Storm Days Nov 2025 to Oct 2026", "2026-11-15"),
+    "4618068249": ("river", "Water Year 2026 Print: Two Rivers at Sacramento", "2026-11-15"),
+    "4618070585": ("sealevel", "Sea Level Print: New York", "2026-11-15"),
+    "4618080886": ("sealevel", "Sea Level Print: San Francisco", "2026-11-15"),
+    "4618086106": ("seatemp", "2025 Sea Temperature Print: Cape May", "2026-11-15"),
+    "4618083537": ("seatemp", "2025 Sea Temperature Print: Lewes", "2026-11-15"),
+    "4618088560": ("seatemp", "2025 Sea Temperature Print: Myrtle Beach", "2026-11-15"),
+    "4618088223": ("seatemp", "2025 Sea Temperature Print: Tybee Island", "2026-11-15"),
+    "4618085735": ("seatemp", "2025 Sea Temperature Print: Wrightsville Beach", "2026-11-15"),
+    "4618189896": ("land", "In Profile Print: Crater Lake", "2026-11-15"),
+    "4618192599": ("land", "In Profile Print: Grand Teton", "2026-11-15"),
+    "4618179625": ("land", "In Profile Print: Lake Tahoe", "2026-11-15"),
+    "4618188565": ("land", "In Profile Print: Mount Hood", "2026-11-15"),
+    "4618192886": ("land", "In Profile Print: Mount Rainier", "2026-11-15"),
+    "4618197440": ("land", "In Profile Print: Mount Shasta", "2026-11-15"),
+    "4618178774": ("normals", "Your Town's Typical Year", "2026-11-15"),
 }
 NEW_STATIONS = {
     "4617388180": "8419317", "4617381055": "8536110", "4617393736": "8661070", "4617387277": "8670870",
@@ -252,6 +347,18 @@ TEST_GIFTS: list[dict[str, Any]] = [
      "about": "The night sky of 2027 over Hagatna, Guam, on one sheet.", "live": "2026-11-14"},
     {"kind": "river", "listing": "1234567881", "title": "Water Year 2026 Print: Talofofo River",
      "about": "A whole year of the Talofofo River, drawn as one river running down the page.", "live": "2026-11-14"},
+    {"kind": "aurora", "listing": "1234567882",
+     "title": "Northern Lights Print: Geomagnetic Storm Days Nov 2025 to Oct 2026",
+     "about": "A year of geomagnetic storms on one sheet, drawn as one spoke of a ring for each day.",
+     "live": "2026-11-15"},
+    {"kind": "sealevel", "listing": "1234567883", "title": "Sea Level Print: Apra Harbor",
+     "about": "The whole record of monthly mean sea level at Apra Harbor, drawn as one picture.", "live": "2026-11-15"},
+    {"kind": "seatemp", "listing": "1234567884", "title": "2025 Sea Temperature Print: Apra Harbor",
+     "about": "All of 2025 in the water at Apra Harbor, Guam, drawn as one ring.", "live": "2026-11-15"},
+    {"kind": "land", "listing": "1234567885", "title": "In Profile Print: Mount Lamlam",
+     "about": "Mount Lamlam, Guam, drawn as 80 stacked elevation profiles.", "live": "2026-11-15"},
+    {"kind": "normals", "listing": "1234567886", "title": "Your Town's Typical Year",
+     "about": "A year of normal weather in your town, drawn as one picture.", "live": "2026-11-15"},
 ]  # fmt: skip
 ETSY_OR_AMAZON = re.compile(r'<a\b[^>]*href="(https?://[^"]*(?:etsy|amazon)\.[^"]*)"', re.I)
 H2 = re.compile(r"<h2 id=\"g-[^\"]*\">(.*?)</h2>")
@@ -356,9 +463,14 @@ def test_the_committed_list_is_exactly_the_listings_marked_live() -> None:
     listed = gifts.load(COMMITTED)
     assert {g.ref: (g.kind, g.title, g.live.isoformat()) for g in listed} == LIVE
     by_ref = {g.ref: g for g in listed}
-    assert all(g.year == 2027 for g in listed if g.kind not in ("daylight", "custom", "river"))
+    assert all(g.year == 2027 for g in listed if g.kind not in ("daylight", *NO_YEAR))
     # A river print's water year is over before it is sold: no year ends it.
-    assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "river")
+    # Nor does one end a print of a record already made, or the made-to-order
+    # typical year print.
+    assert all(g.year is None and g.station is None and g.about for g in listed if g.kind in NO_YEAR)
+    assert {kind: sum(g.kind == kind for g in listed) for kind in NO_YEAR} == {
+        "custom": 2, "river": 13, "aurora": 1, "sealevel": 2, "seatemp": 5, "land": 6, "normals": 1,
+    }  # fmt: skip
     assert all(g.station is None and g.about for g in listed if g.kind in ("sunrise", "sky"))
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "custom")
     assert by_ref["4617246732"].station == "8413320" and by_ref["4617240419"].station == "9413450"
@@ -455,6 +567,24 @@ BAD = {
     "a river print with a station": [{**TEST_GIFTS[10], "station": GU}],
     "a river print's other title": [{**TEST_GIFTS[10], "title": "2026 River Print: Talofofo River"}],
     "a river print not marked live": [without(TEST_GIFTS[10], "live")],
+    "a northern lights print with a year": [{**TEST_GIFTS[11], "year": 2026}],
+    "a northern lights print without about": [without(TEST_GIFTS[11], "about")],
+    "a northern lights print's other title": [{**TEST_GIFTS[11], "title": "Northern Lights Print: Aurora Tonight"}],
+    "a northern lights print not marked live": [without(TEST_GIFTS[11], "live")],
+    "a sea level print with a station": [{**TEST_GIFTS[12], "station": GU}],
+    "a sea level print without about": [without(TEST_GIFTS[12], "about")],
+    "a sea level print's other title": [{**TEST_GIFTS[12], "title": "Sea Rise Print: Apra Harbor"}],
+    "a sea temperature print with a year": [{**TEST_GIFTS[13], "year": 2025}],
+    "a sea temperature print without about": [without(TEST_GIFTS[13], "about")],
+    "a sea temperature print's other title": [{**TEST_GIFTS[13], "title": "Sea Temperature Print: Apra Harbor"}],
+    "a sea temperature print with a claim": [{**TEST_GIFTS[13], "about": "The best year in the water at Apra Harbor."}],
+    "a land print with a station": [{**TEST_GIFTS[14], "station": GU}],
+    "a land print without about": [without(TEST_GIFTS[14], "about")],
+    "a land print's other title": [{**TEST_GIFTS[14], "title": "Ridgeline Print: Mount Lamlam"}],
+    "a land print not marked live": [without(TEST_GIFTS[14], "live")],
+    "a typical year print with a year": [{**TEST_GIFTS[15], "year": 2027}],
+    "a typical year print without about": [without(TEST_GIFTS[15], "about")],
+    "a typical year print with a price": [{**TEST_GIFTS[15], "title": "Your Town's Typical Year $16"}],
 }
 
 
@@ -480,15 +610,22 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     assert H2.findall(main) == SECTIONS
     for line in (
         CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, ANY_CITY, OGUNQUIT_RINGS,
-        SUNRISE, SKY, RIVER,
+        SUNRISE, SKY, RIVER, TWO_RIVERS, AURORA, SEA_LEVEL, SEA_TEMP, LAND, TYPICAL_YEAR,
     ):  # fmt: skip
         assert line in main
+    # Each kind's lines in list order: the rivers', then the new kinds' by place.
+    titles = re.findall(r'rel="noopener">([^<]*)</a>', main)
+    for prefix, want_titles in (
+        ("Water Year", RIVERS), ("Sea Level Print", SEA_LEVELS), ("2025 Sea Temperature", SEA_TEMPS),
+        ("In Profile Print", LANDS),
+    ):  # fmt: skip
+        assert [t for t in titles if t.startswith(prefix)] == want_titles
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 8 + 33 listings and the shop.
+    # once each: 40 + 8 + 49 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 33 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 49 + 1
     # Within a kind, by town.
     section = main[main.find('id="g-calendars"') : main.find('id="g-moon"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
@@ -585,7 +722,8 @@ def test_a_one_town_book_and_the_guam_list(guam: Path, lists: dict[str, Path], c
     assert H2.findall(text) == [
         "Custom tide chart prints", "Winter solstice print", "Year-of-daylight prints", "Sunrise and sunset calendars",
         "Tide rings art prints", "Tide blanket patterns", "Cross-stitch patterns", "Printed tide tables",
-        "Moon phase calendars", "Night sky prints", "River year prints",
+        "Moon phase calendars", "Night sky prints", "Northern lights print", "River year prints", "Sea level prints",
+        "Sea temperature prints", "Land prints", "Typical year prints",
     ]  # fmt: skip
     assert (
         '<li data-gift="1234567898"><a href="https://www.etsy.com/listing/1234567898" rel="noopener">2027 Year of '
@@ -614,33 +752,21 @@ def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, ch
     """Every dated entry of the committed lists is of 2026 or 2027, so the
     build of January 1, 2028 lists only the entries with no year: the
     custom prints (the shop's own sentence and the two made-to-order
-    listings) and the twelve river prints. The made-to-order
-    year-of-daylight print, the sunrise and sunset calendars and the night
-    sky prints are of 2027 and leave."""
+    listings), the thirteen river prints, the northern lights print, the
+    sea level, sea temperature and land prints and the typical year print.
+    The made-to-order year-of-daylight print, the sunrise and sunset
+    calendars and the night sky prints are of 2027 and leave."""
     root = build(tmp_path / "on", "--print-shop-url", SHOP, "--gifts", str(COMMITTED),
                  now="2028-01-01T11:20:00Z", states="ME")  # fmt: skip
     text = read(root, PAGE)
-    assert H2.findall(text) == ["Custom tide chart prints", "River year prints"]
+    assert H2.findall(text) == [
+        "Custom tide chart prints", "Northern lights print", "River year prints", "Sea level prints",
+        "Sea temperature prints", "Land prints", "Typical year prints",
+    ]  # fmt: skip
     assert re.findall(r'rel="noopener">(Water Year[^<]*)</a>', text) == RIVERS
-    assert sorted(ETSY_OR_AMAZON.findall(text)) == sorted(
-        [
-            SHOP,
-            "https://www.etsy.com/listing/4617340915",
-            "https://www.etsy.com/listing/4617341518",
-            "https://www.etsy.com/listing/4617481843",
-            "https://www.etsy.com/listing/4617492188",
-            "https://www.etsy.com/listing/4617493412",
-            "https://www.etsy.com/listing/4617545168",
-            "https://www.etsy.com/listing/4617536713",
-            "https://www.etsy.com/listing/4617547222",
-            "https://www.etsy.com/listing/4617564366",
-            "https://www.etsy.com/listing/4617556217",
-            "https://www.etsy.com/listing/4617567212",
-            "https://www.etsy.com/listing/4617572373",
-            "https://www.etsy.com/listing/4617637616",
-            "https://www.etsy.com/listing/4617656280",
-        ]
-    )
+    no_year = [f"https://www.etsy.com/listing/{ref}" for ref, (kind, _, _) in LIVE.items() if kind in NO_YEAR]
+    assert len(no_year) == 2 + 13 + 1 + 2 + 5 + 6 + 1
+    assert sorted(ETSY_OR_AMAZON.findall(text)) == sorted([SHOP, *no_year])
     assert "amazon" not in "".join(f.read_text(encoding="utf-8").lower() for f in pages(root))
     assert problems(check_site, root, shop=SHOP) == []
     off = build(tmp_path / "off", "--gifts", str(COMMITTED), now="2028-01-01T11:20:00Z", states="ME")
@@ -811,6 +937,24 @@ SABOTAGE: dict[str, Callable[[Path], None]] = {
     "the river section's sentence": edit(PAGE, " Not a USGS product.", ""),
     "a river print's words dropped": edit(
         PAGE, ". A whole year of the Talofofo River, drawn as one river running down the page.", ""
+    ),
+    "the northern lights section's sentence": edit(PAGE, " A record of the past, not a forecast.", ""),
+    "a northern lights print's listing swapped for one not marked live": edit(
+        PAGE, "https://www.etsy.com/listing/1234567882", NOT_LIVE
+    ),
+    "the sea level section's sentence": edit(PAGE, "Art from NOAA tide station data. ", ""),
+    "a sea level print's words changed": edit(PAGE, "at Apra Harbor, drawn as one picture.", "at Apra Harbor."),
+    "the sea temperature section's sentence": edit(
+        PAGE, " it does not say what the water will be on any day to come.", ""
+    ),
+    "a sea temperature print's words dropped": edit(
+        PAGE, ". All of 2025 in the water at Apra Harbor, Guam, drawn as one ring.", ""
+    ),
+    "the land section's sentence": edit(PAGE, "Art made from U.S. Geological Survey elevation data. ", ""),
+    "a land print's title changed": edit(PAGE, "In Profile Print: Mount Lamlam", "In Profile Print: Lamlam"),
+    "the typical year section's sentence": edit(PAGE, " Not a forecast and not the weather of any single year.", ""),
+    "a typical year print's listing swapped for one not marked live": edit(
+        PAGE, "https://www.etsy.com/listing/1234567886", NOT_LIVE
     ),
     "no page": remove_page,
     "no footer link": edit("index.html", FOOTER, ""),

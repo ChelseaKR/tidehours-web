@@ -2614,6 +2614,80 @@ new kind, section or sentence. The page now lists twelve river prints,
 and the build of January 1, 2028 lists the custom prints and those
 twelve.
 
+Update, 2026-11-15 (evening): sixteen more digital listings went live
+that day and are linked at the owner's request, each id checked against
+the line "LISTED 2026-11-15 as Etsy listing ID" in its product notes. The
+listings were not fetched. One is a thirteenth river print, "Water Year
+2026 Print: Two Rivers at Sacramento" (4618068249; "Two Rivers at
+Sacramento" is the print's approved title), after the American and
+Sacramento side by side and before the three maps. The other fifteen are
+of five new kinds in `copy/gifts.json`, none bound to a town and none on a
+station page. None has a `year`: like a river print, each is of a record
+already made or is made to order, so a year would take a live listing off
+the page, and only an `until` ends it.
+
+- **`aurora`**, a year of geomagnetic storm days: a title "Northern
+  Lights Print: Geomagnetic Storm Days MON YEAR to MON YEAR" and `about`.
+  One listing (4618073834), of November 2025 to October 2026, under
+  "Northern lights print", after the night sky prints, with the sentence
+  "A year of geomagnetic storm days, from NOAA Space Weather Prediction
+  Center data. It shows space weather, not the tide. A storm day does not
+  mean the aurora was seen anywhere in particular. A record of the past,
+  not a forecast. Not a NOAA product."
+- **`sealevel`**, a tide station's whole record of monthly mean sea
+  level: a title "Sea Level Print: Place" and `about`. New York
+  (4618070585) and San Francisco (4618080886), under "Sea level prints",
+  after the river prints, with the sentence "Art from NOAA tide station
+  data. They show monthly mean sea level, not the tide. A picture of the
+  record, not a chart for reading values. Not a NOAA product."
+- **`seatemp`**, a year of daily water temperature at one station: a
+  title "YEAR Sea Temperature Print: Place" and `about`. Cape May
+  (4618086106), Lewes (4618083537), Myrtle Beach (4618088560), Tybee
+  Island (4618088223) and Wrightsville Beach (4618085735), each of 2025,
+  under "Sea temperature prints", with the sentence "Art from NOAA
+  National Data Buoy Center data. They show the temperature of the water,
+  not the tide. Each shows what its station recorded in one year; it does
+  not say what the water will be on any day to come. Not a NOAA product."
+- **`land`**, the land around one place as stacked elevation profiles: a
+  title "In Profile Print: Place" and `about` ("In Profile" is the
+  owner's name for the set, and "Land Prints" its Etsy section). Crater
+  Lake (4618189896), Grand Teton (4618192599), Lake Tahoe (4618179625),
+  Mount Hood (4618188565), Mount Rainier (4618192886) and Mount Shasta
+  (4618197440), under "Land prints", with the sentence "Art made from U.S.
+  Geological Survey elevation data. They show the shape of the land, not
+  the tide. Not a USGS product."
+- **`normals`**, the made-to-order "Your Town's Typical Year"
+  (4618178774): a title in the listing's own words, as a custom print's,
+  and `about`, under a last section, "Typical year prints", with the
+  sentence "A year of normal weather in one U.S. town, made to order from
+  NOAA's 1991–2020 climate normals. They show the weather, not the tide.
+  Not a forecast and not the weather of any single year. Not a NOAA
+  product." It is not put under "Custom tide chart prints", though that
+  is its Etsy section: it is not a tide chart.
+
+The sea temperature and sea level prints name towns the site has station
+pages for, but they are not bound to them: a line that links a town's
+name to its tide page says the gift is of that page's tides, and these
+are of another record. Within each new section the lines are by place,
+A to Z. Each entry's `about` is the first paragraph of its listing's own
+description, word for word (for the Two Rivers print, its first
+sentence). The section sentences are made of the listings' own words,
+shortened: their source notes ("Art from NOAA tide station data", "Art
+from NOAA National Data Buoy Center data", "Not a NOAA product", "Not a
+USGS product") and their cautions ("A storm day does not mean the aurora
+was seen anywhere in particular", "A record of the past, not a forecast",
+"A picture of the record, not a chart for reading values", "it does not
+say what the water will be on any day to come", "not a forecast and not
+the weather of any single year"). What joins them, with "not the tide" as
+each of this page's other sections says of its own kind, and the five
+headings and the link titles are this change's, put to the owner in its
+pull request. No price, image or claim, as before. The meta description's list of kinds gains "a
+northern lights print", "sea level prints", "sea temperature prints",
+"land prints" and "typical year prints". The page's title, intro and
+footer link are unchanged. The page now lists 49 entries of
+`copy/gifts.json`, and the build of January 1, 2028 lists the custom
+prints, the thirteen river prints and the fifteen new prints.
+
 ## 0042: A share image and home-screen icons (2026-11-14)
 
 A link to tidehours.com shared in a message or a post showed no picture,

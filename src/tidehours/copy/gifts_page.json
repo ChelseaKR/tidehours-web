@@ -70,10 +70,35 @@
       "short": "night sky prints",
       "text": "The {year} night sky over one city. They show the sky, not the tide. Not a USNO or NASA product."
     },
+    "aurora": {
+      "heading": "Northern lights print",
+      "short": "a northern lights print",
+      "text": "A year of geomagnetic storm days, from NOAA Space Weather Prediction Center data. It shows space weather, not the tide. A storm day does not mean the aurora was seen anywhere in particular. A record of the past, not a forecast. Not a NOAA product."
+    },
     "river": {
       "heading": "River year prints",
       "short": "river year prints",
       "text": "Art from USGS daily streamflow data. They show a river, not the tide. Not a USGS product."
+    },
+    "sealevel": {
+      "heading": "Sea level prints",
+      "short": "sea level prints",
+      "text": "Art from NOAA tide station data. They show monthly mean sea level, not the tide. A picture of the record, not a chart for reading values. Not a NOAA product."
+    },
+    "seatemp": {
+      "heading": "Sea temperature prints",
+      "short": "sea temperature prints",
+      "text": "Art from NOAA National Data Buoy Center data. They show the temperature of the water, not the tide. Each shows what its station recorded in one year; it does not say what the water will be on any day to come. Not a NOAA product."
+    },
+    "land": {
+      "heading": "Land prints",
+      "short": "land prints",
+      "text": "Art made from U.S. Geological Survey elevation data. They show the shape of the land, not the tide. Not a USGS product."
+    },
+    "normals": {
+      "heading": "Typical year prints",
+      "short": "typical year prints",
+      "text": "A year of normal weather in one U.S. town, made to order from NOAA's 1991–2020 climate normals. They show the weather, not the tide. Not a forecast and not the weather of any single year. Not a NOAA product."
     }
   },
   "privacyShop": "{places} {verb} {target}. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies.",

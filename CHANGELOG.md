@@ -2,6 +2,15 @@
 
 ## 0.1.0 (unreleased)
 
+- Sixteen more listings of 2026-11-15 are linked. `/tide-gifts/` has five
+  new sections, each line ending with its listing's own description:
+  "Northern lights print" (geomagnetic storm days, November 2025 to
+  October 2026), "Sea level prints" (New York and San Francisco), "Sea
+  temperature prints" (Cape May, Lewes, Myrtle Beach, Tybee Island and
+  Wrightsville Beach, 2025), "Land prints" (the six "In Profile" prints)
+  and "Typical year prints" (the made-to-order "Your Town's Typical
+  Year"), and a thirteenth river year print, "Two Rivers at Sacramento".
+  None has a year, so each stays until it is delisted (DECISIONS 0041).
 - Region pages' meta description names what each place's page has:
   "Today's high and low tide times and a tide chart for each of {n} NOAA
   tide stations in {place}.", or "for 1 NOAA tide station" where a region

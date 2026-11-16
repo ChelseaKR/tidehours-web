@@ -9,12 +9,16 @@ the winter solstice print, year-of-daylight prints and sunrise and sunset
 calendars (no town), tide rings art prints, tide blanket patterns and
 cross-stitch patterns (one town each), moon phase calendars, night sky
 prints and river year prints (no town; a river print, of a water year
-already over, has no year) and printed tide tables on Amazon (one or more
-towns). Every entry there carries `live`, the date its listing was marked
-live; an entry without one stops the build, so a draft cannot be linked. A
-custom print, year-of-daylight print, sunrise and sunset calendar, night
-sky print, river print or cross-stitch pattern also carries `about`, the
-listing's own approved words for it, shown after its link. The one-day custom tide chart print is the print shop's own
+already over, has no year), the prints of a record already made, which
+have no town and no year either (the northern lights print, sea level
+prints, sea temperature prints and land prints), the made-to-order
+typical year print (no town, no year) and printed tide tables on Amazon
+(one or more towns). Every entry there carries `live`, the date its
+listing was marked live; an entry without one stops the build, so a draft
+cannot be linked. Every kind but the tide rings, the blanket patterns, the
+moon phase calendars, the solstice print and the books also carries
+`about`, the listing's own approved words for it, shown after its link.
+The one-day custom tide chart print is the print shop's own
 (0029): its sentence shows only when the shop address is set, and links to
 the shop.
 
@@ -59,7 +63,7 @@ COPY = Path(__file__).parent / "copy" / "gifts_page.json"
 # The order of the sections on the page.
 ORDER = (
     "custom", "daylight", "sun", "sunrise", "rings", "posters", "calendars", "blanket", "stitch", "book", "moon",
-    "sky", "river",
+    "sky", "aurora", "river", "sealevel", "seatemp", "land", "normals",
 )  # fmt: skip
 # The zone an entry's `until` date is read in: the shop's own.
 UNTIL_ZONE = ZoneInfo("America/Los_Angeles")
@@ -83,6 +87,19 @@ TITLES = {
     # A made-to-order print has no year: its title is the listing's own name
     # for it, in title case.
     "custom": re.compile(r"[A-Z][A-Za-z' ]{2,48}[a-z]"),
+    # Prints of a record already made, which no year ends, as a river print:
+    # twelve months of geomagnetic storm days, a tide station's whole record
+    # of monthly mean sea level, a year of water temperature at one station
+    # (its year is in the title only), and the land around one place.
+    "aurora": re.compile(
+        r"Northern Lights Print: Geomagnetic Storm Days [A-Z][a-z]{2} 20[0-9]{2} to [A-Z][a-z]{2} 20[0-9]{2}"
+    ),
+    "sealevel": re.compile(rf"Sea Level Print: {_PLACE}"),
+    "seatemp": re.compile(rf"(20[0-9]{{2}}) Sea Temperature Print: {_PLACE}"),
+    "land": re.compile(rf"In Profile Print: {_PLACE}"),
+    # A made-to-order year of climate normals: no year, and its title is the
+    # listing's own name for it, as a custom print's.
+    "normals": re.compile(r"[A-Z][A-Za-z' ]{2,48}[a-z]"),
 }
 KEYS = {
     "rings": {"kind", "listing", "year", "title", "station", "live"},
@@ -96,18 +113,40 @@ KEYS = {
     "sky": {"kind", "listing", "year", "title", "about", "live"},
     "river": {"kind", "listing", "title", "about", "live"},
     "custom": {"kind", "listing", "title", "about", "live"},
+    "aurora": {"kind", "listing", "title", "about", "live"},
+    "sealevel": {"kind", "listing", "title", "about", "live"},
+    "seatemp": {"kind", "listing", "title", "about", "live"},
+    "land": {"kind", "listing", "title", "about", "live"},
+    "normals": {"kind", "listing", "title", "about", "live"},
 }
 # The kinds bound to one town's station, and the kinds whose line carries
 # `about`: one or two sentences of the listing's own approved description.
 TOWN_KINDS = ("rings", "blanket", "stitch")
 # The kinds with no town, one line each, in list order.
-NO_TOWN = ("moon", "daylight", "sun", "sunrise", "sky", "river", "custom")
+NO_TOWN = (
+    "moon", "daylight", "sun", "sunrise", "sky", "river", "custom", "aurora", "sealevel", "seatemp", "land", "normals",
+)  # fmt: skip
 ABOUT = re.compile(r"[A-Z][^<>{}$%\u2605]{19,398}[.]")
 # Every kind may carry `until`: the first day, in UNTIL_ZONE, on which the
 # entry no longer shows. A made-to-order seasonal print must carry one.
 OPTIONAL = {"until"}
 FORMATS = ("hardcover", "paperback")
 TOWN_NAME = re.compile(_PLACE)
+# The kinds that are art prints: with one on the page, its title says so.
+ART = (
+    "custom",
+    "daylight",
+    "sun",
+    "rings",
+    "posters",
+    "sky",
+    "river",
+    "aurora",
+    "sealevel",
+    "seatemp",
+    "land",
+    "normals",
+)
 LIVE = re.compile(r"20[0-9]{2}-[0-9]{2}-[0-9]{2}")
 COUNTS = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
 
@@ -118,14 +157,14 @@ class Gift:
 
     kind: str
     ref: str  # the Etsy listing id, or the book's ASIN
-    year: int | None  # None for a made-to-order print or a river print, which no year ends
+    year: int | None  # None for a made-to-order print or a print of a record already made, which no year ends
     title: str
     live: dt.date  # the day its listing was marked live
     station: str | None = None  # rings and blanket: the town's station
     towns: tuple[tuple[str, str], ...] = ()  # book: (name, station id), in the book's order
     format: str | None = None  # book: hardcover or paperback
     until: dt.date | None = None  # the first day (UNTIL_ZONE) it no longer shows
-    about: str = ""  # custom, sun, sunrise, sky, river and stitch: the listing's own words for it
+    about: str = ""  # every kind with `about` in KEYS: the listing's own words for it
 
     @property
     def url(self) -> str:
@@ -415,7 +454,7 @@ def block(
     text = _copy()
     years: set[int] = {c.year for c in calendar_of.values()}
     kinds = [_one_year(set(years), text["sections"][s.key]["short"]) for s in secs]
-    art = any(s.key in ("custom", "daylight", "sun", "rings", "posters", "sky", "river") for s in secs)
+    art = any(s.key in ART for s in secs)
     title = text["titleArt" if art else "title"]
     return {
         "rel": REL,

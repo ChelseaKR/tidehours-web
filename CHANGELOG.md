@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Eleven more listings are linked on `/tide-gifts/`, each line ending
+  with its listing's own first paragraph: four made-to-order occasion
+  prints under "Custom tide chart prints" (new home, new grandparents,
+  beach vacation, adoption day), four more "In Profile" land prints
+  (Badwater Basin, Denali, Mount Whitney, Yosemite Valley) and a new
+  section, "Above and Below prints" (Crater Lake, Lake Tahoe, Monterey
+  Bay) (DECISIONS 0041).
 - Sixteen more listings of 2026-11-15 are linked. `/tide-gifts/` has five
   new sections, each line ending with its listing's own description:
   "Northern lights print" (geomagnetic storm days, November 2025 to

@@ -95,6 +95,11 @@
       "short": "land prints",
       "text": "Art made from U.S. Geological Survey elevation data. They show the shape of the land, not the tide. Not a USGS product."
     },
+    "depth": {
+      "heading": "Above and Below prints",
+      "short": "Above and Below prints",
+      "text": "Art made from U.S. Geological Survey and NOAA elevation and survey data. They show the shape of the land above the water and below it, not the tide. Not a USGS or NOAA product."
+    },
     "normals": {
       "heading": "Typical year prints",
       "short": "typical year prints",

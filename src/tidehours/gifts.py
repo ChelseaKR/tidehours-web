@@ -11,7 +11,8 @@ cross-stitch patterns (one town each), moon phase calendars, night sky
 prints and river year prints (no town; a river print, of a water year
 already over, has no year), the prints of a record already made, which
 have no town and no year either (the northern lights print, sea level
-prints, sea temperature prints and land prints), the made-to-order
+prints, sea temperature prints, land prints and Above and Below prints,
+of the land and the lake floor or seafloor), the made-to-order
 typical year print (no town, no year) and printed tide tables on Amazon
 (one or more towns). Every entry there carries `live`, the date its
 listing was marked live; an entry without one stops the build, so a draft
@@ -63,7 +64,7 @@ COPY = Path(__file__).parent / "copy" / "gifts_page.json"
 # The order of the sections on the page.
 ORDER = (
     "custom", "daylight", "sun", "sunrise", "rings", "posters", "calendars", "blanket", "stitch", "book", "moon",
-    "sky", "aurora", "river", "sealevel", "seatemp", "land", "normals",
+    "sky", "aurora", "river", "sealevel", "seatemp", "land", "depth", "normals",
 )  # fmt: skip
 # The zone an entry's `until` date is read in: the shop's own.
 UNTIL_ZONE = ZoneInfo("America/Los_Angeles")
@@ -90,13 +91,15 @@ TITLES = {
     # Prints of a record already made, which no year ends, as a river print:
     # twelve months of geomagnetic storm days, a tide station's whole record
     # of monthly mean sea level, a year of water temperature at one station
-    # (its year is in the title only), and the land around one place.
+    # (its year is in the title only), the land around one place, and the
+    # land with the floor of its lake or bay ("Above and Below").
     "aurora": re.compile(
         r"Northern Lights Print: Geomagnetic Storm Days [A-Z][a-z]{2} 20[0-9]{2} to [A-Z][a-z]{2} 20[0-9]{2}"
     ),
     "sealevel": re.compile(rf"Sea Level Print: {_PLACE}"),
     "seatemp": re.compile(rf"(20[0-9]{{2}}) Sea Temperature Print: {_PLACE}"),
     "land": re.compile(rf"In Profile Print: {_PLACE}"),
+    "depth": re.compile(rf"Above and Below Print: {_PLACE}"),
     # A made-to-order year of climate normals: no year, and its title is the
     # listing's own name for it, as a custom print's.
     "normals": re.compile(r"[A-Z][A-Za-z' ]{2,48}[a-z]"),
@@ -117,6 +120,7 @@ KEYS = {
     "sealevel": {"kind", "listing", "title", "about", "live"},
     "seatemp": {"kind", "listing", "title", "about", "live"},
     "land": {"kind", "listing", "title", "about", "live"},
+    "depth": {"kind", "listing", "title", "about", "live"},
     "normals": {"kind", "listing", "title", "about", "live"},
 }
 # The kinds bound to one town's station, and the kinds whose line carries
@@ -124,9 +128,14 @@ KEYS = {
 TOWN_KINDS = ("rings", "blanket", "stitch")
 # The kinds with no town, one line each, in list order.
 NO_TOWN = (
-    "moon", "daylight", "sun", "sunrise", "sky", "river", "custom", "aurora", "sealevel", "seatemp", "land", "normals",
+    "moon", "daylight", "sun", "sunrise", "sky", "river", "custom", "aurora", "sealevel", "seatemp", "land", "depth",
+    "normals",
 )  # fmt: skip
 ABOUT = re.compile(r"[A-Z][^<>{}$%\u2605]{19,398}[.]")
+# Phrases in a listing's own words that hold a claim word but name a thing,
+# not a claim: "first home" is the home, not the print. Only these are
+# taken out before `about` is checked for a claim.
+NOT_CLAIMS = re.compile(r"\bfirst home\b")
 # Every kind may carry `until`: the first day, in UNTIL_ZONE, on which the
 # entry no longer shows. A made-to-order seasonal print must carry one.
 OPTIONAL = {"until"}
@@ -145,6 +154,7 @@ ART = (
     "sealevel",
     "seatemp",
     "land",
+    "depth",
     "normals",
 )
 LIVE = re.compile(r"20[0-9]{2}-[0-9]{2}-[0-9]{2}")
@@ -195,7 +205,9 @@ def _gift(n: int, entry: Any) -> Gift:
     if named is None or not dated or CLAIMS.search(title):
         raise ValueError(f"{where}: {title!r} is not a {kind} title for {year}")
     about = entry.get("about", "")
-    if "about" in KEYS[kind] and (not isinstance(about, str) or ABOUT.fullmatch(about) is None or CLAIMS.search(about)):
+    if "about" in KEYS[kind] and (
+        not isinstance(about, str) or ABOUT.fullmatch(about) is None or CLAIMS.search(NOT_CLAIMS.sub("", about))
+    ):
         raise ValueError(f"{where}: about is one or two plain sentences, with no price or claim, not {about!r}")
     if kind == "book":
         return _book(where, entry, cast(int, year), title, live_on, until)

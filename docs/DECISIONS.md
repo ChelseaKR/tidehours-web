@@ -2688,6 +2688,56 @@ footer link are unchanged. The page now lists 49 entries of
 `copy/gifts.json`, and the build of January 1, 2028 lists the custom
 prints, the thirteen river prints and the fifteen new prints.
 
+Update, 2026-11-16: four made-to-order occasion prints that went live on
+2026-11-15 are linked at the owner's request, each id checked against the
+line "LISTED 2026-11-15 as Etsy listing" in its kit's `FIELDS.txt`. The
+listings were not fetched. They are `custom` entries, after the wedding
+sign under "Custom tide chart prints", in the order they were listed: "New
+Home Tide Chart Print" (4618270033), "New Grandparents Tide Chart Print"
+(4618271113), "Beach Vacation Tide Chart Print" (4618277948) and "Adoption
+Day Tide Chart Print" (4618278782). Each link title is the occasion its
+listing's title opens with and "Tide Chart Print", put to the owner in the
+pull request; each `about` is the first paragraph of its listing's own
+description, word for word, one sentence. The new home print's says "first
+home", and "first" is a claim word (`booklets.CLAIMS`), so `gifts.py` now
+takes the phrase "first home", and only it, out of an `about` before
+looking for a claim; "The first print ... at your first home" is still
+refused. These four add no kind, section, sentence or heading.
+
+The same day, seven more listings went live and are linked at the
+owner's request, with the ids the owner's session gave once they were
+listed (2026-11-16); the kits' `FIELDS.txt` hold the approved wording.
+The listings were not fetched.
+
+- **Four `land` prints**, "In Profile Print: Place", under "Land prints"
+  among the six of 2026-11-15, by place A to Z: Badwater Basin
+  (4618905514), Denali (4618898243), Mount Whitney (4618904046) and
+  Yosemite Valley (4618902572). Their data and their kind are the same
+  as the six's, so the section's sentence holds for them.
+- **A new kind, `depth`**, the land with the floor of its lake or bay
+  ("Above and Below", the owner's name for the set; "Land Prints" is its
+  Etsy section): a title "Above and Below Print: Place" and `about`, no
+  town and no year. Crater Lake (4618908156), Lake Tahoe (4618909654)
+  and Monterey Bay (4618902435), under a new section, "Above and Below
+  prints", after "Land prints", with the sentence "Art made from U.S.
+  Geological Survey and NOAA elevation and survey data. They show the
+  shape of the land above the water and below it, not the tide. Not a
+  USGS or NOAA product." They are not put under "Land prints": that
+  section's sentence says USGS elevation data and the shape of the land,
+  and the Monterey Bay print is mostly seafloor, from NOAA's CUDEM model.
+  The sentence is made of the listings' own words ("art made from
+  elevation and lake-floor survey data", "Not a USGS product", "Not a
+  NOAA product", "above and below its surface"), shortened, with "not the
+  tide" as the other sections say it.
+
+Each `about` is the first paragraph of its listing's own description,
+word for word. The heading, the sentence and the link titles are this
+change's, put to the owner in its pull request. The meta description's
+list of kinds gains "Above and Below prints". The page now lists 60
+entries of `copy/gifts.json`, and the build of January 1, 2028 lists six
+custom prints, the thirteen river prints and twenty-two other prints with
+no year.
+
 ## 0042: A share image and home-screen icons (2026-11-14)
 
 A link to tidehours.com shared in a message or a post showed no picture,

@@ -46,7 +46,7 @@ DESCRIPTION = (
     "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, a winter solstice print, "
     "year-of-daylight prints, sunrise and sunset calendars, tide art prints, tide posters, 2027 tide calendars, "
     "moon phase calendars, night sky prints, a northern lights print, river year prints, sea level prints, sea "
-    "temperature prints, land prints and typical year prints."
+    "temperature prints, land prints, Above and Below prints and typical year prints."
 )
 INTRO = (
     "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, "
@@ -71,6 +71,7 @@ SECTIONS = [
     "Sea level prints",
     "Sea temperature prints",
     "Land prints",
+    "Above and Below prints",
     "Typical year prints",
 ]
 # The made-to-order prints of the list: each line's words after the link
@@ -85,6 +86,38 @@ WEDDING_SIGN = (
     "Welcome Sign</a>. A welcome sign for a wedding by the water: the predicted tide at your town or beach on your "
     "wedding day, with the time of your ceremony marked on the curve.</li>"
 )
+# The four made-to-order occasion prints of 2026-11-15, after the wedding
+# sign: each line's words after the link are the first paragraph of its
+# listing's own description, one sentence.
+NEW_HOME = (
+    '<li data-gift="4618270033"><a href="https://www.etsy.com/listing/4618270033" rel="noopener">New Home Tide Chart '
+    "Print</a>. A custom tide chart print of the day you got the keys, made to order as a digital file: a "
+    "housewarming, first home or closing day gift.</li>"
+)
+NEW_GRANDPARENTS = (
+    '<li data-gift="4618271113"><a href="https://www.etsy.com/listing/4618271113" rel="noopener">New Grandparents '
+    "Tide Chart Print</a>. A custom tide chart print of the day they became grandparents, made to order as a digital "
+    "file: a gift for a new grandma and grandpa.</li>"
+)
+BEACH_VACATION = (
+    '<li data-gift="4618277948"><a href="https://www.etsy.com/listing/4618277948" rel="noopener">Beach Vacation Tide '
+    "Chart Print</a>. A custom tide chart print of a day on your beach vacation, made to order as a digital file: a "
+    "keepsake of a family trip or a honeymoon.</li>"
+)
+ADOPTION_DAY = (
+    '<li data-gift="4618278782"><a href="https://www.etsy.com/listing/4618278782" rel="noopener">Adoption Day Tide '
+    "Chart Print</a>. A custom tide chart print of your adoption day, made to order as a digital file: a keepsake of "
+    "the day you became a family.</li>"
+)
+# The custom section's lines, in list order.
+CUSTOMS = [
+    "Your Year In Tides",
+    "Beach Wedding Welcome Sign",
+    "New Home Tide Chart Print",
+    "New Grandparents Tide Chart Print",
+    "Beach Vacation Tide Chart Print",
+    "Adoption Day Tide Chart Print",
+]
 # The made-to-order year-of-daylight print: the section's sentence, then
 # the line, whose words after the link are the listing's own approved
 # description (its first two sentences).
@@ -174,9 +207,20 @@ SEA_TEMP = (
 LAND = (
     '<h2 id="g-land">Land prints</h2>\n  <p>Art made from U.S. Geological Survey elevation data. They show the '
     'shape of the land, not the tide. Not a USGS product.</p>\n  <ul class="printables">\n    <li '
-    'data-gift="4618189896"><a href="https://www.etsy.com/listing/4618189896" rel="noopener">In Profile Print: '
-    "Crater Lake</a>. Crater Lake, Oregon, drawn as 80 stacked elevation profiles: the shape of the land, line by "
-    "line.</li>"
+    'data-gift="4618905514"><a href="https://www.etsy.com/listing/4618905514" rel="noopener">In Profile Print: '
+    "Badwater Basin</a>. Badwater Basin, Death Valley, California, drawn as 80 stacked elevation profiles: the shape "
+    "of the land, line by line. Badwater Basin is the lowest point in North America.</li>"
+)
+# The Above and Below prints of 2026-11-16: the land and the floor of its
+# lake or bay, after the land prints, with a section and sentence of their
+# own (their data are not all USGS elevation data, nor all land).
+ABOVE_AND_BELOW = (
+    '<h2 id="g-depth">Above and Below prints</h2>\n  <p>Art made from U.S. Geological Survey and NOAA elevation and '
+    "survey data. They show the shape of the land above the water and below it, not the tide. Not a USGS or NOAA "
+    'product.</p>\n  <ul class="printables">\n    <li data-gift="4618908156"><a '
+    'href="https://www.etsy.com/listing/4618908156" rel="noopener">Above and Below Print: Crater Lake</a>. Crater '
+    "Lake, Oregon, drawn as 80 stacked profiles of the land and the lake floor: the lake&#39;s shape above and below "
+    "its surface, line by line.</li>"
 )
 TYPICAL_YEAR = (
     '<h2 id="g-normals">Typical year prints</h2>\n  <p>A year of normal weather in one U.S. town, made to order '
@@ -198,15 +242,24 @@ SEA_TEMPS = [
     "2025 Sea Temperature Print: Wrightsville Beach",
 ]
 LANDS = [
+    "In Profile Print: Badwater Basin",
     "In Profile Print: Crater Lake",
+    "In Profile Print: Denali",
     "In Profile Print: Grand Teton",
     "In Profile Print: Lake Tahoe",
     "In Profile Print: Mount Hood",
     "In Profile Print: Mount Rainier",
     "In Profile Print: Mount Shasta",
+    "In Profile Print: Mount Whitney",
+    "In Profile Print: Yosemite Valley",
+]
+DEPTHS = [
+    "Above and Below Print: Crater Lake",
+    "Above and Below Print: Lake Tahoe",
+    "Above and Below Print: Monterey Bay",
 ]
 # The entries with no year, which the build of January 1, 2028 still lists.
-NO_YEAR = ("custom", "river", "aurora", "sealevel", "seatemp", "land", "normals")
+NO_YEAR = ("custom", "river", "aurora", "sealevel", "seatemp", "land", "depth", "normals")
 # The solstice print's sentence: the wording of its live Etsy listing,
 # adapted only to join its first two sentences of the second paragraph.
 SOLSTICE = (
@@ -258,7 +311,9 @@ BOOK_PRIVACY = (
 # The committed list: each listing id, as marked "LISTED" in the owner's
 # product notes, with its kind, title and the day it was marked. The
 # sixteen of 2026-11-15 after the Harpers Ferry map are of five new kinds
-# and one more river print. The
+# and one more river print; the four custom prints after the wedding sign
+# are the occasion prints of the same day. The four land prints and the
+# three Above and Below prints of 2026-11-16 were marked live that day. The
 # town-bound ones of the afternoon of 2026-11-14 have their stations in
 # NEW_STATIONS. The tide blanket and cross-stitch pattern listings
 # (PAUSED) are paused on Etsy and not listed. The Maine Coast hardcover is
@@ -266,6 +321,10 @@ BOOK_PRIVACY = (
 LIVE = {
     "4617340915": ("custom", "Your Year In Tides", "2026-11-14"),
     "4617341518": ("custom", "Beach Wedding Welcome Sign", "2026-11-14"),
+    "4618270033": ("custom", "New Home Tide Chart Print", "2026-11-15"),
+    "4618271113": ("custom", "New Grandparents Tide Chart Print", "2026-11-15"),
+    "4618277948": ("custom", "Beach Vacation Tide Chart Print", "2026-11-15"),
+    "4618278782": ("custom", "Adoption Day Tide Chart Print", "2026-11-15"),
     "4616980007": ("daylight", "2026 Winter Solstice Print: The Light Returns", "2026-11-13"),
     "4617410905": ("sun", "2027 Year of Daylight Print: Any City", "2026-11-14"),
     "4617494392": ("sunrise", "2027 Sunrise and Sunset Calendar: Anchorage", "2026-11-14"),
@@ -312,6 +371,13 @@ LIVE = {
     "4618188565": ("land", "In Profile Print: Mount Hood", "2026-11-15"),
     "4618192886": ("land", "In Profile Print: Mount Rainier", "2026-11-15"),
     "4618197440": ("land", "In Profile Print: Mount Shasta", "2026-11-15"),
+    "4618905514": ("land", "In Profile Print: Badwater Basin", "2026-11-16"),
+    "4618898243": ("land", "In Profile Print: Denali", "2026-11-16"),
+    "4618904046": ("land", "In Profile Print: Mount Whitney", "2026-11-16"),
+    "4618902572": ("land", "In Profile Print: Yosemite Valley", "2026-11-16"),
+    "4618908156": ("depth", "Above and Below Print: Crater Lake", "2026-11-16"),
+    "4618909654": ("depth", "Above and Below Print: Lake Tahoe", "2026-11-16"),
+    "4618902435": ("depth", "Above and Below Print: Monterey Bay", "2026-11-16"),
     "4618178774": ("normals", "Your Town's Typical Year", "2026-11-15"),
 }
 NEW_STATIONS = {
@@ -359,6 +425,8 @@ TEST_GIFTS: list[dict[str, Any]] = [
      "about": "Mount Lamlam, Guam, drawn as 80 stacked elevation profiles.", "live": "2026-11-15"},
     {"kind": "normals", "listing": "1234567886", "title": "Your Town's Typical Year",
      "about": "A year of normal weather in your town, drawn as one picture.", "live": "2026-11-15"},
+    {"kind": "depth", "listing": "1234567887", "title": "Above and Below Print: Apra Harbor",
+     "about": "Apra Harbor, Guam, drawn as 80 stacked profiles of the land and the seafloor.", "live": "2026-11-16"},
 ]  # fmt: skip
 ETSY_OR_AMAZON = re.compile(r'<a\b[^>]*href="(https?://[^"]*(?:etsy|amazon)\.[^"]*)"', re.I)
 H2 = re.compile(r"<h2 id=\"g-[^\"]*\">(.*?)</h2>")
@@ -469,7 +537,7 @@ def test_the_committed_list_is_exactly_the_listings_marked_live() -> None:
     # typical year print.
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind in NO_YEAR)
     assert {kind: sum(g.kind == kind for g in listed) for kind in NO_YEAR} == {
-        "custom": 2, "river": 13, "aurora": 1, "sealevel": 2, "seatemp": 5, "land": 6, "normals": 1,
+        "custom": 6, "river": 13, "aurora": 1, "sealevel": 2, "seatemp": 5, "land": 10, "depth": 3, "normals": 1,
     }  # fmt: skip
     assert all(g.station is None and g.about for g in listed if g.kind in ("sunrise", "sky"))
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "custom")
@@ -544,6 +612,9 @@ BAD = {
     "a custom print not marked live": [without(TEST_GIFTS[5], "live")],
     "about with a price": [{**TEST_GIFTS[5], "about": "A print of the tide at your place, only $22 today."}],
     "about with a claim": [{**TEST_GIFTS[5], "about": "The best print of the tide at your place on your day."}],
+    "about with a claim beside a first home": [
+        {**TEST_GIFTS[5], "about": "The first print of the tide at your first home, on your own day."}
+    ],
     "about with markup": [{**TEST_GIFTS[5], "about": "A print of the <b>tide</b> at your place on your day."}],
     "about that is not a sentence": [{**TEST_GIFTS[5], "about": "tide"}],
     "a custom title with a claim": [{**TEST_GIFTS[5], "title": "Best Tide Print"}],
@@ -585,6 +656,11 @@ BAD = {
     "a typical year print with a year": [{**TEST_GIFTS[15], "year": 2027}],
     "a typical year print without about": [without(TEST_GIFTS[15], "about")],
     "a typical year print with a price": [{**TEST_GIFTS[15], "title": "Your Town's Typical Year $16"}],
+    "an Above and Below print with a year": [{**TEST_GIFTS[16], "year": 2026}],
+    "an Above and Below print with a station": [{**TEST_GIFTS[16], "station": GU}],
+    "an Above and Below print without about": [without(TEST_GIFTS[16], "about")],
+    "an Above and Below print's other title": [{**TEST_GIFTS[16], "title": "In Depth Print: Apra Harbor"}],
+    "an Above and Below print not marked live": [without(TEST_GIFTS[16], "live")],
 }
 
 
@@ -609,23 +685,26 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     assert "<p>" + HOW.replace("'", "&#39;") + "</p>" in main
     assert H2.findall(main) == SECTIONS
     for line in (
-        CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, ANY_CITY, OGUNQUIT_RINGS,
-        SUNRISE, SKY, RIVER, TWO_RIVERS, AURORA, SEA_LEVEL, SEA_TEMP, LAND, TYPICAL_YEAR,
+        CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, NEW_HOME, NEW_GRANDPARENTS,
+        BEACH_VACATION, ADOPTION_DAY, ANY_CITY, OGUNQUIT_RINGS, SUNRISE, SKY, RIVER, TWO_RIVERS, AURORA, SEA_LEVEL,
+        SEA_TEMP, LAND, ABOVE_AND_BELOW, TYPICAL_YEAR,
     ):  # fmt: skip
         assert line in main
     # Each kind's lines in list order: the rivers', then the new kinds' by place.
     titles = re.findall(r'rel="noopener">([^<]*)</a>', main)
     for prefix, want_titles in (
         ("Water Year", RIVERS), ("Sea Level Print", SEA_LEVELS), ("2025 Sea Temperature", SEA_TEMPS),
-        ("In Profile Print", LANDS),
+        ("In Profile Print", LANDS), ("Above and Below Print", DEPTHS),
     ):  # fmt: skip
         assert [t for t in titles if t.startswith(prefix)] == want_titles
+    custom = main[main.find('id="g-custom"') : main.find('id="g-daylight"')]
+    assert re.findall(r'listing/\d+" rel="noopener">([^<]*)</a>', custom) == CUSTOMS
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 8 + 49 listings and the shop.
+    # once each: 40 + 8 + 60 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 49 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 60 + 1
     # Within a kind, by town.
     section = main[main.find('id="g-calendars"') : main.find('id="g-moon"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
@@ -723,7 +802,7 @@ def test_a_one_town_book_and_the_guam_list(guam: Path, lists: dict[str, Path], c
         "Custom tide chart prints", "Winter solstice print", "Year-of-daylight prints", "Sunrise and sunset calendars",
         "Tide rings art prints", "Tide blanket patterns", "Cross-stitch patterns", "Printed tide tables",
         "Moon phase calendars", "Night sky prints", "Northern lights print", "River year prints", "Sea level prints",
-        "Sea temperature prints", "Land prints", "Typical year prints",
+        "Sea temperature prints", "Land prints", "Above and Below prints", "Typical year prints",
     ]  # fmt: skip
     assert (
         '<li data-gift="1234567898"><a href="https://www.etsy.com/listing/1234567898" rel="noopener">2027 Year of '
@@ -751,9 +830,10 @@ def test_only_a_moon_calendar_names_no_art_and_no_amazon(tmp_path: Path, lists: 
 def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, check_site: Any) -> None:
     """Every dated entry of the committed lists is of 2026 or 2027, so the
     build of January 1, 2028 lists only the entries with no year: the
-    custom prints (the shop's own sentence and the two made-to-order
+    custom prints (the shop's own sentence and the six made-to-order
     listings), the thirteen river prints, the northern lights print, the
-    sea level, sea temperature and land prints and the typical year print.
+    sea level, sea temperature, land and Above and Below prints and the
+    typical year print.
     The made-to-order year-of-daylight print, the sunrise and sunset
     calendars and the night sky prints are of 2027 and leave."""
     root = build(tmp_path / "on", "--print-shop-url", SHOP, "--gifts", str(COMMITTED),
@@ -761,11 +841,11 @@ def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, ch
     text = read(root, PAGE)
     assert H2.findall(text) == [
         "Custom tide chart prints", "Northern lights print", "River year prints", "Sea level prints",
-        "Sea temperature prints", "Land prints", "Typical year prints",
+        "Sea temperature prints", "Land prints", "Above and Below prints", "Typical year prints",
     ]  # fmt: skip
     assert re.findall(r'rel="noopener">(Water Year[^<]*)</a>', text) == RIVERS
     no_year = [f"https://www.etsy.com/listing/{ref}" for ref, (kind, _, _) in LIVE.items() if kind in NO_YEAR]
-    assert len(no_year) == 2 + 13 + 1 + 2 + 5 + 6 + 1
+    assert len(no_year) == 6 + 13 + 1 + 2 + 5 + 10 + 3 + 1
     assert sorted(ETSY_OR_AMAZON.findall(text)) == sorted([SHOP, *no_year])
     assert "amazon" not in "".join(f.read_text(encoding="utf-8").lower() for f in pages(root))
     assert problems(check_site, root, shop=SHOP) == []
@@ -952,6 +1032,12 @@ SABOTAGE: dict[str, Callable[[Path], None]] = {
     ),
     "the land section's sentence": edit(PAGE, "Art made from U.S. Geological Survey elevation data. ", ""),
     "a land print's title changed": edit(PAGE, "In Profile Print: Mount Lamlam", "In Profile Print: Lamlam"),
+    "the Above and Below section's sentence": edit(
+        PAGE, " They show the shape of the land above the water and below it,", " They show"
+    ),
+    "an Above and Below print's words dropped": edit(
+        PAGE, ". Apra Harbor, Guam, drawn as 80 stacked profiles of the land and the seafloor.", ""
+    ),
     "the typical year section's sentence": edit(PAGE, " Not a forecast and not the weather of any single year.", ""),
     "a typical year print's listing swapped for one not marked live": edit(
         PAGE, "https://www.etsy.com/listing/1234567886", NOT_LIVE

@@ -140,9 +140,9 @@
   {% if app_store_url %}<a href="{{ app_store_url }}">Get Tide Hours on the App Store</a>.{% else %}<strong>Coming soon to the App Store.</strong>{% endif %}
   NOAA also publishes its own <a href="https://tidesandcurrents.noaa.gov/noaatidepredictions.html?id={{ station.id }}">predictions for station {{ station.id }}</a>.</p>
 </section>
-{% if booklet %}
+{% for booklet in booklets %}
 {% include "_booklet.html.jinja" %}
-{% endif %}
+{% endfor %}
 {% if calendar %}
 {% include "_calendar.html.jinja" %}
 {% endif %}

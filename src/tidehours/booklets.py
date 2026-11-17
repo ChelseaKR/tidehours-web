@@ -1,18 +1,21 @@
 """A station page's link to that station's printed tide-table booklet on
 Amazon (docs/DECISIONS.md 0030).
 
-The booklets are Tide Hours' own, published through Amazon KDP, one per
-station and year. `copy/booklets.json` lists the ones that are on sale: a
-station id, the booklet's ASIN, its year, and its title as printed on the
-cover. An empty list leaves no trace in the build. An entry is added by a
-pull request when a booklet goes live; there is no repository variable.
+The books are Tide Hours' own, published through Amazon KDP: a booklet
+for one station, or a hardcover for several. `copy/booklets.json` lists the
+ones that are on sale: a station id, and its book (or a list of its books),
+each with its ASIN, its year, and its title as printed on the cover. A book
+for several stations is listed under each of them, with the same ASIN, year
+and title. An empty list leaves no trace in the build. An entry is added by
+a pull request when a book goes live; there is no repository variable.
 
-A listed station's own page carries one sentence with one plain link,
-`https://www.amazon.com/dp/ASIN` and nothing after it: no Associates tag,
-even when the affiliate switch (0016) is on, no query string, no tracking
-parameter and no click event. The link shows while the page's first day is
-in the booklet's year or earlier, so a 2027 booklet leaves the page on
-January 1, 2028 without anyone editing a file.
+A listed station's own page carries one sentence per book, each with one
+plain link, a station's own booklet before a book that covers several
+stations. Each link is `https://www.amazon.com/dp/ASIN` and nothing after
+it: no Associates tag, even when the affiliate switch (0016) is on, no
+query string, no tracking parameter and no click event. A link shows while
+the page's first day is in its book's year or earlier, so a 2027 book
+leaves the page on January 1, 2028 without anyone editing a file.
 """
 
 from __future__ import annotations
@@ -20,6 +23,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -81,19 +85,35 @@ def _booklet(station_id: str, entry: Any) -> Booklet:
     return Booklet(asin, year, title)
 
 
-def load(path: Path | None = None) -> dict[str, Booklet]:
-    """Station id -> its booklet, from the committed list (or `path`, for
-    tests). Anything that is not exactly a station id with an ASIN, a year
-    and a title is refused, and so is one ASIN listed for two stations."""
+def _books(station_id: str, value: Any) -> list[Booklet]:
+    """A station's entry: one book, or a non-empty list of books."""
+    entries = value if isinstance(value, list) else [value]
+    if not entries:
+        raise ValueError(f"station {station_id}: an empty list of books")
+    return [_booklet(station_id, entry) for entry in entries]
+
+
+def load(path: Path | None = None) -> dict[str, tuple[Booklet, ...]]:
+    """Station id -> its books, from the committed list (or `path`, for
+    tests), each station's own booklet first: the books are in order of how
+    many stations each covers, then as listed. Anything that is not exactly
+    a station id with books of an ASIN, a year and a title is refused, and
+    so is one ASIN listed twice for a station, or with two years or titles."""
     source = path or LIST
     raw = json.loads(source.read_text(encoding="utf-8"))
     if not isinstance(raw, dict) or set(raw) != {"booklets"} or not isinstance(raw["booklets"], dict):
         raise ValueError(f'{source.name}: expected {{"booklets": {{...}}}}')
-    out = {station_id: _booklet(station_id, entry) for station_id, entry in raw["booklets"].items()}
-    asins = [b.asin for b in out.values()]
-    if len(asins) != len(set(asins)):
-        raise ValueError(f"{source.name}: one ASIN is listed for two stations")
-    return out
+    listed = {station_id: _books(station_id, value) for station_id, value in raw["booklets"].items()}
+    book_of: dict[str, Booklet] = {}
+    covers: dict[str, int] = {}
+    for station_id, books in listed.items():
+        if len({b.asin for b in books}) != len(books):
+            raise ValueError(f"{source.name}: station {station_id} lists one ASIN twice")
+        for b in books:
+            if book_of.setdefault(b.asin, b) != b:
+                raise ValueError(f"{source.name}: ASIN {b.asin} is listed with two years or titles")
+            covers[b.asin] = covers.get(b.asin, 0) + 1
+    return {station_id: tuple(sorted(books, key=lambda b: covers[b.asin])) for station_id, books in listed.items()}
 
 
 def shown(booklet: Booklet, today: dt.date) -> bool:
@@ -102,20 +122,23 @@ def shown(booklet: Booklet, today: dt.date) -> bool:
     return booklet.year >= today.year
 
 
-def block(booklet: Booklet | None) -> dict[str, Any] | None:
-    """What the station template needs for the sentence, or None for a page
-    with no booklet to show."""
-    if booklet is None:
-        return None
+def blocks(books: Sequence[Booklet]) -> list[dict[str, Any]]:
+    """What the station template needs for each book's sentence, in order;
+    none for a page with no book to show."""
+    if not books:
+        return []
     text: dict[str, str] = json.loads(COPY.read_text(encoding="utf-8"))
-    return {
-        "asin": booklet.asin,
-        "url": booklet.url,
-        "rel": REL,
-        "title": booklet.title,
-        "before": text["before"].replace("{year}", str(booklet.year)),
-        "after": text["after"],
-    }
+    return [
+        {
+            "asin": booklet.asin,
+            "url": booklet.url,
+            "rel": REL,
+            "title": booklet.title,
+            "before": text["before"].replace("{year}", str(booklet.year)),
+            "after": text["after"],
+        }
+        for booklet in books
+    ]
 
 
 def notice(any_shown: bool) -> dict[str, str] | None:

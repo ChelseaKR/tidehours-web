@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- The other five live books are linked: the Garibaldi and Brewster Flats
+  booklets, and the Maine Coast, Massachusetts and Washington and Oregon
+  Coast hardcovers on each of their six towns' station pages. Nineteen
+  station pages link to a book. Bar Harbor, Sesuit Harbor (Brewster Flats)
+  and Garibaldi link to two, one sentence each, the town's own booklet
+  first. A station's entry in `copy/booklets.json` can now be a list, and
+  one ASIN can be listed under several stations (DECISIONS 0030).
 - Two station pages link to their printed 2027 tide tables on Amazon:
   Bar Harbor (8413320), "A printed 2027 tide table for this station is sold
   on Amazon as 2027 Tide Tables: Bar Harbor.", and Half Moon Bay (Pillar

@@ -17,10 +17,11 @@ before them; with no tag, "amazon" appears nowhere in the build (0016). The
 link to the Tide Hours shop on Etsy appears only when a shop address is
 configured, once on the About page and once on the English king-tide page,
 with that exact address; with none, "etsy" appears nowhere (0029). A
-station whose printed booklet is listed (src/tidehours/copy/booklets.json)
-and whose year is not over links to it once, on its own page, with exactly
-https://www.amazon.com/dp/ASIN; that sentence is the one exception to the
-Amazon rules above, and with no booklet listed they are unchanged (0030).
+station whose printed tide tables are listed (src/tidehours/copy/booklets.json)
+and whose year is not over links to each book once, on its own page, in the
+list's order, with exactly https://www.amazon.com/dp/ASIN; those sentences
+are the one exception to the Amazon rules above, and with no book listed
+they are unchanged (0030).
 In the same way, a station whose printable calendar is listed
 (src/tidehours/copy/calendars.json) and whose year is not over links to it
 once, on its own page, with exactly https://www.etsy.com/listing/ID, after
@@ -620,63 +621,70 @@ def check_king_calendar(root: Path, cat: Catalog) -> list[str]:
     return problems
 
 
-def booklet_pages(root: Path, listed: dict[str, booklets.Booklet]) -> tuple[dict[str, booklets.Booklet], list[str]]:
-    """The station pages of this build that must link to a booklet, as page
-    path -> booklet: each listed station that has a page, unless the page's
-    own date is past the booklet's year (docs/DECISIONS.md 0030)."""
-    want: dict[str, booklets.Booklet] = {}
+Books = tuple[booklets.Booklet, ...]
+
+
+def booklet_pages(root: Path, listed: dict[str, Books]) -> tuple[dict[str, Books], list[str]]:
+    """The station pages of this build that must link to a book, as page
+    path -> its books, in order: each listed station that has a page, with
+    the books whose year is not past the page's own date
+    (docs/DECISIONS.md 0030)."""
+    want: dict[str, Books] = {}
     problems: list[str] = []
-    for station_id, booklet in listed.items():
+    for station_id, books in listed.items():
         rel = f"stations/{station_id}/index.html"
         if not (root / rel).is_file():
             continue
         dates = STATION_DATE.findall((root / rel).read_text(encoding="utf-8"))
         if len(dates) != 1:
             problems.append(f"{rel}: no date to tell whether its booklet's year is over")
-        elif booklets.shown(booklet, dt.date.fromisoformat(dates[0])):
-            want[rel] = booklet
+            continue
+        due = tuple(b for b in books if booklets.shown(b, dt.date.fromisoformat(dates[0])))
+        if due:
+            want[rel] = due
     return want, problems
 
 
-def _check_booklet(rel: str, text: str, want: booklets.Booklet | None) -> tuple[str, list[str]]:
-    """One page's booklet sentence. Returns the page without the sentence,
-    for the Amazon rules that apply to everything else, and the problems:
-    a sentence on a page that is due none; or, on a page that is due one,
-    none or more than one, more than one link in it, an address that is not
-    exactly the booklet's, a rel other than noopener, a click event, or a
+def _check_booklet(rel: str, text: str, want: Books | None) -> tuple[str, list[str]]:
+    """One page's book sentences. Returns the page without them, for the
+    Amazon rules that apply to everything else, and the problems: a
+    sentence on a page that is due none; or, on a page that is due some, a
+    number of sentences other than its number of books, more than one link
+    in a sentence, an address that is not exactly its book's (which covers
+    books out of order), a rel other than noopener, a click event, or a
     place before the tide tables or after the page's closing notes."""
     blocks = list(BOOKLET_P.finditer(text))
-    if want is None:
+    if not want:
         return text, ([f"{rel}: a booklet link on a page that is due none"] if blocks else [])
-    if len(blocks) != 1:
-        return BOOKLET_P.sub("", text), [f"{rel}: {len(blocks)} booklet links, exactly 1 expected"]
+    if len(blocks) != len(want):
+        return BOOKLET_P.sub("", text), [f"{rel}: {len(blocks)} booklet links, exactly {len(want)} expected"]
     problems: list[str] = []
-    found = blocks[0]
-    anchors = ANY_A.findall(found.group(0))
-    if len(anchors) != 1 or found.group(0).count("http") != 1:
-        problems.append(f"{rel}: the booklet sentence has {len(anchors)} links, exactly 1 expected")
-    for a in anchors:
-        href_attr = HREF_ATTR.search(a)
-        href = htmllib.unescape(href_attr.group(1)) if href_attr else ""
-        if href != want.url:
-            problems.append(f"{rel}: {href} is not the booklet's address, {want.url}")
-        rel_attr = REL_ATTR.search(a)
-        tokens = set(rel_attr.group(1).split()) if rel_attr else set()
-        if tokens != set(booklets.REL.split()):
-            problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
-        if "data-ga" in a:
-            problems.append(f"{rel}: the booklet link carries a click event")
     last_day = text.rfind('<section class="day"')
-    if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
-        problems.append(f"{rel}: the booklet link is not between the tide tables and the closing notes")
-    return text[: found.start()] + text[found.end() :], problems
+    for found, book in zip(blocks, want, strict=True):
+        anchors = ANY_A.findall(found.group(0))
+        if len(anchors) != 1 or found.group(0).count("http") != 1:
+            problems.append(f"{rel}: the booklet sentence has {len(anchors)} links, exactly 1 expected")
+        for a in anchors:
+            href_attr = HREF_ATTR.search(a)
+            href = htmllib.unescape(href_attr.group(1)) if href_attr else ""
+            if href != book.url:
+                problems.append(f"{rel}: {href} is not the booklet's address, {book.url}")
+            rel_attr = REL_ATTR.search(a)
+            tokens = set(rel_attr.group(1).split()) if rel_attr else set()
+            if tokens != set(booklets.REL.split()):
+                problems.append(f"{rel}: {href} rel is {sorted(tokens)}")
+            if "data-ga" in a:
+                problems.append(f"{rel}: the booklet link carries a click event")
+        if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
+            problems.append(f"{rel}: the booklet link is not between the tide tables and the closing notes")
+    return BOOKLET_P.sub("", text), problems
 
 
 def check_affiliate(
     root: Path,
     html: list[Path],
     tag: str,
-    booklet_links: dict[str, booklets.Booklet] | None = None,
+    booklet_links: dict[str, Books] | None = None,
     gift_books: bool = False,
 ) -> list[str]:
     """With no tag, "amazon" appears nowhere. With one, only the English
@@ -810,8 +818,7 @@ def _check_calendar(rel: str, text: str, want: calendars.Calendar | None) -> tup
     last_day = text.rfind('<section class="day"')
     if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
         problems.append(f"{rel}: the calendar link is not between the tide tables and the closing notes")
-    booklet = BOOKLET_P.search(text)
-    if booklet and booklet.start() > found.start():
+    if any(m.start() > found.start() for m in BOOKLET_P.finditer(text)):
         problems.append(f"{rel}: the calendar link comes before the booklet link")
     return text[: found.start()] + text[found.end() :], problems
 
@@ -868,7 +875,7 @@ def _check_poster(rel: str, text: str, want: posters.Poster | None) -> tuple[str
     last_day = text.rfind('<section class="day"')
     if not 0 <= last_day < text.find("</section>", last_day) < found.start() < text.find('id="what"'):
         problems.append(f"{rel}: the poster link is not between the tide tables and the closing notes")
-    earlier = [m for m in (BOOKLET_P.search(text), CALENDAR_P.search(text)) if m is not None]
+    earlier = [*BOOKLET_P.finditer(text), *CALENDAR_P.finditer(text)]
     if any(m.start() > found.start() for m in earlier):
         problems.append(f"{rel}: the poster link comes before the booklet or calendar link")
     return text[: found.start()] + text[found.end() :], problems
@@ -1114,7 +1121,7 @@ def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]
     return problems
 
 
-def _check_book_notice(root: Path, booklet_links: dict[str, booklets.Booklet], gift_books: bool) -> list[str]:
+def _check_book_notice(root: Path, booklet_links: dict[str, Books], gift_books: bool) -> list[str]:
     """The privacy page's section on the Amazon book links is exactly the one
     gifts.book_notice gives for this build (docs/DECISIONS.md 0030, 0041)."""
     f = root / "privacy" / "index.html"

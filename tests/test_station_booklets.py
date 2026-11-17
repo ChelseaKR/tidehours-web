@@ -33,6 +33,43 @@ URL = "https://www.amazon.com/dp/B0TESTTEST"
 PAGE = f"stations/{STATION}/index.html"
 SENTENCE = "A printed 2027 tide table for this station is sold on Amazon as 2027 Tide Tables: Apra Harbor."
 TAG = "tidehours-20"
+# The committed list, as the owner approved it on 2026-11-16: four booklets
+# and three six-town hardcovers. Station id -> its books, (ASIN, title), in
+# the order its page shows them: its own booklet first.
+BAR_HARBOR = ("B0HRK68249", "2027 Tide Tables: Bar Harbor")
+HALF_MOON_BAY = ("B0HRJ4XF7W", "2027 Tide Tables: Half Moon Bay")
+GARIBALDI = ("B0HRT487NL", "2027 Tide Tables: Garibaldi")
+BREWSTER_FLATS = ("B0HRTL7GPY", "2027 Tide Tables: Brewster Flats")
+MAINE = ("B0HRP6Z64Q", "2027 Tide Tables: Maine Coast")
+MASSACHUSETTS = ("B0HRTG9CCK", "2027 Tide Tables: Massachusetts")
+WA_OR = ("B0HRTYK4FR", "2027 Tide Tables: Washington and Oregon Coast")
+COMMITTED = {
+    "8410140": (MAINE,),
+    "8413320": (BAR_HARBOR, MAINE),
+    "8415490": (MAINE,),
+    "8418150": (MAINE,),
+    "8418911": (MAINE,),
+    "8419317": (MAINE,),
+    "8440466": (MASSACHUSETTS,),
+    "8441841": (MASSACHUSETTS,),
+    "8446121": (MASSACHUSETTS,),
+    "8446166": (MASSACHUSETTS,),
+    "8446493": (MASSACHUSETTS,),
+    "8447241": (BREWSTER_FLATS, MASSACHUSETTS),
+    "9414131": (HALF_MOON_BAY,),
+    "9435380": (WA_OR,),
+    "9437540": (GARIBALDI, WA_OR),
+    "9440581": (WA_OR,),
+    "9441102": (WA_OR,),
+    "9442396": (WA_OR,),
+    "9446807": (WA_OR,),
+}
+COMMITTED_STATES = "ME,MA,OR,WA,CA"
+PRIVACY = (
+    "Some station pages link to a printed tide table for that station, which Tide Hours publishes and sells on "
+    "Amazon. It is a plain link, not an affiliate link, and this site sends nothing to Amazon. The link takes you "
+    "to Amazon, where Amazon's own privacy notice applies."
+)
 SHOP = "https://www.etsy.com/shop/TideHours"
 AMAZON_A = re.compile(r'<a\b[^>]*href="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 BLOCK = re.compile(r'<p class="booklet"[^>]*>.*?</p>', re.S)
@@ -53,8 +90,8 @@ def write_list(path: Path, entries: Any) -> Path:
     return path
 
 
-def build(out: Path, list_file: Path | None, *extra: str, now: str = NOW) -> Path:
-    args = ["--out", str(out), "--now", now, "--states", "GU", *extra]
+def build(out: Path, list_file: Path | None, *extra: str, now: str = NOW, states: str = "GU") -> Path:
+    args = ["--out", str(out), "--now", now, "--states", states, *extra]
     if list_file is not None:
         args += ["--booklets", str(list_file)]
     assert cli.main(args) == 0
@@ -157,11 +194,68 @@ def statement_problems(check_site: Any, root: Path) -> list[str]:
 # The list
 
 
-def test_the_committed_list_loads_and_names_real_stations() -> None:
+def test_the_committed_list_is_the_owners_books() -> None:
     cat = catalog.load()
-    for station_id, booklet in booklets.load().items():
-        assert cat.station(station_id) is not None, station_id
-        assert booklet.url == f"https://www.amazon.com/dp/{booklet.asin}"
+    listed = booklets.load()
+    assert {sid: tuple((b.asin, b.title) for b in books) for sid, books in listed.items()} == COMMITTED
+    for station_id, books in listed.items():
+        station = cat.station(station_id)
+        assert station is not None, station_id
+        assert station.state in COMMITTED_STATES.split(","), station_id
+        for booklet, (asin, _) in zip(books, COMMITTED[station_id], strict=True):
+            assert booklet.year == 2027
+            assert booklet.url == f"https://www.amazon.com/dp/{asin}"
+    # Each hardcover covers six stations; each booklet, one.
+    covers: dict[str, int] = {}
+    for pairs in COMMITTED.values():
+        for asin, _ in pairs:
+            covers[asin] = covers.get(asin, 0) + 1
+    assert covers == {
+        BAR_HARBOR[0]: 1, HALF_MOON_BAY[0]: 1, GARIBALDI[0]: 1, BREWSTER_FLATS[0]: 1,
+        MAINE[0]: 6, MASSACHUSETTS[0]: 6, WA_OR[0]: 6,
+    }  # fmt: skip
+
+
+@pytest.fixture(scope="module")
+def committed(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """The states of the committed books, with the committed list, the default."""
+    return build(tmp_path_factory.mktemp("committed"), None, "--ga4-id", "G-TEST123", states=COMMITTED_STATES)
+
+
+def test_the_committed_booklets_show_on_their_own_stations_only(committed: Path, check_site: Any) -> None:
+    links = {
+        f.relative_to(committed).as_posix(): AMAZON_A.findall(f.read_text(encoding="utf-8"))
+        for f in committed.rglob("*")
+        if f.is_file() and f.suffix in SUFFIXES and AMAZON_A.search(f.read_text(encoding="utf-8"))
+    }
+    assert links == {
+        f"stations/{sid}/index.html": [f"https://www.amazon.com/dp/{asin}" for asin, _ in books]
+        for sid, books in COMMITTED.items()
+    }
+    for sid, books in COMMITTED.items():
+        blocks = BLOCK.findall(read(committed, f"stations/{sid}"))
+        assert len(blocks) == len(books), sid
+        for block, (asin, title) in zip(blocks, books, strict=True):
+            assert plain(block) == f"A printed 2027 tide table for this station is sold on Amazon as {title}."
+            assert block == (
+                f'<p class="booklet" data-booklet="{asin}">A printed 2027 tide table for this station is sold on '
+                f'Amazon as <a href="https://www.amazon.com/dp/{asin}" rel="noopener">{title}</a>.</p>'
+            )
+    said = text_of(read(committed, "privacy"))
+    assert PRIVACY in said and said.count("Amazon") == PRIVACY.count("Amazon")
+    # The committed calendars and posters link to Etsy, so the terms page
+    # names both stores.
+    terms = text_of(read(committed, "terms"))
+    assert TERMS_ALL in terms and terms.count("Amazon") == 1
+    assert problems(check_site, committed, booklets.LIST) == []
+
+
+def test_the_committed_booklets_leave_on_january_1_2028(tmp_path: Path, check_site: Any) -> None:
+    after = build(tmp_path / "2028", None, now="2028-01-01T11:20:00Z", states=COMMITTED_STATES)
+    for sid in COMMITTED:
+        assert 'data-station-date="2028-01-01"' in read(after, f"stations/{sid}")
+    assert traces(after) == []
+    assert problems(check_site, after, booklets.LIST) == []
 
 
 def test_valid_asin() -> None:
@@ -203,7 +297,14 @@ def test_valid_asin() -> None:
         ({STATION: {"asin": ASIN, "year": 2027}}, "exactly asin, year and title"),
         ({STATION: ASIN}, "exactly asin, year and title"),
         ({"163000": entry()}, "is not a station id"),
-        ({STATION: entry(), OTHER_STATION: entry()}, "one ASIN is listed for two stations"),
+        (
+            {STATION: entry(), OTHER_STATION: entry(year=2028, title="2028 Tide Tables: Apra Harbor")},
+            "two years or titles",
+        ),
+        ({STATION: entry(), OTHER_STATION: entry(title="2027 Tide Tables: Guam")}, "two years or titles"),
+        ({STATION: [entry(), entry()]}, "lists one ASIN twice"),
+        ({STATION: []}, "an empty list of books"),
+        ({STATION: [entry(), ASIN]}, "exactly asin, year and title"),
         ([entry()], "expected"),
     ],
 )
@@ -232,6 +333,102 @@ def test_a_station_the_catalog_does_not_have_stops_the_build(tmp_path: Path) -> 
     unknown = write_list(tmp_path / "unknown.json", {"9999999": entry()})
     with pytest.raises(ValueError, match="no station 9999999 in the catalog"):
         build(tmp_path / "x", unknown)
+
+
+# Several books on one page
+
+
+HARDCOVER_ASIN = "B0TESTHARD"
+HARDCOVER = "2027 Tide Tables: Guam"
+HARDCOVER_URL = f"https://www.amazon.com/dp/{HARDCOVER_ASIN}"
+OTHER_PAGE_PATH = f"stations/{OTHER_STATION}/index.html"
+
+
+def hardcover(**changes: Any) -> dict[str, Any]:
+    return entry(asin=HARDCOVER_ASIN, title=HARDCOVER) | changes
+
+
+@pytest.fixture(scope="module")
+def several_list(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A booklet for Apra Harbor and a hardcover for both Guam stations,
+    the hardcover listed first: the page puts the booklet first anyway."""
+    entries = {STATION: [hardcover(), entry()], OTHER_STATION: hardcover()}
+    return write_list(tmp_path_factory.mktemp("lists") / "several.json", entries)
+
+
+@pytest.fixture(scope="module")
+def several(tmp_path_factory: pytest.TempPathFactory, several_list: Path) -> Path:
+    return build(tmp_path_factory.mktemp("several"), several_list, "--ga4-id", "G-TEST123")
+
+
+def test_several_books_show_one_sentence_each_booklet_first(several: Path, several_list: Path, check_site: Any) -> None:
+    listed = booklets.load(several_list)
+    assert [b.asin for b in listed[STATION]] == [ASIN, HARDCOVER_ASIN]
+    assert [b.asin for b in listed[OTHER_STATION]] == [HARDCOVER_ASIN]
+    assert listed[STATION][1] == listed[OTHER_STATION][0]
+    blocks = BLOCK.findall(read(several, f"stations/{STATION}"))
+    assert [plain(b) for b in blocks] == [
+        SENTENCE,
+        f"A printed 2027 tide table for this station is sold on Amazon as {HARDCOVER}.",
+    ]
+    assert f'<a href="{HARDCOVER_URL}" rel="noopener">{HARDCOVER}</a>' in blocks[1]
+    other = BLOCK.findall(read(several, f"stations/{OTHER_STATION}"))
+    assert [plain(b) for b in other] == [
+        f"A printed 2027 tide table for this station is sold on Amazon as {HARDCOVER}."
+    ]
+    links = {
+        f.relative_to(several).as_posix(): AMAZON_A.findall(f.read_text(encoding="utf-8"))
+        for f in several.rglob("*")
+        if f.is_file() and f.suffix in SUFFIXES and AMAZON_A.search(f.read_text(encoding="utf-8"))
+    }
+    assert links == {PAGE: [URL, HARDCOVER_URL], OTHER_PAGE_PATH: [HARDCOVER_URL]}
+    said = text_of(read(several, "privacy"))
+    assert PRIVACY in said and said.count("Amazon") == PRIVACY.count("Amazon")
+    assert problems(check_site, several, several_list) == []
+    assert statement_problems(check_site, several) == []
+
+
+def test_each_book_leaves_when_its_own_year_is_over(tmp_path: Path, on: Path, check_site: Any) -> None:
+    """A page due two books in its list is due only the one whose year is
+    not over; the build of a single 2027 booklet then has the right one."""
+    mixed = write_list(
+        tmp_path / "mixed.json",
+        {STATION: [entry(), hardcover(year=2025, title="2025 Tide Tables: Guam")]},
+    )
+    want, _ = check_site.booklet_pages(on, booklets.load(mixed))
+    assert [b.asin for b in want[PAGE]] == [ASIN]
+    assert problems(check_site, on, mixed) == []
+    built = build(tmp_path / "built", mixed)
+    assert AMAZON_A.findall(read(built, f"stations/{STATION}")) == [URL]
+
+
+@pytest.mark.parametrize(
+    ("sabotage", "expect"),
+    [
+        ("drop the hardcover", f"{PAGE}: 1 booklet links, exactly 2 expected"),
+        ("swap the order", f"{PAGE}: {HARDCOVER_URL} is not the booklet's address, {URL}"),
+        ("drop it from the other station", f"{OTHER_PAGE_PATH}: 0 booklet links, exactly 1 expected"),
+    ],
+)
+def test_check_site_catches_a_broken_page_of_several_books(
+    several: Path, several_list: Path, tmp_path: Path, check_site: Any, sabotage: str, expect: str
+) -> None:
+    """Negative controls: each sabotage must change the build and be reported."""
+    bad = tmp_path / "bad"
+    shutil.copytree(several, bad)
+    assert problems(check_site, bad, several_list) == []
+    rel = OTHER_PAGE_PATH if sabotage == "drop it from the other station" else PAGE
+    was = (bad / rel).read_text(encoding="utf-8")
+    first, *rest = BLOCK.findall(was)
+    if sabotage == "swap the order":
+        now = was.replace(first + rest[0], rest[0] + first)
+    elif sabotage == "drop the hardcover":
+        now = was.replace(rest[0], "")
+    else:
+        now = was.replace(first, "")
+    assert now != was  # the sabotage applied
+    (bad / rel).write_text(now, encoding="utf-8")
+    assert expect in problems(check_site, bad, several_list)
 
 
 # The empty list
@@ -335,7 +532,7 @@ def test_the_sentence_makes_no_claim(on: Path) -> None:
     assert built is not None
     for prose in (*copy.values(), plain(built.group(0))):
         assert FORBIDDEN.search(prose) is None, prose
-    assert booklets.block(None) is None
+    assert booklets.blocks(()) == []
     assert booklets.notice(False) is None
 
 

@@ -303,6 +303,11 @@ SHOP_PRIVACY = (
     "pages of towns with a printable calendar or poster, link to the Tide Hours shop on Etsy. This site sends "
     "nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies."
 )
+BOOKLET_PRIVACY = (
+    "Some station pages link to a printed tide table for that station, which Tide Hours publishes and sells on "
+    "Amazon. It is a plain link, not an affiliate link, and this site sends nothing to Amazon. The link takes you "
+    "to Amazon, where Amazon's own privacy notice applies."
+)
 BOOK_PRIVACY = (
     "The tide gifts page links to printed tide tables that Tide Hours publishes and sells on Amazon. They are "
     "plain links, not affiliate links, and this site sends nothing to Amazon. A link takes you to Amazon, where "
@@ -761,20 +766,30 @@ def test_the_page_is_in_the_sitemap_and_llms_txt(published: Path) -> None:
 def test_privacy_and_terms_name_the_page(published: Path) -> None:
     privacy = read(published, "privacy/index.html").replace("&#39;", "'")
     assert f'<h2 id="shop">Shop links</h2>\n<p>{SHOP_PRIVACY}</p>' in privacy
-    assert 'id="booklets"' not in privacy and "Book links" not in privacy
+    # The committed booklets (0030) give the privacy page their own section,
+    # in their own words: the gifts page lists no book, so not "Book links".
+    assert f'<h2 id="booklets">Booklet links</h2>\n<p>{BOOKLET_PRIVACY}</p>' in privacy
+    assert "Book links" not in privacy
     assert "no ads" in privacy
     terms = read(published, "terms/index.html")
-    assert "Etsy" in terms and "Amazon" not in terms
+    assert "Etsy" in terms and terms.count("Amazon") == 1
 
 
-def test_with_no_book_entry_nothing_links_to_or_names_amazon(published: Path, check_site: Any) -> None:
-    """The committed list has no book: no page or file of the published
-    build links to Amazon or names it, the gifts page has no "Printed tide
-    tables" section, and check_site agrees."""
+def test_with_no_book_entry_only_the_booklets_name_amazon(published: Path, check_site: Any) -> None:
+    """The committed list has no book: the gifts page has no "Printed tide
+    tables" section and no Amazon link, Amazon is named only where the
+    committed booklets (0030) put it, and check_site agrees."""
     assert not [g for g in gifts.load(COMMITTED) if g.kind == "book"]
-    for f in published.rglob("*"):
-        if f.is_file() and f.suffix in {".html", ".xml", ".txt", ".json"}:
-            assert "amazon" not in f.read_text(encoding="utf-8").lower(), f
+    named = {
+        f.relative_to(published).as_posix()
+        for f in published.rglob("*")
+        if f.is_file()
+        and f.suffix in {".html", ".xml", ".txt", ".json"}
+        and "amazon" in f.read_text(encoding="utf-8").lower()
+    }
+    assert named == {"privacy/index.html", "terms/index.html"} | {
+        f"stations/{sid}/index.html" for sid in booklets.load()
+    }
     assert "Printed tide tables" not in read(published, PAGE)
     assert problems(check_site, published, shop=SHOP) == []
 

@@ -889,18 +889,23 @@ def moved_pages(template: Template, common: dict[str, Any], states: list[State])
     return pages
 
 
-def booklets_shown(cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime) -> dict[str, booklets.Booklet]:
-    """Station id -> the booklet its page links to in this build: a listed
-    booklet whose year is not over on the station's own date
-    (docs/DECISIONS.md 0030). A listed station the catalog does not have
-    stops the build."""
+def booklets_shown(
+    cat: Catalog, stations: list[Station], cfg: Config, now: dt.datetime
+) -> dict[str, tuple[booklets.Booklet, ...]]:
+    """Station id -> the books its page links to in this build, in order:
+    the listed books whose year is not over on the station's own date
+    (docs/DECISIONS.md 0030). A station with none is left out. A listed
+    station the catalog does not have stops the build."""
     listed = booklets.load(cfg.booklets_file)
     unknown = sorted(sid for sid in listed if cat.station(sid) is None)
     if unknown:
         raise ValueError(f"booklets: no station {', '.join(unknown)} in the catalog")
-    return {
-        s.id: listed[s.id] for s in stations if s.id in listed and booklets.shown(listed[s.id], local_today(s, now))
+    out = {
+        s.id: tuple(b for b in listed[s.id] if booklets.shown(b, local_today(s, now)))
+        for s in stations
+        if s.id in listed
     }
+    return {sid: books for sid, books in out.items() if books}
 
 
 def calendars_shown(
@@ -1159,7 +1164,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
             king_link=links.get(s.id),
             king_calendar=king_calendar(season, links.get(s.id)),
             kc=kt["copy"]["en"],
-            booklet=booklets.block(booklet_of.get(s.id)),
+            booklets=booklets.blocks(booklet_of.get(s.id, ())),
             schema_nodes=schema.station_nodes(
                 s,
                 state_code=st.code,

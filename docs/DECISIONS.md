@@ -1065,6 +1065,62 @@ its include, the privacy and terms lines, and the check.
 
 **For the app:** nothing changes.
 
+Update, 2026-11-16: the owner approved the first two entries after holding
+her own copies, and they are added to the list: Bar Harbor (8413320, ASIN
+B0HRK68249, "2027 Tide Tables: Bar Harbor") and Half Moon Bay (Pillar Point
+Harbor, 9414131, ASIN B0HRJ4XF7W, "2027 Tide Tables: Half Moon Bay"). Each
+link goes on the page of the station its booklet is computed from, with the
+sentence and the privacy paragraph above, unchanged. Garibaldi, Brewster
+Flats and the others are not listed until the owner has held them. The tide
+gifts page (0041) does not list them: a book there would change the privacy
+paragraph to `privacyBooksAndBooklets`, which is not the approved one, so
+that is with the owner. Those two station pages and the privacy and terms
+pages change, with their `lastmod` and IndexNow (0011, 0028).
+`tests/test_station_booklets.py` pins the list to these two entries and
+checks, on a Maine and California build with the committed list, that each
+of the two pages has exactly its own sentence and link, that no other file
+links to Amazon, that the privacy page carries the paragraph and the terms
+page names Amazon once, and that the build of January 1, 2028 has no trace
+of either. `tests/test_gifts.py`'s published build, which uses every
+committed list, now expects the booklets' privacy section and Amazon named
+only on those two pages, privacy and terms, where it expected no Amazon.
+
+Update, 2026-11-16 (later): the owner asked for all seven live books, so
+the other five are added: the Garibaldi booklet (9437540, B0HRT487NL), the
+Brewster Flats booklet (Sesuit Harbor, 8447241, B0HRTL7GPY), and three
+hardcovers of six towns each, "2027 Tide Tables: Maine Coast" (B0HRP6Z64Q:
+8410140, 8413320, 8415490, 8418150, 8418911, 8419317), "2027 Tide Tables:
+Massachusetts" (B0HRTG9CCK: 8440466, 8441841, 8446166, 8446493, 8447241,
+8446121) and "2027 Tide Tables: Washington and Oregon Coast" (B0HRTYK4FR:
+9435380, 9437540, 9440581, 9441102, 9442396, 9446807). The station ids
+are the ones in each book's own packet. Nineteen station pages link to a
+book, and three of them to two.
+
+**What changed for a book of several stations.** A hardcover is one book
+for six stations, which the list refused ("one ASIN under two stations").
+Now a station's entry is one book or a list of books, and a book for
+several stations is listed under each of them with the same ASIN, year and
+title. The list refuses one ASIN with two years or titles, one ASIN twice
+under a station, and an empty list of books; everything else it refused it
+still refuses. A page carries one sentence per book, the same sentence as
+before, in the order of how many stations each book covers, so a station's
+own booklet comes before the hardcover (Bar Harbor, Brewster Flats and
+Garibaldi), whatever order the file lists them in. Each book leaves the
+page when its own year is over. `check_site.py` expects exactly the page's
+books, in that order, each with its own address, and the calendar and
+poster sentences after all of them. A page with one book is byte for byte
+what it was. The privacy paragraph is unchanged: the owner kept it.
+
+**Tests.** `tests/test_station_booklets.py` pins the committed list to the
+seven books and the nineteen stations, builds Maine, Massachusetts, Oregon,
+Washington and California with it, and checks every page's sentences, in
+order and word for word, and that nothing else links to Amazon. On Guam, a
+booklet and a hardcover listed hardcover first show booklet first; a book
+whose year is over leaves while the other stays; the refusals above; and
+three negative controls (a sentence missing, the order swapped, the
+hardcover gone from its other station), each asserting the sabotage
+changed the build.
+
 ## 0031: Highs and lows keep a year's constants for 30 minutes into the next (2026-11-10)
 
 **What was wrong.** The engine picks each instant's lunar-node constants (f

@@ -1,3 +1,120 @@
 {
-  "booklets": {}
+  "booklets": {
+    "8410140": {
+      "asin": "B0HRP6Z64Q",
+      "year": 2027,
+      "title": "2027 Tide Tables: Maine Coast"
+    },
+    "8413320": [
+      {
+        "asin": "B0HRK68249",
+        "year": 2027,
+        "title": "2027 Tide Tables: Bar Harbor"
+      },
+      {
+        "asin": "B0HRP6Z64Q",
+        "year": 2027,
+        "title": "2027 Tide Tables: Maine Coast"
+      }
+    ],
+    "8415490": {
+      "asin": "B0HRP6Z64Q",
+      "year": 2027,
+      "title": "2027 Tide Tables: Maine Coast"
+    },
+    "8418150": {
+      "asin": "B0HRP6Z64Q",
+      "year": 2027,
+      "title": "2027 Tide Tables: Maine Coast"
+    },
+    "8418911": {
+      "asin": "B0HRP6Z64Q",
+      "year": 2027,
+      "title": "2027 Tide Tables: Maine Coast"
+    },
+    "8419317": {
+      "asin": "B0HRP6Z64Q",
+      "year": 2027,
+      "title": "2027 Tide Tables: Maine Coast"
+    },
+    "8440466": {
+      "asin": "B0HRTG9CCK",
+      "year": 2027,
+      "title": "2027 Tide Tables: Massachusetts"
+    },
+    "8441841": {
+      "asin": "B0HRTG9CCK",
+      "year": 2027,
+      "title": "2027 Tide Tables: Massachusetts"
+    },
+    "8446121": {
+      "asin": "B0HRTG9CCK",
+      "year": 2027,
+      "title": "2027 Tide Tables: Massachusetts"
+    },
+    "8446166": {
+      "asin": "B0HRTG9CCK",
+      "year": 2027,
+      "title": "2027 Tide Tables: Massachusetts"
+    },
+    "8446493": {
+      "asin": "B0HRTG9CCK",
+      "year": 2027,
+      "title": "2027 Tide Tables: Massachusetts"
+    },
+    "8447241": [
+      {
+        "asin": "B0HRTL7GPY",
+        "year": 2027,
+        "title": "2027 Tide Tables: Brewster Flats"
+      },
+      {
+        "asin": "B0HRTG9CCK",
+        "year": 2027,
+        "title": "2027 Tide Tables: Massachusetts"
+      }
+    ],
+    "9414131": {
+      "asin": "B0HRJ4XF7W",
+      "year": 2027,
+      "title": "2027 Tide Tables: Half Moon Bay"
+    },
+    "9435380": {
+      "asin": "B0HRTYK4FR",
+      "year": 2027,
+      "title": "2027 Tide Tables: Washington and Oregon Coast"
+    },
+    "9437540": [
+      {
+        "asin": "B0HRT487NL",
+        "year": 2027,
+        "title": "2027 Tide Tables: Garibaldi"
+      },
+      {
+        "asin": "B0HRTYK4FR",
+        "year": 2027,
+        "title": "2027 Tide Tables: Washington and Oregon Coast"
+      }
+    ],
+    "9440581": {
+      "asin": "B0HRTYK4FR",
+      "year": 2027,
+      "title": "2027 Tide Tables: Washington and Oregon Coast"
+    },
+    "9441102": {
+      "asin": "B0HRTYK4FR",
+      "year": 2027,
+      "title": "2027 Tide Tables: Washington and Oregon Coast"
+    },
+    "9442396": {
+      "asin": "B0HRTYK4FR",
+      "year": 2027,
+      "title": "2027 Tide Tables: Washington and Oregon Coast"
+    },
+    "9446807": {
+      "asin": "B0HRTYK4FR",
+      "year": 2027,
+      "title": "2027 Tide Tables: Washington and Oregon Coast"
+    }
+  }
 }

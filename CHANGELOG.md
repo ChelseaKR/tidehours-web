@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Two station pages link to their printed 2027 tide tables on Amazon:
+  Bar Harbor (8413320), "A printed 2027 tide table for this station is sold
+  on Amazon as 2027 Tide Tables: Bar Harbor.", and Half Moon Bay (Pillar
+  Point Harbor, 9414131), "... as 2027 Tide Tables: Half Moon Bay.", each
+  linking `https://www.amazon.com/dp/ASIN` with nothing after it. The
+  privacy page gains its "Booklet links" section and the terms page names
+  Amazon. The links leave by themselves on January 1, 2028 (DECISIONS 0030).
 - Eleven more listings are linked on `/tide-gifts/`, each line ending
   with its listing's own first paragraph: four made-to-order occasion
   prints under "Custom tide chart prints" (new home, new grandparents,

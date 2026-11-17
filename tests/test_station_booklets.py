@@ -33,6 +33,17 @@ URL = "https://www.amazon.com/dp/B0TESTTEST"
 PAGE = f"stations/{STATION}/index.html"
 SENTENCE = "A printed 2027 tide table for this station is sold on Amazon as 2027 Tide Tables: Apra Harbor."
 TAG = "tidehours-20"
+# The committed list, as the owner approved it on 2026-11-16 after holding
+# her own copies: station id -> (ASIN, title).
+COMMITTED = {
+    "8413320": ("B0HRK68249", "2027 Tide Tables: Bar Harbor"),
+    "9414131": ("B0HRJ4XF7W", "2027 Tide Tables: Half Moon Bay"),
+}
+PRIVACY = (
+    "Some station pages link to a printed tide table for that station, which Tide Hours publishes and sells on "
+    "Amazon. It is a plain link, not an affiliate link, and this site sends nothing to Amazon. The link takes you "
+    "to Amazon, where Amazon's own privacy notice applies."
+)
 SHOP = "https://www.etsy.com/shop/TideHours"
 AMAZON_A = re.compile(r'<a\b[^>]*href="(https?://[^"]*amazon\.[^"]*)"[^>]*>', re.I)
 BLOCK = re.compile(r'<p class="booklet"[^>]*>.*?</p>', re.S)
@@ -53,8 +64,8 @@ def write_list(path: Path, entries: Any) -> Path:
     return path
 
 
-def build(out: Path, list_file: Path | None, *extra: str, now: str = NOW) -> Path:
-    args = ["--out", str(out), "--now", now, "--states", "GU", *extra]
+def build(out: Path, list_file: Path | None, *extra: str, now: str = NOW, states: str = "GU") -> Path:
+    args = ["--out", str(out), "--now", now, "--states", states, *extra]
     if list_file is not None:
         args += ["--booklets", str(list_file)]
     assert cli.main(args) == 0
@@ -157,11 +168,54 @@ def statement_problems(check_site: Any, root: Path) -> list[str]:
 # The list
 
 
-def test_the_committed_list_loads_and_names_real_stations() -> None:
+def test_the_committed_list_is_the_owners_booklets() -> None:
     cat = catalog.load()
-    for station_id, booklet in booklets.load().items():
+    listed = booklets.load()
+    assert {sid: (b.asin, b.title) for sid, b in listed.items()} == COMMITTED
+    for station_id, booklet in listed.items():
         assert cat.station(station_id) is not None, station_id
-        assert booklet.url == f"https://www.amazon.com/dp/{booklet.asin}"
+        assert booklet.year == 2027
+        assert booklet.url == f"https://www.amazon.com/dp/{COMMITTED[station_id][0]}"
+
+
+@pytest.fixture(scope="module")
+def committed(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Maine and California with the committed list, the default."""
+    return build(tmp_path_factory.mktemp("committed"), None, "--ga4-id", "G-TEST123", states="ME,CA")
+
+
+def test_the_committed_booklets_show_on_their_own_stations_only(committed: Path, check_site: Any) -> None:
+    links = {
+        f.relative_to(committed).as_posix(): AMAZON_A.findall(f.read_text(encoding="utf-8"))
+        for f in committed.rglob("*")
+        if f.is_file() and f.suffix in SUFFIXES and AMAZON_A.search(f.read_text(encoding="utf-8"))
+    }
+    assert links == {
+        f"stations/{sid}/index.html": [f"https://www.amazon.com/dp/{asin}"] for sid, (asin, _) in COMMITTED.items()
+    }
+    for sid, (asin, title) in COMMITTED.items():
+        blocks = BLOCK.findall(read(committed, f"stations/{sid}"))
+        assert len(blocks) == 1, sid
+        assert plain(blocks[0]) == f"A printed 2027 tide table for this station is sold on Amazon as {title}."
+        assert blocks[0] == (
+            f'<p class="booklet" data-booklet="{asin}">A printed 2027 tide table for this station is sold on '
+            f'Amazon as <a href="https://www.amazon.com/dp/{asin}" rel="noopener">{title}</a>.</p>'
+        )
+    said = text_of(read(committed, "privacy"))
+    assert PRIVACY in said and said.count("Amazon") == PRIVACY.count("Amazon")
+    # The committed calendars and posters link to Etsy, so the terms page
+    # names both stores.
+    terms = text_of(read(committed, "terms"))
+    assert TERMS_ALL in terms and terms.count("Amazon") == 1
+    assert problems(check_site, committed, booklets.LIST) == []
+
+
+def test_the_committed_booklets_leave_on_january_1_2028(tmp_path: Path, check_site: Any) -> None:
+    after = build(tmp_path / "2028", None, now="2028-01-01T11:20:00Z", states="ME,CA")
+    for sid in COMMITTED:
+        assert 'data-station-date="2028-01-01"' in read(after, f"stations/{sid}")
+    assert traces(after) == []
+    assert problems(check_site, after, booklets.LIST) == []
 
 
 def test_valid_asin() -> None:

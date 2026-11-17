@@ -1065,6 +1065,26 @@ its include, the privacy and terms lines, and the check.
 
 **For the app:** nothing changes.
 
+Update, 2026-11-16: the owner approved the first two entries after holding
+her own copies, and they are added to the list: Bar Harbor (8413320, ASIN
+B0HRK68249, "2027 Tide Tables: Bar Harbor") and Half Moon Bay (Pillar Point
+Harbor, 9414131, ASIN B0HRJ4XF7W, "2027 Tide Tables: Half Moon Bay"). Each
+link goes on the page of the station its booklet is computed from, with the
+sentence and the privacy paragraph above, unchanged. Garibaldi, Brewster
+Flats and the others are not listed until the owner has held them. The tide
+gifts page (0041) does not list them: a book there would change the privacy
+paragraph to `privacyBooksAndBooklets`, which is not the approved one, so
+that is with the owner. Those two station pages and the privacy and terms
+pages change, with their `lastmod` and IndexNow (0011, 0028).
+`tests/test_station_booklets.py` pins the list to these two entries and
+checks, on a Maine and California build with the committed list, that each
+of the two pages has exactly its own sentence and link, that no other file
+links to Amazon, that the privacy page carries the paragraph and the terms
+page names Amazon once, and that the build of January 1, 2028 has no trace
+of either. `tests/test_gifts.py`'s published build, which uses every
+committed list, now expects the booklets' privacy section and Amazon named
+only on those two pages, privacy and terms, where it expected no Amazon.
+
 ## 0031: Highs and lows keep a year's constants for 30 minutes into the next (2026-11-10)
 
 **What was wrong.** The engine picks each instant's lunar-node constants (f

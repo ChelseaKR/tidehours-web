@@ -1,3 +1,14 @@
 {
-  "booklets": {}
+  "booklets": {
+    "8413320": {
+      "asin": "B0HRK68249",
+      "year": 2027,
+      "title": "2027 Tide Tables: Bar Harbor"
+    },
+    "9414131": {
+      "asin": "B0HRJ4XF7W",
+      "year": 2027,
+      "title": "2027 Tide Tables: Half Moon Bay"
+    }
+  }
 }

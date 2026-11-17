@@ -4,9 +4,8 @@ Amazon (docs/DECISIONS.md 0030).
 The booklets are Tide Hours' own, published through Amazon KDP, one per
 station and year. `copy/booklets.json` lists the ones that are on sale: a
 station id, the booklet's ASIN, its year, and its title as printed on the
-cover. The list ships empty, and empty leaves no trace in the build. An
-entry is added by a pull request when a booklet goes live; there is no
-repository variable.
+cover. An empty list leaves no trace in the build. An entry is added by a
+pull request when a booklet goes live; there is no repository variable.
 
 A listed station's own page carries one sentence with one plain link,
 `https://www.amazon.com/dp/ASIN` and nothing after it: no Associates tag,

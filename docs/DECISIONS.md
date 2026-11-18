@@ -3027,3 +3027,43 @@ still never names Etsy or Amazon, and check_site still fails it if it
 does (0029, 0030). The year in the calendars line is the owner's wording;
 change it with the print shop's sentence when the year changes (README,
 owner step 7).
+
+## 0048: The build fails if a search or AI-answer crawler is shut out (2026-11-17)
+
+(0047 is reserved for another branch.) Bing, Yahoo and DuckDuckGo sent 12
+of the site's first 14 search visits (GA4, Oct 31 to Nov 17, 2026), and
+ChatGPT is the largest source of visits to another of the owner's sites.
+`robots.txt` is one line that allows everything, and nothing kept it that
+way: the only crawler any check named was Bingbot, at the site root
+(`indexnow.check_robots`), read with `urllib.robotparser`, which takes the
+first matching rule. A file with a group for `OAI-SearchBot` and
+`Disallow: /` passed.
+
+**The rule** (`check_crawlers` in `scripts/check_site.py`, so it runs in
+`make verify` and in the daily publish before the deploy):
+
+- `robots.txt` must let Bingbot, OAI-SearchBot, ChatGPT-User, GPTBot,
+  PerplexityBot and ClaudeBot fetch every page in `sitemap.xml`. It is read
+  as RFC 9309 says and as those crawlers read it: the groups that name the
+  crawler, else `*`; the longest matching rule wins; Allow wins a tie.
+- No sitemap page may carry `noarchive`, `nocache`, `nosnippet` or
+  `max-snippet:0` in a robots meta tag, or in one named for a crawler
+  above. Bing documents `nocache` and `noarchive` as limits on its chat
+  answers. A tag for Google alone (`googlebot`) is not counted.
+
+**What does not change:** `robots.txt`, `sitemap.xml`, `lastmod.json`,
+IndexNow and every page. `check_indexing` already holds that the sitemap
+lists exactly the pages without noindex.
+
+**The list is the owner's.** Blocking the training crawlers (GPTBot,
+ClaudeBot) while keeping the search and answer ones is a decision the
+owner has not made; making it means editing `CRAWLERS` and this entry.
+
+**Tests:** `tests/test_crawler_access.py`: the build passes; five
+`robots.txt` files that shut out one, two or all six crawlers each fail
+with exactly those crawlers named; a file that shuts out OAI-SearchBot and
+ChatGPT-User passes the old Bingbot check; seven meta tags, four that
+fail and three that must not; a noindex page outside the sitemap is left
+alone; and `check_site.main` calls the check.
+
+**For the app:** nothing changes.

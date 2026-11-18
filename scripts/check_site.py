@@ -56,6 +56,11 @@ Every page carries the share card (its own title and description, the
 one 1200 x 630 share image, a large-image Twitter card) and links
 favicon.ico, the apple-touch-icon and manifest.json, and those files are
 at the root at their exact sizes, each under 200 KB (0042).
+robots.txt lets Bingbot, OAI-SearchBot, ChatGPT-User, GPTBot, PerplexityBot
+and ClaudeBot fetch every page in the sitemap, read the way those crawlers
+read it (the group that names the crawler, else "*"; the longest matching
+rule wins), and no sitemap page tells a crawler not to keep or quote it
+(noarchive, nocache, nosnippet, max-snippet:0) (0048).
 
     uv run python scripts/check_site.py SITE_DIR [--amazon-tag TAG] [--print-shop-url URL] [--booklets FILE]
                                        [--calendars FILE] [--posters FILE] [--gifts FILE]
@@ -84,6 +89,18 @@ SCRIPT = re.compile(r"<script.*?</script>", re.S)
 BAD = ("None", "NaN", "nan ft", "undefined", "{{", "{place}", "{id}", "{date}")
 MAX_PAGE_BYTES = 120_000
 NOINDEX = '<meta name="robots" content="noindex,follow">'
+# Search and AI-answer crawlers that must be able to fetch every sitemap page
+# (0048), by the names their owners publish: Bing's crawler; OpenAI's search
+# crawler, its fetcher for a user's question and its training crawler;
+# Perplexity's and Anthropic's crawlers. Changing this list is an owner
+# decision.
+CRAWLERS = ("bingbot", "OAI-SearchBot", "ChatGPT-User", "GPTBot", "PerplexityBot", "ClaudeBot")
+# A robots meta value that stops a crawler keeping or quoting a page. Bing
+# documents nocache and noarchive as limits on its chat answers.
+QUOTE_LIMITS = ("noarchive", "nocache", "nosnippet", "max-snippet:0")
+META = re.compile(r"<meta\b[^>]*>", re.I)
+META_NAME = re.compile(r'\bname="([^"]*)"', re.I)
+META_CONTENT = re.compile(r'\bcontent="([^"]*)"', re.I)
 CANONICAL = re.compile(r'<link rel="canonical" href="https://[^/"]+/([^"]*)">')
 TIDE_TYPE = re.compile(r'data-tide-type="([^"]*)"')
 STATION_DATE = re.compile(r'data-station-date="(\d{4}-\d{2}-\d{2})"')
@@ -230,6 +247,86 @@ def check_share_files(root: Path) -> list[str]:
             problems.append(f"manifest.json: icon {icon} does not match its file")
     if sorted(str(i.get("src")) for i in icons) != ["/icon-192.png", "/icon-512.png"]:
         problems.append("manifest.json does not name /icon-192.png and /icon-512.png")
+    return problems
+
+
+def robots_rules(robots: str, crawler: str) -> list[tuple[str, str]]:
+    """The Allow and Disallow rules of robots.txt that apply to one crawler
+    (RFC 9309): those of every group that names it, else those of "*"."""
+    groups: list[tuple[list[str], list[tuple[str, str]]]] = []
+    in_agents = False
+    for raw in robots.splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if ":" not in line:
+            continue
+        key, value = (part.strip() for part in line.split(":", 1))
+        key = key.lower()
+        if key == "user-agent":
+            if not in_agents:
+                groups.append(([], []))
+            groups[-1][0].append(value.lower())
+            in_agents = True
+            continue
+        in_agents = False
+        if key in ("allow", "disallow") and groups and value:
+            groups[-1][1].append((key, value))
+    name = crawler.lower()
+    named = [g for g in groups if any(agent != "*" and agent in name for agent in g[0])]
+    chosen = named or [g for g in groups if "*" in g[0]]
+    return [rule for g in chosen for rule in g[1]]
+
+
+def may_fetch(rules: list[tuple[str, str]], path: str) -> bool:
+    """Whether the rules let a crawler fetch a path: the longest matching
+    rule wins, Allow wins a tie, and no matching rule means yes. "*" matches
+    any run of characters and a final "$" the end of the path.
+    urllib.robotparser takes the first matching rule instead, which is not
+    how Bing, Google or OpenAI read the file."""
+    allowed, longest = True, -1
+    for kind, pattern in rules:
+        regex = re.escape(pattern).replace(r"\*", ".*")
+        if regex.endswith(r"\$"):
+            regex = regex[:-2] + "$"
+        if re.match(regex, path) is None:
+            continue
+        if len(pattern) > longest or (len(pattern) == longest and kind == "allow"):
+            allowed, longest = kind == "allow", len(pattern)
+    return allowed
+
+
+def quote_limits(page: str) -> list[str]:
+    """The keep-or-quote limits a page's robots meta tags set for a search or
+    AI-answer crawler, as "name: limit". A tag for Google alone (googlebot)
+    is not one of them: it leaves the page open to every other crawler."""
+    names = {"robots", *(c.lower() for c in CRAWLERS)}
+    found = []
+    for tag in META.findall(page):
+        name, content = META_NAME.search(tag), META_CONTENT.search(tag)
+        if name is None or content is None or name.group(1).lower() not in names:
+            continue
+        values = content.group(1).lower().replace(" ", "").split(",")
+        found += [f"{name.group(1).lower()}: {limit}" for limit in QUOTE_LIMITS if limit in values]
+    return found
+
+
+def check_crawlers(root: Path) -> list[str]:
+    """robots.txt lets each of CRAWLERS fetch every page the sitemap lists,
+    and no sitemap page limits keeping or quoting it (0048). Bing, Yahoo and
+    DuckDuckGo sent 12 of the site's first 14 search visits, and until this
+    check the only crawler anything named was Bingbot, at the site root
+    (indexnow.check_robots)."""
+    problems: list[str] = []
+    robots = (root / "robots.txt").read_text(encoding="utf-8")
+    locs = LOC.findall((root / "sitemap.xml").read_text(encoding="utf-8"))
+    for crawler in CRAWLERS:
+        rules = robots_rules(robots, crawler)
+        shut = [loc for loc in locs if not may_fetch(rules, "/" + loc)]
+        if shut:
+            problems.append(f"robots.txt: {crawler} may not fetch {len(shut)} sitemap page(s), such as /{shut[0]}")
+    for loc in locs:
+        f = root / loc / "index.html"
+        if f.is_file():
+            problems += [f"{loc or 'index.html'}: {limit}" for limit in quote_limits(f.read_text(encoding="utf-8"))]
     return problems
 
 
@@ -1264,6 +1361,7 @@ def main(
     for f in html:
         problems += check_page(root, f)
     problems += check_indexing(root, html, cat.stations)
+    problems += check_crawlers(root)
     problems += check_tide_types(root, cat)
     problems += check_king_tides(root, cat)
     problems += check_king_calendar(root, cat)

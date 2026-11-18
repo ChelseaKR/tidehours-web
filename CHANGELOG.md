@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- The build now fails if a search or AI-answer crawler is shut out:
+  `check_site` requires that `robots.txt` lets Bingbot, OAI-SearchBot,
+  ChatGPT-User, GPTBot, PerplexityBot and ClaudeBot fetch every sitemap
+  page (read as those crawlers read it: the longest rule wins), and that no
+  sitemap page carries noarchive, nocache, nosnippet or max-snippet:0.
+  Until now only Bingbot was checked, at the site root. No page,
+  `robots.txt` or sitemap changes (DECISIONS 0048).
 - The other five live books are linked: the Garibaldi and Brewster Flats
   booklets, and the Maine Coast, Massachusetts and Washington and Oregon
   Coast hardcovers on each of their six towns' station pages. Nineteen

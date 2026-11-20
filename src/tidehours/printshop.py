@@ -26,6 +26,11 @@ REL = "noopener"
 PAGES = ("about/", "king-tides/")
 # The pages that may name Etsy in words without linking to it.
 MENTION_PAGES = ("privacy/", "terms/")
+# The state king-tide calendars that carry the same section, near the top,
+# with a sentence naming the state's calendar towns (docs/DECISIONS.md 0051).
+# Washington, Oregon and California only, as the owner approved; their paths
+# are kingtides.calendar_path's (tests/test_king_shop_link.py holds them so).
+CALENDAR_PAGES = ("king-tides/washington/", "king-tides/oregon/", "king-tides/california/")
 COPY = Path(__file__).parent / "copy" / "print_shop.json"
 
 

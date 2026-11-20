@@ -2,6 +2,17 @@
 
 ## 0.1.0 (unreleased)
 
+- The "Prints" section moves up on the king-tide page, from the end to
+  right after the next run, before "What is a king tide?", word for word.
+  The Washington, Oregon and California king-tide calendars carry the same
+  section after the safety box, with one more sentence naming the state's
+  calendar towns and linking to its part of `/tide-calendars/`, for
+  example "Printable 2027 tide calendars for Hood Canal, La Push, Long
+  Beach, Olympia and Westport are listed under Washington on Tide
+  calendars and posters." `check_site` holds the shop link to exactly one
+  on each calendar. Station, state and region pages, the Spanish page,
+  privacy and terms are unchanged. The owner's exception to the
+  December freeze (DECISIONS 0051, amending 0029 and 0035).
 - The build now fails if a search or AI-answer crawler is shut out:
   `check_site` requires that `robots.txt` lets Bingbot, OAI-SearchBot,
   ChatGPT-User, GPTBot, PerplexityBot and ClaudeBot fetch every sitemap

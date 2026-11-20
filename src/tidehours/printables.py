@@ -132,6 +132,45 @@ def link(which: str | None) -> dict[str, str] | None:
     return {"path": PATH, "label": _fill(text["footer"], words, None)}
 
 
+def state_lines(
+    calendar_of: Mapping[str, Calendar], poster_of: Mapping[str, Poster], stations: Mapping[str, Station]
+) -> dict[str, dict[str, str]]:
+    """One sentence for each state of this page, naming its towns, as a
+    state's king-tide calendar shows it in its Prints section
+    (docs/DECISIONS.md 0051): "Printable 2027 tide calendars for Garibaldi
+    and Newport are listed under Oregon on", then a link to that state's
+    section of this page, labeled as the footer labels the page. Keyed by
+    the section's code ("wa"). The towns and their order are the page's
+    own, the words follow what that state has (calendars, posters or
+    both), a state whose items are not all of one year names no year, and
+    a state with a single item reads in the singular. Empty for a build
+    with nothing to list."""
+    footer = link(kind(bool(calendar_of), bool(poster_of)))
+    if footer is None:
+        return {}
+    text: dict[str, Any] = json.loads(COPY.read_text(encoding="utf-8"))
+    out: dict[str, dict[str, str]] = {}
+    for state in states(calendar_of, poster_of, stations):
+        ids = [town.station_id for town in state.towns]
+        which = kind(any(i in calendar_of for i in ids), any(i in poster_of for i in ids))
+        if which is None:  # not reached: states() lists only towns with one
+            continue
+        words = text["kinds"][which]
+        years = {calendar_of[i].year for i in ids if i in calendar_of} | {
+            poster_of[i].year for i in ids if i in poster_of
+        }
+        names = [town.name for town in state.towns]
+        towns = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+        items = sum(len(town.items) for town in state.towns)
+        before = _fill(
+            text["stateLineOne" if items == 1 else "stateLine"],
+            {**words, "towns": towns, "state": state.name},
+            years.pop() if len(years) == 1 else None,
+        )
+        out[state.code] = {"before": before, "path": f"{PATH}#p-{state.code}", "label": footer["label"], "after": "."}
+    return out
+
+
 def notice(which: str | None, print_shop: dict[str, Any] | None) -> dict[str, str] | None:
     """The privacy page's words about the links to Etsy, or None when the
     build has none. `which` is `kind`'s value and `print_shop` is

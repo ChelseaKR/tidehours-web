@@ -1035,6 +1035,9 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "booklet_links": gifts.book_notice(booklets.notice(bool(booklet_of)), gifts.has_books(gift_page)),
         "shop_links": gifts.shop_notice(printed, shop, gifts.has_etsy(gift_page)),
         "printables": printables.link(printed),
+        # The state king-tide calendars' Prints section (docs/DECISIONS.md 0051).
+        "king_shop_pages": printshop.CALENDAR_PAGES,
+        "king_shop_towns": printables.state_lines(calendar_of, poster_of, by_id),
         "gifts": gifts.link(gift_page),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),

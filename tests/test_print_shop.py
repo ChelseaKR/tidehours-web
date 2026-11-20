@@ -117,8 +117,8 @@ def test_off_check_can_fail(off: Path, tmp_path: Path, check_site: Any) -> None:
     ]
 
 
-def test_on_links_from_about_and_the_english_king_tide_page_only(on: Path, check_site: Any) -> None:
-    for rel in ("about", "king-tides"):
+def test_on_links_from_about_and_the_english_king_tide_pages_only(on: Path, check_site: Any) -> None:
+    for rel in ("about", "king-tides", "king-tides/washington", "king-tides/oregon", "king-tides/california"):
         html = read(on, rel)
         links = ETSY_A.findall(html)
         assert links == [URL], rel
@@ -126,7 +126,16 @@ def test_on_links_from_about_and_the_english_king_tide_page_only(on: Path, check
         assert tag is not None and 'rel="noopener"' in tag.group(0), rel
         assert "data-ga-event" not in tag.group(0), rel
         assert "Tide Hours shop on Etsy" in text_of(html), rel
-    assert sorted(traces(on)) == ["about/index.html", "king-tides/index.html", "privacy/index.html", "terms/index.html"]
+    # About, the king-tide page and, since 0051, the three state calendars.
+    assert sorted(traces(on)) == [
+        "about/index.html",
+        "king-tides/california/index.html",
+        "king-tides/index.html",
+        "king-tides/oregon/index.html",
+        "king-tides/washington/index.html",
+        "privacy/index.html",
+        "terms/index.html",
+    ]
     assert "etsy" not in read(on, "es/king-tides").lower()
     assert check_site.check_print_shop(on, pages(on), URL) == []
 

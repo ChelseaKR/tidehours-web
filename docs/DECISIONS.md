@@ -3067,3 +3067,94 @@ fail and three that must not; a noindex page outside the sitemap is left
 alone; and `check_site.main` calls the check.
 
 **For the app:** nothing changes.
+
+## 0051: Prints near the top of the king-tide pages, and the calendar towns on the state calendars (owner, 2026-11-19)
+
+(0049 and 0050 are reserved for other branches.) Search Console and GA4,
+read 2026-11-19: in the 28 days to Nov 19 the king-tide pages took 11 of
+the site's 14 Google clicks and 30 of its 34 search landings (Google,
+Bing, Yahoo, DuckDuckGo), 23 of them on `king-tides/`. GA4 had recorded
+no outbound click and no scroll event (90% depth) on any page since
+launch, with both switched on. The hub's "Prints" section (0029) was its
+last section, on phone screen 29 of 30 (375 × 812); the state calendars
+had no shop link at all (0035 kept it off them). So no reader had seen
+the shop link. The owner approved the three changes below on
+2026-11-19, as drafted in
+`growth/tidehours-landing-to-shop-2026-11-19/FOR-APPROVAL.md`.
+
+**An exception to the freeze.** Nothing was to change tidehours.com
+before 2026-12-16, to keep the station-page indexing read (0033, about
+Dec 10) and the "More places" read (0043) clean. The owner made an
+exception for the English king-tide page and the three state calendars
+only, to ship before the Nov 23 to Dec 1 run. These pages already change
+on their own (0045 titles; the next-run table daily). No station, state,
+region, home, About, privacy or terms page changes, and no page gains a
+link to a station page.
+
+**1. The hub.** The "Prints" section moves, word for word, from the end
+of `king-tides/` to right after the next-run section and before "What is
+a king tide?" (phone screen about 5). When the next-run section is not
+built, it falls just before the definition. English only, as before.
+Amends 0029, which ended the page with it.
+
+**2. The state calendars.** `king-tides/washington/`, `oregon/` and
+`california/` (`printshop.CALENDAR_PAGES`) carry the same section, after
+the safety box and before the months (phone screen about 1.5). The
+words are the hub's, the owner's of 2026-11-12, as she approved them for
+these pages on 2026-11-17 (W6 part 1); she approved this place on
+2026-11-19 in place of "after the last month". Amends 0035 ("not on …
+king-tide pages") for these three. `check_site.check_print_shop` now
+requires exactly one shop link, with the shop's address and
+`rel="noopener"`, on each of them as on About and the hub. Maine and
+Massachusetts calendars, when they come (0049), are not in the list; adding
+them is the owner's call.
+
+**3. The calendar towns.** Inside the same section, after the shop
+sentence: "Printable 2027 tide calendars for Hood Canal, La Push, Long
+Beach, Olympia and Westport are listed under Washington on Tide calendars
+and posters." (the owner's wording), with "Tide calendars and posters"
+linking to `/tide-calendars/#p-wa`. Oregon and California follow the
+same pattern. The towns, their order, the words for what the state has
+("calendars", "posters", "calendars and posters"), the year and the link
+label all come from `printables.state_lines`, which reads what
+`tide-calendars/` lists for that state in this build, so a new listing
+appears with no edit and a state with none gets no sentence. One item
+reads in the singular ("A printable 2027 tide calendar for … is listed
+…"); items of more than one year name no year. The frames are in
+`copy/printables.json` (`stateLine`, `stateLineOne`). The sentence links
+to this site's own page, not to Etsy; the listings stay one click away
+there (0037).
+
+**Privacy and terms.** Unchanged. The privacy page already says "The
+About and king tides pages … link to the Tide Hours shop on Etsy", and
+the three calendars are king-tide pages.
+
+**Checked.** `tests/test_king_shop_link.py` reads the built pages with
+`htmlq` (added here, the same file as on the Maine and Massachusetts and
+January wording branches): the hub's section sits between the next run
+and the definition; each calendar's sits between the safety box and the
+first month, with the shop sentence and the towns sentence and their
+links; Washington reads exactly as approved; each state's towns are the
+towns `tide-calendars/` lists and the committed calendars and posters of
+that state; the anchors exist; no word of the standing wording rules
+(fishing, boating, surfing, clamming, tide-pool, swimming, diving words),
+no urgency and no claim, with a negative control; nothing with the shop
+off; no other page carries the towns; and `check_print_shop` passes the
+build and fails a calendar with no link or two. `test_print_shop.py` and
+`test_station_calendars.py` list the three calendars among the shop's
+pages.
+
+**Overlap.** `seo/jan-5-wording` (W6 parts 1 and 2, local) puts the same
+section at the end of each calendar and changes the same lines of
+`tests/test_print_shop.py` and `tests/test_station_calendars.py`.
+Rebased onto this, it drops part 1 and keeps part 2, on the hub only (the
+owner's default of 2026-11-19 once this is live). Its DECISIONS number,
+0048, is taken on main.
+
+**Measured next.** GA4 outbound clicks by page, read on Dec 2 and Jan 28.
+
+**Reversible.** Yes: move the include back to the end of the hub, drop
+it from the calendar template, `CALENDAR_PAGES`, `state_lines`, the two
+copy keys and the tests.
+
+**For the app:** nothing changes.

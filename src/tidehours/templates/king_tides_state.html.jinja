@@ -41,6 +41,14 @@
   <p>{{ kc.safety.body[0] }}</p>
   <p>Check the <a href="https://www.weather.gov/">National Weather Service</a> for coastal flood warnings, and don't go out for photos unless it's safe.</p>
 </section>
+{# The hub's Prints section, after the safety box and before the months,
+    with a sentence naming this state's calendar towns (docs/DECISIONS.md
+    0051). Only on the calendars printshop.CALENDAR_PAGES names. #}
+{% if print_shop and path in king_shop_pages %}
+{% with shop_towns = king_shop_towns.get(state_code|lower) %}
+{% include "_print_shop.html.jinja" %}
+{% endwith %}
+{% endif %}
 
 {% for m in calendar %}
 {% set month_name = kc.monthsLong[m.month - 1] ~ " " ~ m.year %}

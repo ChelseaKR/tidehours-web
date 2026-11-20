@@ -7,4 +7,7 @@
 <section class="print-shop" aria-labelledby="print-shop" data-print-shop="etsy">
   <h2 id="print-shop">{{ print_shop.text.heading }}</h2>
   <p>{{ print_shop.text.before }} <a href="{{ print_shop.url }}" rel="{{ print_shop.rel }}">{{ print_shop.text.link }}</a>{{ print_shop.text.after }}</p>
+{% if shop_towns is defined and shop_towns %}
+  <p data-shop-towns>{{ shop_towns.before }} <a href="/{{ shop_towns.path }}">{{ shop_towns.label }}</a>{{ shop_towns.after }}</p>
+{% endif %}
 </section>

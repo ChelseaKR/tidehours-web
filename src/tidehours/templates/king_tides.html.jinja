@@ -51,6 +51,11 @@
 </section>
 {% endif %}
 
+{# Prints right after the next run, before the definition (docs/DECISIONS.md
+    0029, moved up in 0051). English only, as before. #}
+{% if print_shop and lang == "en" %}
+{% include "_print_shop.html.jinja" %}
+{% endif %}
 <section aria-labelledby="kt-definition">
   <h2 id="kt-definition">{{ c.definition.heading }}</h2>
   {% for p in c.definition.body %}<p>{{ p }}</p>{% endfor %}
@@ -134,8 +139,5 @@
 </section>
 {% if affiliate %}
 {% include "_affiliate_block.html.jinja" %}
-{% endif %}
-{% if print_shop and lang == "en" %}
-{% include "_print_shop.html.jinja" %}
 {% endif %}
 {% endblock %}

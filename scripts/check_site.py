@@ -1271,7 +1271,9 @@ def check_print_shop(
         f = root / name
         if f.exists() and "etsy" in f.read_text(encoding="utf-8").lower():
             problems.append(f"{name}: mentions etsy")
-    link_pages = {p + "index.html" for p in printshop.PAGES}
+    # Since 0051 the state king-tide calendars of printshop.CALENDAR_PAGES
+    # carry the link too, under the same rules.
+    link_pages = {p + "index.html" for p in (*printshop.PAGES, *printshop.CALENDAR_PAGES)}
     for f in html:
         rel = f.relative_to(root).as_posix()
         text, found = _check_poster(rel, f.read_text(encoding="utf-8"), want_poster.get(rel))
@@ -1324,7 +1326,7 @@ def _check_print_shop_page(rel: str, text: str, url: str, link_page: bool) -> li
     links = list(ETSY_A.finditer(text))
     if not link_page:
         if links:
-            problems.append(f"{rel}: etsy link outside {', '.join(printshop.PAGES)}")
+            problems.append(f"{rel}: etsy link outside {', '.join((*printshop.PAGES, *printshop.CALENDAR_PAGES))}")
         elif rel not in {p + "index.html" for p in printshop.MENTION_PAGES}:
             problems.append(f"{rel}: mentions etsy")
         return problems

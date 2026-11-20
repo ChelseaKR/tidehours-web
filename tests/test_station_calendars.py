@@ -509,7 +509,8 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
     } | {f"stations/{sid}/index.html": [poster_of[sid]] for sid in poster_only}
     every = sorted(url for urls in want.values() for url in urls)
     assert len(every) == 48 and sorted(links.pop(HUB)) == every
-    assert links == want | {"about/index.html": [SHOP], "king-tides/index.html": [SHOP]}
+    shop_pages = ("about/", "king-tides/", "king-tides/washington/", "king-tides/oregon/", "king-tides/california/")
+    assert links == want | {f"{rel}index.html": [SHOP] for rel in shop_pages}  # 0029, 0051
     for sid, (listing, title) in COMMITTED.items():
         html = read(committed, f"stations/{sid}")
         blocks = BLOCK.findall(html)
@@ -540,7 +541,10 @@ def test_the_committed_calendars_leave_on_january_1_2028(tmp_path: Path, check_s
         assert "etsy" not in read(after, f"stations/{sid}").lower(), sid
     assert {f.relative_to(after).as_posix() for f in pages(after) if ETSY_A.search(f.read_text(encoding="utf-8"))} == {
         "about/index.html",
+        "king-tides/california/index.html",
         "king-tides/index.html",
+        "king-tides/oregon/index.html",
+        "king-tides/washington/index.html",
     }
     assert shop_section(after) == [PRIVACY_SHOP_ONLY]
     assert not (after / HUB).exists()

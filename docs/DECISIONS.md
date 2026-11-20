@@ -3158,3 +3158,59 @@ it from the calendar template, `CALENDAR_PAGES`, `state_lines`, the two
 copy keys and the tests.
 
 **For the app:** nothing changes.
+
+## 0054: An Accessibility Conformance Report, and the gaps it found (2026-11-19)
+
+(0052 and 0053 are reserved for other branches.) The owner asked for a
+WCAG conformance report on each product she earns from,
+with the gaps filled. `docs/accessibility/ACR.md` is that report for this
+site: every WCAG 2.2 Level A and AA criterion, in the form of the ITI
+VPAT 2.5 Rev WCAG edition, from axe-core and pa11y, measured reflow, text
+spacing and keyboard focus on one page of every template in light and
+dark mode, and a reading of every template. It says what still needs a
+person with a screen reader and lists those steps.
+
+**What it found.** One failure on the site and three gaps in the gate:
+
+1. **Language of parts (3.1.2).** With analytics on, every page's footer
+   has the opt-out button and its status lines, in English
+   (`_ga4.html.jinja`). On `es/king-tides/`, a Spanish page, nothing
+   marked them as English, so a screen reader read them with Spanish
+   pronunciation. The footer's `#analytics-choice` now carries
+   `lang="en"` on a page whose language is not English. No word changes.
+2. **The sample left out two templates.** `scripts/site_sample.py` named
+   home, about, privacy and the king-tide pages but not `terms/`, and not
+   the state king-tide calendars (`king-tides/washington/`, `oregon/`,
+   `california/`), which have a template of their own. Both are now in it.
+3. **The gate's build had no shop and no analytics.** The Prints sections
+   (About, the king-tide hub and the state calendars, 0029 and 0051) and
+   the analytics opt-out appear only with a shop address and a GA4 ID,
+   which the published build has and `run.sh`'s build did not, so axe and
+   pa11y never saw them. `run.sh` now builds with a placeholder shop
+   address and a placeholder GA4 ID. Its browsers already block Google
+   Analytics, so nothing is sent.
+4. **Dark mode was not checked.** The site has a dark palette; axe ran in
+   light mode only. `axe.mjs` now runs axe's contrast rules again with
+   `prefers-color-scheme: dark`.
+
+**An exception to the freeze, as a fix.** Nothing was to change
+tidehours.com before 2026-12-16 (0051). An accessibility fix counts as a
+fix. Only item 1 changes a page: `lang="en"` on one footer element, on
+`es/king-tides/` only. English pages, and every page built without
+analytics, are byte for byte unchanged. Items 2 to 4 change the checks,
+not the site. The owner decides when it ships.
+
+**Not built.** No new page or footer link to the report: that would be
+new words on the site, listed for the owner's approval with the rest in
+`growth/acr-2026-11-20/tidehours-web/FOR-APPROVAL.md`.
+
+**Tests:** `tests/test_accessibility.py`: the Spanish page's opt-out is
+marked English and no English page's is; the sample has terms and the
+three calendars; `run.sh` builds with a shop address and a GA4 ID; and
+`axe.mjs` checks contrast in dark mode. Each fails on the code before.
+
+**Reversible.** Yes: drop the attribute, the sample lines, the two build
+options and the dark pass.
+
+**For the app:** nothing changes. The app's own accessibility audit is in
+its repository.

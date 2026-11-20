@@ -2,6 +2,16 @@
 
 ## 0.1.0 (unreleased)
 
+- An Accessibility Conformance Report, `docs/accessibility/ACR.md`, in
+  the form of the VPAT 2.5 Rev WCAG edition: every WCAG 2.2 Level A and AA
+  criterion, with what was measured and what still needs a screen-reader
+  walkthrough (listed in its appendix). One fix to the site: on the
+  Spanish king-tide page, the footer's English analytics opt-out is marked
+  `lang="en"` (WCAG 3.1.2); no words change, and English pages are
+  unchanged. The accessibility gate now also checks `terms/` and the three
+  state king-tide calendars, builds with a shop address and a GA4 ID so it
+  sees the Prints sections and the opt-out, and checks contrast in dark
+  mode (DECISIONS 0054).
 - The "Prints" section moves up on the king-tide page, from the end to
   right after the next run, before "What is a king tide?", word for word.
   The Washington, Oregon and California king-tide calendars carry the same

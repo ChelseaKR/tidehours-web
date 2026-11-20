@@ -14,6 +14,10 @@ the Tide Hours iPhone app's engine, as a static site.
 Every page says the numbers are predictions, not observations, not for
 navigation, and not a NOAA product, and credits NOAA CO-OPS.
 
+Accessibility: WCAG 2.2 Level AA, checked by `make site-checks`. The
+Accessibility Conformance Report is
+[docs/accessibility/ACR.md](docs/accessibility/ACR.md) (DECISIONS 0054).
+
 ## How it works
 
 `tidehours --out site` loads the committed NOAA data (`src/tidehours/data/`,

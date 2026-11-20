@@ -1,6 +1,7 @@
 // axe-core over every page of the built site (ACCESSIBILITY-STANDARD §1):
 //   A11Y-01  0 violations of impact critical, serious or moderate, against
 //            the WCAG 2.0/2.1/2.2 A and AA tags (target-size included).
+//            Color contrast is checked again with the dark palette.
 //   A11Y-09  320 x 256 viewport: the page does not scroll sideways.
 //
 // Usage: node axe.mjs <base-url> <path> [<path> ...]
@@ -57,6 +58,18 @@ try {
         problems.push(`${path}: [${v.impact}] ${v.id}: ${v.help} (${where})`);
       }
     }
+
+    // The dark palette (prefers-color-scheme: dark in style.css): contrast
+    // again, since only the colors change.
+    await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "dark" }]);
+    const dark = await new AxePuppeteer(page).withRules(["color-contrast", "link-in-text-block"]).analyze();
+    for (const v of dark.violations) {
+      if (BLOCKING.has(v.impact ?? "")) {
+        const where = v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join("; ");
+        problems.push(`${path} (dark): [${v.impact}] ${v.id}: ${v.help} (${where})`);
+      }
+    }
+    await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
 
     await page.setViewport({ width: 320, height: 256 });
     const overflow = await page.evaluate(() => {

@@ -76,7 +76,9 @@
     <p class="foot-read"><a href="/about/#reading"{% if lang != "en" %} hreflang="en"{% endif %}>{{ "Cómo leer una página de mareas" if lang == "es" else "How to read a tide page" }}</a></p>
     <p><a href="/privacy/">{{ t.privacy }}</a> · <a href="/terms/">{{ t.terms }}</a> · <a href="/about/">{{ t.about }}</a>{% if printables and lang == "en" %} · <a href="/{{ printables.path }}">{{ printables.label }}</a>{% endif %}{% if gifts and lang == "en" %} · <a href="/{{ gifts.path }}">{{ gifts.label }}</a>{% endif %}</p>
     {% if ga4_measurement_id %}
-    <div id="analytics-choice" hidden>
+    {#- The control and its messages are in English (_ga4.html.jinja), so a
+        page in another language marks them as English (WCAG 3.1.2). -#}
+    <div id="analytics-choice"{% if lang != "en" %} lang="en"{% endif %} hidden>
       <button type="button" id="analytics-opt-out" hidden>Opt out of analytics</button>
       <span id="analytics-status" role="status"></span>
     </div>

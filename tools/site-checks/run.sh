@@ -8,8 +8,9 @@
 #   4. pa11y-ci with the axe runner, WCAG2AA, on the same sample.
 #
 # The sample (scripts/site_sample.py): every page that is not a station or
-# region page (home, about, privacy, both king-tide pages, 404, every state
-# page), every 25th region page, every split-region page, and the station
+# region page (home, about, privacy, terms, both king-tide pages and each
+# state's king-tide calendar, 404, every state page), every 25th region
+# page, every split-region page, and the station
 # pages of the golden-test fixtures (a harmonic and a subordinate station in
 # every state). Station pages share one template, so the sample covers each
 # shape: harmonic, subordinate, no state, no region. Moved region pages that
@@ -35,7 +36,10 @@ echo "== the checkers' own dependencies"
 (cd "$tools" && npm audit --audit-level=high --no-fund)
 
 echo "== build the site"
-(cd "$root" && uv run --frozen tidehours --out "$work/site" --now 2026-11-01T11:20:00Z)
+# A shop address and a GA4 ID, neither real, so the pages carry the Prints
+# sections (about, the king-tide hub and state calendars) and the footer's
+# analytics opt-out as published; Google Analytics is blocked below.
+(cd "$root" && uv run --frozen tidehours --out "$work/site" --now 2026-11-01T11:20:00Z --print-shop-url https://www.etsy.com/shop/TideHoursCheck --ga4-id G-SITECHECKS)
 
 pages_file="$work/pages.txt"
 (cd "$root" && uv run --frozen python scripts/site_sample.py "$work/site" > "$pages_file")

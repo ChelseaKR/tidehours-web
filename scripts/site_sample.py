@@ -3,8 +3,9 @@ check and pa11y-ci, one path per line.
 
     uv run python scripts/site_sample.py <built-site-dir>
 
-Every page that is not a station or region page (home, about, privacy, both
-king-tide pages, 404, every state page), every 25th region page, every
+Every page that is not a station or region page (home, about, privacy,
+terms, both king-tide pages and each state's king-tide calendar, 404, every
+state page), every 25th region page, every
 split-region page, the station pages of the golden-test fixtures (a
 harmonic and a subordinate station in every state), the station pages
 of the committed booklet, calendar and poster lists, which carry a link no
@@ -45,7 +46,8 @@ def sample(site: Path) -> list[str]:
         ids += list(d["harmonic"]) + list(d["subordinate"])
     listed = [*booklets.load(), *calendars.load(), *posters.load()]
     ids += [i for i in listed if (site / "stations" / i / "index.html").is_file()]
-    pages = ["./", "about/", "privacy/", "king-tides/", "es/king-tides/", "404.html"]
+    pages = ["./", "about/", "privacy/", "terms/", "king-tides/", "es/king-tides/", "404.html"]
+    pages += sorted(p.parent.relative_to(site).as_posix() + "/" for p in site.glob("king-tides/*/index.html"))
     if (site / printables.PATH / "index.html").is_file():
         pages.append(printables.PATH)
     if (site / gifts.PATH / "index.html").is_file():

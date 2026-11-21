@@ -90,6 +90,8 @@ Each motif carries information, except the wave rule.
 
 The app is held for Apple's review. Make these changes in the release after Apple's decision, not in a pending submission.
 
+Status: the app made these changes in its 1.0 (ChelseaKR/tide-hours DECISIONS 0003), and since moved to the Print look (DECISIONS 0009 there). Where this list and "App" below differ, "App" is current: station names are Iowan Old Style now, with New York only at the accessibility text sizes.
+
 - **Mark:** the app icon already is the clock over the wave. Keep the favicon and the icon the same drawing.
 - **Accent:** move AccentColor from #006190 / #1a73b3 to channel navy #17365d (light) and #9cc6ea (dark), with the high and low colors above.
 - **Triangles:** use the same up and down triangles for high and low in the day list and widgets.
@@ -97,3 +99,58 @@ The app is held for Apple's review. Make these changes in the release after Appl
 - **Serif station names:** set station names in New York (the iOS system serif, close to Iowan Old Style), with tabular numbers for times and heights.
 - **Reading guide:** reuse the site's "How to read a tide page" text (/about/#reading) for the app's About screen.
 - **Distinct from sister apps:** the app must look like its own product next to Trout Truck and Lake Notice (App Store 4.3(a)), so don't borrow their layouts.
+
+## App
+
+The iPhone app's Print look, chosen by the owner on 2026-11-20 (ChelseaKR/tide-hours DECISIONS 0009). The station screen's first card and About's first card are drawn as the print shop's print: its paper with a 1 pt frame rule in its ink, 7 pt in from the card's edge, on a slightly darker wall. Light mode is the print's Chart colorway, dark mode its Night colorway (the share image's). The colors are in the app's `App/Views/Theme.swift` and `App/Views/Print/PrintStyle.swift`; `design/print/contrast_check.py` there measures every pair below and fails under WCAG AA.
+
+| Name | Role | Light | Dark |
+|---|---|---|---|
+| `Theme.page` | The wall the print hangs on | #ede6d6 | #08111d |
+| `Theme.surface` | Every other card | #fffdf7 | #101e30 |
+| iOS label | Body text | #000000 | #ffffff |
+| `Theme.muted` | Secondary text | #4b5561 | #a9b6c4 |
+| `Theme.brand` | Channel navy: headings, navigation titles, the day line, the accent | #17365d | #9cc6ea |
+| `Theme.high` | High triangles | #1d5a8c | #8cc4f0 |
+| `Theme.low` | Low triangles | #87470f | #f0b46a |
+| `PrintPalette.paper` | The print's paper | #f7f3e8 | #0f2238 |
+| `PrintPalette.ink` | The print's ink: the station name, the frame rule, high time labels | #17365d | #f4efe2 |
+| `PrintPalette.water` | The filled water under the curve | #17365d | #1d4468 |
+| `PrintPalette.edge` | The curve's edge | #9fbfca | #9cc6ea |
+| `PrintPalette.onWater` | Low time labels in the water | #f7f3e8 | #f4efe2 |
+| `PrintPalette.midline` | The dotted 0 ft line and the now line | #80868e | #7c93ad |
+| `PrintPalette.moonRim` | The moon's rim | #17365d | #9cc6ea |
+
+Contrast ratios, light / dark:
+
+| Pair | Light | Dark |
+|---|---|---|
+| Body text on the wall | 16.89 | 18.95 |
+| Muted text on the wall (footers) | 6.10 | 9.18 |
+| Section headers and navigation titles (navy Iowan) on the wall | 9.81 | 10.54 |
+| Body text on a card | 20.65 | 16.79 |
+| Muted text on a card | 7.45 | 8.14 |
+| Station name (print ink) on the print | 11.00 | 14.00 |
+| Body text on the print | 18.94 | 16.08 |
+| Muted text and axis labels on the print | 6.83 | 7.79 |
+| Day line (navy) on the print | 11.00 | 8.94 |
+| High time labels (ink) on the print | 11.00 | 14.00 |
+| Low time labels (cream) on the water | 11.00 | 8.80 |
+| Low time labels above the low (ink) on their paper halo | 11.00 | 14.00 |
+| The curve against the print (light: the water's edge; dark: the edge line) (graphic) | 11.00 | 8.94 |
+| Curve edge on the water (graphic) | 6.26 | 5.62 |
+| 0 ft line and now line on the print (graphic) | 3.31 | 5.08 |
+| 0 ft line and now line on the water (graphic) | 3.32 | 3.19 |
+| High triangle on its paper halo (graphic) | 6.55 | 8.63 |
+| Low triangle on its paper halo (graphic) | 6.45 | 8.76 |
+| Frame rule on the print (graphic) | 11.00 | 14.00 |
+| Moon rim on the print (graphic) | 11.00 | 8.94 |
+
+The floor: text 6.10:1 and graphics 3.19:1 or better. A new app color goes into `contrast_check.py` first and stays at or above 4.5:1 for text and 3:1 for graphics.
+
+Type in the app:
+
+- **Headings:** Iowan Old Style, the first face in the site's heading stack, built into iOS (nothing is bundled or downloaded). Bold for station names, section headers and navigation titles; italic for the day line, like the print's date; bold italic for the 7-day table's days. The station name on the print is centered, like the print's place name, and so are the "now" lines under it; the rest of the card is left-aligned.
+- **At the accessibility text sizes:** New York (the iOS system serif) takes over at the same text style, because Iowan is about a tenth wider and broke long names mid-word at the largest size.
+- **With Bold Text on:** Iowan's regular and italic text is drawn in its bold faces, since iOS does not thicken a named font.
+- **Body and numbers:** the system font, with tabular figures for times and heights, as on the site.

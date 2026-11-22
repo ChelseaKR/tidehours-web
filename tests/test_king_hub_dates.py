@@ -1,18 +1,19 @@
-"""The king-tide page's dates late in a run (docs/DECISIONS.md 0060).
+"""The king-tide dates late in a run (docs/DECISIONS.md 0060).
 
 Once a station's run ends, `kingtides.coming_up` gives it the next month's
-run. The page's heading, description and state lines took the first and last
-day over every station, so late in a run they reached into the next month:
-on Nov 28, "Washington: Nov 24–Dec 26, 2026" for a run that ends Dec 1.
-While king tides are under way, those three now use only the runs under way;
+run. The king-tide page's heading, description and state lines, the home
+page's king-tide line and the WA, OR and CA state pages' took the first and
+last day over every station, so late in a run they reached into the next
+month: on Nov 28, "Washington: Nov 24–Dec 26, 2026" for a run that ends
+Dec 1. While king tides are under way, they now use only the runs under way;
 a state with none keeps its next run's line, and the station rows are every
 run coming up, as before. No words change.
 
 Builds are pinned with `--now` at the daily build's time, 11:20 UTC. Each
 date is also built with the span as it was before this change (every run
 coming up), so the tests can say what changed: on the dates between runs,
-nothing; on the dates late in a run, only the heading, the two descriptions
-and the state lines of the English and Spanish king-tide pages."""
+nothing; on the dates late in a run, only those lines, on the English and
+Spanish king-tide pages, the home page and the state pages."""
 
 from __future__ import annotations
 
@@ -26,7 +27,7 @@ from tidehours import cli, htmlq, site
 from tidehours import kingtides as kt
 from tidehours.catalog import DATA_DIR, load
 
-STATES = "WA"
+STATES = "CA,OR,WA"
 PAGES = ("king-tides/index.html", "es/king-tides/index.html")
 
 EN_DESCRIPTION = (
@@ -221,8 +222,73 @@ EXPECTED: dict[str, tuple[tuple[str, str, list[str]], tuple[str, str, list[str]]
         ),
     ),
 }
-# Late in a run: the dates the old merge got wrong.
-LATE = {"2026-11-27", "2026-11-28", "2026-12-01", "2026-12-27", "2026-12-30"}
+# The home page's king-tide sentence and the WA, OR and CA state pages'.
+SUMMARIES: dict[str, tuple[str, str, str, str]] = {
+    "2026-11-22": (
+        "The next West Coast king tides are Nov 23–Dec 1, 2026, peaking Nov 25–27, 2026 depending on the place.",
+        "Washington's next king tides are Nov 23–Dec 1, 2026, peaking Nov 25–27, 2026 depending on the place.",
+        "Oregon's next king tides are Nov 23–27, 2026, highest on Nov 25, 2026.",
+        "California's next king tides are Nov 23–27, 2026, highest on Nov 25, 2026.",
+    ),
+    "2026-11-27": (
+        "The next West Coast king tides are Nov 23–Dec 1, 2026, peaking Nov 25–27, 2026 depending on the place.",
+        "Washington's next king tides are Nov 23–Dec 1, 2026, peaking Nov 25–27, 2026 depending on the place.",
+        "Oregon's next king tides are Nov 23–27, 2026, highest on Nov 25, 2026.",
+        "California's next king tides are Nov 23–27, 2026, highest on Nov 25, 2026.",
+    ),
+    "2026-11-28": (
+        "The next West Coast king tides are Nov 24–Dec 1, 2026, peaking Nov 26–27, 2026 depending on the place.",
+        "Washington's next king tides are Nov 24–Dec 1, 2026, peaking Nov 26–27, 2026 depending on the place.",
+        "Oregon's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+        "California's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+    ),
+    "2026-12-01": (
+        "The next West Coast king tides are Nov 25–Dec 1, 2026, highest on Nov 27, 2026.",
+        "Washington's next king tides are Nov 25–Dec 1, 2026, highest on Nov 27, 2026.",
+        "Oregon's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+        "California's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+    ),
+    "2026-12-02": (
+        "The next West Coast king tides are Dec 8–30, 2026, peaking Dec 9–26, 2026 depending on the place.",
+        "Washington's next king tides are Dec 8–30, 2026, peaking Dec 9–26, 2026 depending on the place.",
+        "Oregon's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+        "California's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+    ),
+    "2026-12-17": (
+        "The next West Coast king tides are Dec 20–30, 2026, peaking Dec 23–26, 2026 depending on the place.",
+        "Washington's next king tides are Dec 20–30, 2026, peaking Dec 23–26, 2026 depending on the place.",
+        "Oregon's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+        "California's next king tides are Dec 21–26, 2026, highest on Dec 24, 2026.",
+    ),
+    "2026-12-27": (
+        "The next West Coast king tides are Dec 22–30, 2026, peaking Dec 25–26, 2026 depending on the place.",
+        "Washington's next king tides are Dec 22–30, 2026, peaking Dec 25–26, 2026 depending on the place.",
+        "Oregon's next king tides are Jan 19–24, 2027, highest on Jan 22, 2027.",
+        "California's next king tides are Jan 19–23, 2027, peaking Jan 21–22, 2027 depending on the place.",
+    ),
+    "2026-12-30": (
+        "The next West Coast king tides are Dec 24–30, 2026, highest on Dec 26, 2026.",
+        "Washington's next king tides are Dec 24–30, 2026, highest on Dec 26, 2026.",
+        "Oregon's next king tides are Jan 19–24, 2027, highest on Jan 22, 2027.",
+        "California's next king tides are Jan 19–23, 2027, peaking Jan 21–22, 2027 depending on the place.",
+    ),
+    "2027-01-05": (
+        "The next West Coast king tides are Jan 18–27, 2027, peaking Jan 20–25, 2027 depending on the place.",
+        "Washington's next king tides are Jan 18–27, 2027, peaking Jan 20–25, 2027 depending on the place.",
+        "Oregon's next king tides are Jan 19–24, 2027, highest on Jan 22, 2027.",
+        "California's next king tides are Jan 19–23, 2027, peaking Jan 21–22, 2027 depending on the place.",
+    ),
+}
+SUMMARY_PAGES = ("index.html", "states/wa/index.html", "states/or/index.html", "states/ca/index.html")
+# Late in a run: the dates the old merge got wrong, and the state page that
+# was wrong on each, besides the home page and the two king-tide pages.
+LATE = {
+    "2026-11-27": "states/ca/index.html",
+    "2026-11-28": "states/wa/index.html",
+    "2026-12-01": "states/wa/index.html",
+    "2026-12-27": "states/wa/index.html",
+    "2026-12-30": "states/wa/index.html",
+}
 # What the page said on those dates before this change, for the record.
 BEFORE = {
     "2026-11-27": (
@@ -264,7 +330,7 @@ def built(tmp_path_factory: pytest.TempPathFactory, day: str, fixed: bool = True
         out = tmp_path_factory.mktemp(f"hub-{day}-{'fixed' if fixed else 'before'}")
         with pytest.MonkeyPatch.context() as mp:
             if not fixed:
-                mp.setattr(site, "king_hub_spans", old_spans)
+                mp.setattr(site, "king_spans", old_spans)
             assert cli.main(["--out", str(out), "--now", f"{day}T11:20:00Z", "--states", STATES]) == 0
         _built[key] = out
     return _built[key]
@@ -292,12 +358,31 @@ def test_hub_dates(tmp_path_factory: pytest.TempPathFactory, day: str) -> None:
         assert found == lines, (day, rel)
 
 
+def summary(page: Path) -> str:
+    """The home or state page's king-tide sentence: the start of the one
+    paragraph that names the next king tides."""
+    found = [
+        el.text for el in htmlq.read(page.read_text(encoding="utf-8")) if el.tag == "p" and "king tides are " in el.text
+    ]
+    assert len(found) == 1, (page, found)
+    return found[0]
+
+
+@pytest.mark.parametrize("day", sorted(SUMMARIES))
+def test_home_and_state_dates(tmp_path_factory: pytest.TempPathFactory, day: str) -> None:
+    out = built(tmp_path_factory, day)
+    for rel, sentence in zip(SUMMARY_PAGES, SUMMARIES[day], strict=True):
+        assert summary(out / rel).startswith(sentence + " "), (day, rel)
+
+
 @pytest.mark.parametrize("day", sorted(EXPECTED))
-def test_only_the_hub_summary_changes(tmp_path_factory: pytest.TempPathFactory, day: str) -> None:
-    """The control: built the old way, every file but the two king-tide pages
-    (and lastmod.json, which fingerprints them) is byte for byte the same,
-    and so are the station rows. On the king-tide pages only the heading,
-    the two descriptions and the state lines differ, and only late in a run."""
+def test_only_the_summaries_change(tmp_path_factory: pytest.TempPathFactory, day: str) -> None:
+    """The control: built the old way, every file but the two king-tide
+    pages, the home page, one state page (and lastmod.json, which
+    fingerprints them) is byte for byte the same, and so are the station
+    rows. On the king-tide pages only the heading, the two descriptions and
+    the state lines differ; on the home and state page only the king-tide
+    sentence; and only late in a run."""
     fixed, before = built(tmp_path_factory, day), built(tmp_path_factory, day, fixed=False)
     files = sorted(p.relative_to(before) for p in before.rglob("*") if p.is_file())
     assert files == sorted(p.relative_to(fixed) for p in fixed.rglob("*") if p.is_file())
@@ -305,7 +390,16 @@ def test_only_the_hub_summary_changes(tmp_path_factory: pytest.TempPathFactory, 
     if day not in LATE:
         assert changed == [], day
         return
-    assert changed == ["es/king-tides/index.html", "king-tides/index.html", "lastmod.json"], day
+    assert changed == sorted(
+        ["es/king-tides/index.html", "index.html", "king-tides/index.html", "lastmod.json", LATE[day]]
+    )
+    for rel in ("index.html", LATE[day]):
+        new = (fixed / rel).read_text(encoding="utf-8").splitlines()
+        old = (before / rel).read_text(encoding="utf-8").splitlines()
+        assert len(new) == len(old), (day, rel)
+        diff = [(a, b) for a, b in zip(old, new, strict=True) if a != b]
+        assert len(diff) == 1 and "king tides are " in diff[0][0], (day, rel, diff)
+        assert summary(before / rel) != summary(fixed / rel)
     allowed = (
         '<meta name="description" ',
         '<meta property="og:description" ',
@@ -341,7 +435,7 @@ def test_spans_every_day_of_the_season(seasons: list[kt.StationSeason]) -> None:
     day = dt.date(2026, 10, 1)
     while day <= dt.date(2027, 3, 31):
         up = kt.coming_up(seasons, day)
-        span, states = site.king_hub_spans(up, day)
+        span, states = site.king_spans(up, day)
         iso = day.isoformat()
         begun = [u for u in up if u.first <= iso]
         if not begun:
@@ -381,7 +475,7 @@ def test_a_run_that_starts_a_day_later_is_part_of_it(seasons: list[kt.StationSea
     ):
         today = dt.date.fromisoformat(day)
         up = kt.coming_up(seasons, today)
-        span, states = site.king_hub_spans(up, today)
+        span, states = site.king_spans(up, today)
         line = states["WA"]
         assert line is not None and (line.first, line.last) == wa, day
         if day != "2027-01-25":

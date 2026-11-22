@@ -3438,7 +3438,7 @@ and Jan 25 reads.
 
 **For the app:** nothing changes.
 
-## 0060: The king-tide page's dates late in a run name only the king tides under way (owner, 2026-11-22)
+## 0060: Late in a king-tide run, the summaries name only the king tides under way (owner, 2026-11-22)
 
 (0055 and 0056 are reserved for other branches.) Each station's row on
 `king-tides/` is its next run within 30 days (`kingtides.coming_up`).
@@ -3448,46 +3448,57 @@ day over every row, so late in a run they reached into the next month:
 on Nov 28, "King tides now: Nov 24–Dec 26, 2026" and "Washington: Nov
 24–Dec 26, 2026, peaking Nov 26–Dec 24, 2026" for a run that ends Dec 1;
 on Nov 27, "California: Nov 23–Dec 26, 2026" for one that ended that day.
-The rows were right. It affects Nov 27 to Dec 1, Dec 26 to 30 and Jan 25
-to 27, on the English and Spanish pages. The owner approved the fix on
-2026-11-22 (growth/king-tides-january-2027/CTR-2026-11-22.md, D1 A).
+The rows were right. The home page's king-tide sentence ("The next West
+Coast king tides are …") and the WA, OR and CA state pages' ("Washington's
+next king tides are …") took the same span. It affects Nov 27 to Dec 1,
+Dec 26 to 30 and Jan 25 to 27. The owner approved the fix for the
+king-tide page, English and Spanish, on 2026-11-22
+(growth/king-tides-january-2027/CTR-2026-11-22.md, D1 A), and the same
+day extended it to the home page and the three state pages.
 
 **An exception to the freeze and to the in-run rule.** Nothing was to
 change tidehours.com before 2026-12-16 (0051), and no king-tide template
 was to change during a run. The owner made an exception for this date
-fix only, before the Nov 27 build, as she did for 0051 and 0058 on these
-pages. No words change.
+fix only, before the Nov 27 build, as she did for 0051 and 0058 on the
+king-tide pages. It covers the home page and `states/wa/`, `states/or/`
+and `states/ca/` for these dates only. No words change.
 
-**What.** While king tides are under way, the heading, the description
-and each state's line use only those runs (`site.king_hub_spans`). A
-state with none under way keeps its next run's line, as before. The
-king tides under way are each run that has begun and each run that
-begins before those have ended (`site.king_under_way`): the stations'
+**What.** While king tides are under way, the king-tide page's heading,
+description and state lines, the home page's sentence and each state
+page's use only those runs (`site.king_spans`). A state with none under
+way keeps its next run's line, as before. The king tides under way are
+each run that has begun and each run that begins before those have
+ended (`site.king_under_way`): the stations'
 runs start on different days, so on Nov 23 the runs that begin Nov 24
 are part of it and Washington's line stays "Nov 23–Dec 1". With no run
-begun, nothing changes. The station rows, the title, the "not shown"
-line, the home page and the state and region pages are unchanged; the
-home page and the state pages keep the merged span (not in the
-approval). Besides the dates above, Washington's line and the heading
-read Dec 8–16 instead of Dec 8–30 on Dec 8 to 16, while three
-Washington stations' Dec 8–16 run is under way.
+begun, nothing changes. The station rows, the titles, the "not shown"
+line, the region and station pages and the state calendars
+(`king-tides/washington/` and the others, whose dates come from the
+calendar's month, 0045) are unchanged. Besides the dates above,
+Washington's line, the heading and the home and Washington pages read
+Dec 8–16 instead of Dec 8–30 on Dec 8 to 16, while three Washington
+stations' Dec 8–16 run is under way. When every run under way peaks on
+one day (Dec 1, Dec 30), the home and state sentences use their existing
+"highest on" form in place of "peaking … depending on the place".
 
 **Checked.** `tests/test_king_hub_dates.py`: builds pinned to Nov 22,
 Nov 27, Nov 28, Dec 1, Dec 2, Dec 17, Dec 27, Dec 30 and Jan 5 give the
 heading, both descriptions and the three state lines in English and
-Spanish, word for word. Each is also built with the old span: between
-runs every file is byte for byte the same; late in a run only the two
-king-tide pages (and `lastmod.json`) differ, only in those lines, and
-the 31 station rows are the same. Every day from October to March, the
-span covers every run that has begun, starts no later than today, and
-has no day that no run in it covers. Negative controls: the old code
-fails 12 of the 20 tests, and counting only the runs begun so far fails
+Spanish, and the home and three state pages' sentences, word for word.
+Each is also built with the old span: between runs every file is byte
+for byte the same; late in a run only the two king-tide pages, the home
+page, the state page concerned (and `lastmod.json`) differ, only in
+those lines, and the 31 station rows are the same. Every day from
+October to March, the span covers every run that has begun, starts no
+later than today, and has no day that no run in it covers. Negative controls: the old code
+fails 17 of the 29 tests, and counting only the runs begun so far fails
 the staggered-start test (Nov 23–24, Dec 20–23 and Jan 18–21 would
 have lost the runs that start a day later). A full build of `main` and
 of this change on Nov 22 differ in no file; on Nov 28 only in those
-lines of the two king-tide pages and their `lastmod.json` entries.
+lines of the two king-tide pages, the home page and `states/wa/`, and
+their `lastmod.json` entries.
 
-**Reversible.** Yes: pass `king_span` and the per-state spans back to
-the template and drop the two functions and the tests.
+**Reversible.** Yes: build `king_span` and the per-state spans from every
+run again and drop the two functions and the tests.
 
 **For the app:** nothing changes.

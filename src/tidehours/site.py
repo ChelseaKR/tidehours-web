@@ -698,14 +698,14 @@ def king_under_way(runs: list[kingtides.Upcoming], today: dt.date) -> list[kingt
         end = last
 
 
-def king_hub_spans(
-    runs: list[kingtides.Upcoming], today: dt.date
-) -> tuple[KingSpan | None, dict[str, KingSpan | None]]:
-    """The king-tide page's heading and description span, and each state's
-    line (docs/DECISIONS.md 0060). While king tides are under way, they use
-    only those runs; a state with none under way keeps its next run's line.
-    Otherwise every run coming up, as before. The station rows are not
-    affected: they are every run coming up."""
+def king_spans(runs: list[kingtides.Upcoming], today: dt.date) -> tuple[KingSpan | None, dict[str, KingSpan | None]]:
+    """The West Coast span and each state's span that the summaries name: the
+    king-tide page's heading, description and state lines, the home page's
+    king-tide line and the WA, OR and CA state pages' (docs/DECISIONS.md
+    0060). While king tides are under way, they use only those runs; a state
+    with none under way keeps its next run's span. Otherwise every run coming
+    up, as before. The station rows are not affected: they are every run
+    coming up."""
     now = king_under_way(runs, today)
     states = {
         code: king_span([u for u in now if u.season.state == code])
@@ -1064,8 +1064,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     kt_today = kingtides.today_on_coast(now)
     kt_up = kingtides.coming_up(kt["seasons"], kt_today)
     kt_months = kingtides.months(kt_up, kt_today)
-    kt_states = {code: king_span([u for u in kt_up if u.season.state == code]) for code in ("WA", "OR", "CA")}
-    kt_hub_span, kt_hub_states = king_hub_spans(kt_up, kt_today)
+    kt_span, kt_states = king_spans(kt_up, kt_today)
     links = king_links(stations, kt["seasons"], kt_today, cat)
     booklet_of = booklets_shown(cat, stations, cfg, now)
     calendar_of = calendars_shown(cat, stations, cfg, now)
@@ -1126,7 +1125,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "king_lead": kingtides.LEAD_DAYS,
         "king_up": kt_up,
         "king_months": kt_months,
-        "king_span": king_span(kt_up),
+        "king_span": kt_span,
+        "king_states": kt_states,
         "kc": kt["copy"]["en"],
     }
     groups = coast_groups(states)
@@ -1150,8 +1150,6 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
                 kt["window_start"],
                 kt["window_end"],
             ),
-            king_hub_span=kt_hub_span,
-            king_hub_states=kt_hub_states,
             **kt,
             **{k: v for k, v in king_common.items() if k != "kc"},
         )

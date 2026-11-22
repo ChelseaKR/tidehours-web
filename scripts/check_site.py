@@ -78,7 +78,19 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
-from tidehours import affiliate, booklets, calendars, gifts, kingtides, ktformat, posters, printables, printshop, site
+from tidehours import (
+    affiliate,
+    booklets,
+    calendars,
+    gifts,
+    htmlq,
+    kingtides,
+    ktformat,
+    posters,
+    printables,
+    printshop,
+    site,
+)
 from tidehours.catalog import Catalog, Station, load
 from tidehours.days import sky_text
 from tidehours.sky import moon_day, moon_times, sun_day
@@ -1294,6 +1306,8 @@ def check_print_shop(
             if not in_words_only:
                 problems.append(f"{rel}: mentions etsy with no shop address set")
         else:
+            text, found = _check_king_prints(rel, text)
+            problems += found
             problems += _check_print_shop_page(rel, text, url, rel in link_pages)
     problems += _check_shop_notice(root, url, which, gift_etsy)
     return problems
@@ -1318,6 +1332,57 @@ def _without_shop_click(rel: str, text: str) -> tuple[str, list[str]]:
     if any("data-ga" in b or ".href" in b for b in blocks):
         problems.append(f"{rel}: the shop_click handler reads an attribute or the address")
     return SHOP_CLICK.sub("\n", text), problems
+
+
+KING_PRINTS_P = re.compile(r"<p data-king-prints>(.*?)</p>", re.S)
+
+
+def _king_print_lines(rel: str) -> list[tuple[str, list[tuple[str, str]]]]:
+    """The print sentences a page is due with the shop on (docs/DECISIONS.md
+    0058), from the copy: each as its words and its (address, link text)
+    pairs, in order."""
+    copy: dict[str, Any] = json.loads(printshop.COPY.read_text(encoding="utf-8"))["kingPrints"]
+    out: list[tuple[str, list[tuple[str, str]]]] = []
+    for key in printshop.KING_PRINT_PAGES.get(rel.removesuffix("index.html"), ()):
+        parts = copy["lines"][key]
+        words = "".join(p if isinstance(p, str) else p["text"] for p in parts)
+        links = [
+            (printshop.LISTING_URL.format(listing=p["listing"]), p["text"]) for p in parts if not isinstance(p, str)
+        ]
+        out.append((words, links))
+    return out
+
+
+def _check_king_prints(rel: str, text: str) -> tuple[str, list[str]]:
+    """One page's king-tide print sentences, in a build with the shop on.
+    Returns the page without them, for the shop rules that apply to the
+    rest, and the problems: sentences on a page that is due none; or, on a
+    page due some, other words, other listings or other link text than the
+    copy's, a rel other than noopener, a click event or a query string, or a
+    place outside the page's Prints section."""
+    want = _king_print_lines(rel)
+    found = list(KING_PRINTS_P.finditer(text))
+    if not want:
+        return text, ([f"{rel}: king-tide print sentences on a page that is due none"] if found else [])
+    problems: list[str] = []
+    got = [
+        (" ".join(el.text for el in htmlq.read(m.group(0)) if el.tag == "p"), htmlq.read(m.group(0))[0].links)
+        for m in found
+    ]
+    if got != [(" ".join(w.split()), links) for w, links in want]:
+        problems.append(f"{rel}: the king-tide print sentences are {got}, expected {want}")
+    for m in found:
+        for a in ANY_A.findall(m.group(0)):
+            rel_attr = REL_ATTR.search(a)
+            if (rel_attr.group(1).split() if rel_attr else []) != [printshop.REL]:
+                problems.append(f"{rel}: a king-tide print link's rel is not {printshop.REL}")
+            if "data-ga" in a or "?" in a:
+                problems.append(f"{rel}: a king-tide print link carries a click event or a query string")
+    shop_start = text.find('<section class="print-shop"')
+    shop_end = text.find("</section>", shop_start)
+    if found and not all(shop_start < m.start() < shop_end for m in found):
+        problems.append(f"{rel}: the king-tide print sentences are outside the Prints section")
+    return KING_PRINTS_P.sub("", text), problems
 
 
 SHOP_NOTICE = re.compile(r'<h2 id="shop">(.*?)</h2>\s*<p>(.*?)</p>', re.S)

@@ -3274,3 +3274,75 @@ readers with GPC, DNT, an ad blocker or the opt-out.
 
 **Reversible.** Yes: drop the handler, the `ETSY_LINK` re-render, the
 privacy sentence, the check and the test.
+
+## 0058: The king-tide calendars name the prints that draw January's king tides (owner, 2026-11-21)
+
+(0055 and 0056 are reserved for other branches; 0057 is the shop_click
+count.) The Prints section on the king-tide pages (0051) names no print a
+king-tide reader would recognize. Five live 2027 tide rings prints draw
+this January's king tides in their accent color: Long Beach (WA), Newport
+(OR), San Francisco, Half Moon Bay and Monterey (CA). The owner approved
+naming them on the West Coast calendars and the hub, linking straight to
+each Etsy listing, on 2026-11-21 (growth/king-tides-january-2027, D2
+option A), with the recommended wording of FOR-APPROVAL-dec29.md in that
+folder. The plan had them ship on Dec 29, between the runs. The owner then
+chose to ship them now ("Print links now", 2026-11-21), so the readers of
+the Nov 23 to Dec 1 run see them. **This supersedes the Dec 29 date.**
+"this January's" reads correctly from now through January.
+
+**The sentences** (`copy/print_shop.json`, `kingPrints.lines`), inside the
+Prints section, after its other sentences:
+
+- Washington: "The 2027 tide rings print for Long Beach draws every
+  predicted tide of the year at the south end of the Long Beach Peninsula,
+  with the highest, this January's king tides among them, in an accent
+  color." Oregon (Newport, "at Yaquina Bay") and California (San
+  Francisco, Half Moon Bay and Monterey) follow the same pattern.
+- Then, on each of the three: "A made-to-order tide print can show the
+  predicted tide at a place you choose on one day, a king tide day
+  included."
+- The hub: "On the West Coast, the 2027 tide rings prints for Long Beach,
+  Newport, San Francisco, Half Moon Bay and Monterey show this January's
+  king tides in an accent color."
+
+Each linked name goes to `https://www.etsy.com/listing/<id>`, with
+`rel="noopener"` and no query string, as the station pages' calendar
+links (0035). The links carry no attribute of their own: the page's
+shop_click handler (0057) counts a click on one with `link_kind`
+`listing`. The link text is the shop's own place name;
+no NOAA, operator or park name is a link. The Spanish page and About
+are unchanged.
+
+**The claim is checked at build time.** `printshop.king_prints` fails the
+build unless each print's station (Cape Disappointment 9440581 for Long
+Beach, then 9435380, 9414290, 9414131 and 9413450) has a predicted high
+tide at or above the threshold printed on the print during its state's
+January king tides: the days the state's calendar gives for January
+(`kingtides.calendar`, the month line's span). The
+thresholds are the listings' own (9.2, 9.3, 6.6, 6.4 and 6.3 ft, read on
+the live listings on 2026-11-21). This engine gives 10.11, 10.38, 7.11,
+7.11 and 6.82 ft; NOAA's published predictions give 10.117, 10.390,
+7.113, 7.109 and 6.816 ft.
+
+**Checked.** `tests/test_king_prints.py`: each page reads exactly as
+drafted, with its links in order; the sentences come last in the Prints
+section; noopener and no `data-ga` attribute; none on the other pages or with the
+shop off; the wording rules with a negative control; each print's January
+high against its threshold and against NOAA; the build refuses a print
+under its threshold or an unknown listing. `check_site.check_print_shop`
+now holds each page's print sentences to the copy (words, listings, link
+text, rel, no query string, inside Prints) and refuses them on any other
+page; the shop-link rules (exactly one shop link) apply to the rest.
+Negative controls for each.
+
+**Privacy and terms.** Unchanged: the privacy page already says the king
+tides pages link to the Tide Hours shop on Etsy, and these listings are in
+it.
+
+**Measured next.** `shop_click` with `link_kind` `listing` by page (0057),
+and the five listings' Etsy views, at the Dec 2, Dec 28 and Jan 25 reads.
+
+**Reversible.** Yes: empty `KING_PRINT_PAGES`, or drop the copy key, the
+include's loop, `king_prints` and the tests.
+
+**For the app:** nothing changes.

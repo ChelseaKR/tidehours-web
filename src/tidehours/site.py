@@ -1051,6 +1051,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         # The state king-tide calendars' Prints section (docs/DECISIONS.md 0051).
         "king_shop_pages": printshop.CALENDAR_PAGES,
         "king_shop_towns": printables.state_lines(calendar_of, poster_of, by_id),
+        # The king-tide print sentences inside those Prints sections (0058).
+        "king_prints": printshop.king_prints(shop, cat, kt["seasons"]),
         "gifts": gifts.link(gift_page),
         "retrieved": cat.retrieved,
         "built": now.astimezone(dt.UTC).date().isoformat(),

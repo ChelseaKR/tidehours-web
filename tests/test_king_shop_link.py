@@ -136,8 +136,11 @@ def test_hub_prints_come_right_after_the_next_run(on: Path) -> None:
     # Nothing but the next-run section's own elements lies between them.
     between = [el for el in els[position(els, section("kt-next")) + 1 : shop] if el.tag in ("section", "h2")]
     assert [el.attrs.get("id") for el in between if el.tag == "h2"] == ["kt-next"]
-    assert shop_section(els).text == "Prints " + SHOP_SENTENCE
-    assert shop_section(els).links == [(URL, "Tide Hours shop on Etsy")]
+    # The shop sentence, then the print sentence of 0058 (test_king_prints.py).
+    first, *prints = paragraphs(els, shop_section(els))
+    assert first.text == SHOP_SENTENCE and first.links == [(URL, "Tide Hours shop on Etsy")]
+    assert all("data-king-prints" in p.attrs for p in prints)
+    assert [href for href, _ in shop_section(els).links] == [URL, *printshop.king_print_urls("king-tides/")]
     assert htmlq.marked(els, "data-shop-towns") == []
 
 
@@ -155,11 +158,18 @@ def test_state_prints_come_after_the_safety_box_with_the_towns(on: Path, code: s
     shop = els.index(box)
     months = [i for i, el in enumerate(els) if el.tag == "section" and "data-kt-cal-month" in el.attrs]
     assert months and position(els, section("kt-safety")) < shop < months[0]
-    first, towns = paragraphs(els, box)
+    # The shop and towns sentences, then those of 0058 on the West Coast
+    # calendars (test_king_prints.py holds their words).
+    first, towns, *prints = paragraphs(els, box)
     assert first.text == SHOP_SENTENCE and first.links == [(URL, "Tide Hours shop on Etsy")]
     assert "data-shop-towns" in towns.attrs
     assert towns.links == [(f"/{printables.PATH}#p-{code.lower()}", LABEL)]
-    assert box.links == [(URL, "Tide Hours shop on Etsy"), (f"/{printables.PATH}#p-{code.lower()}", LABEL)]
+    assert all("data-king-prints" in p.attrs for p in prints)
+    assert [href for href, _ in box.links] == [
+        URL,
+        f"/{printables.PATH}#p-{code.lower()}",
+        *printshop.king_print_urls(rel),
+    ]
 
 
 def test_washington_reads_as_the_owner_approved(on: Path) -> None:

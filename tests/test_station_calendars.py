@@ -29,7 +29,7 @@ from typing import Any
 import pytest
 from markupsafe import escape
 
-from tidehours import booklets, calendars, catalog, cli, posters
+from tidehours import booklets, calendars, catalog, cli, posters, printshop
 
 NOW = "2026-11-01T11:20:00Z"
 STATION = "1630000"  # Apra Harbor, Guam
@@ -512,8 +512,9 @@ def test_the_committed_calendars_show_on_their_own_stations_only(committed: Path
     } | {f"stations/{sid}/index.html": [poster_of[sid]] for sid in poster_only}
     every = sorted(url for urls in want.values() for url in urls)
     assert len(every) == 48 and sorted(links.pop(HUB)) == every
-    shop_pages = ("about/", "king-tides/", "king-tides/washington/", "king-tides/oregon/", "king-tides/california/")
-    assert links == want | {f"{rel}index.html": [SHOP] for rel in shop_pages}  # 0029, 0051
+    shop_pages = ("about/", "king-tides/", *printshop.CALENDAR_PAGES)
+    shop_links = {f"{rel}index.html": [SHOP, *printshop.king_print_urls(rel)] for rel in shop_pages}
+    assert links == want | shop_links  # 0029, 0051, 0058
     for sid, (listing, title) in COMMITTED.items():
         html = read(committed, f"stations/{sid}")
         blocks = BLOCK.findall(html)

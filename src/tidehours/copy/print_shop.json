@@ -3,6 +3,23 @@
   "before": "Tide Hours also sells a made-to-order print of the tide at one place on one day, and printable 2027 tide calendars for a few towns, all drawn from the same predictions as this site. They are in the",
   "link": "Tide Hours shop on Etsy",
   "after": ".",
+  "kingPrints": {
+    "prints": {
+      "4617391319": {"state": "WA", "place": "Long Beach", "station": "9440581", "thresholdFt": 9.2},
+      "4617389139": {"state": "OR", "place": "Newport", "station": "9435380", "thresholdFt": 9.3},
+      "4617280124": {"state": "CA", "place": "San Francisco", "station": "9414290", "thresholdFt": 6.6},
+      "4617279303": {"state": "CA", "place": "Half Moon Bay", "station": "9414131", "thresholdFt": 6.4},
+      "4617240419": {"state": "CA", "place": "Monterey", "station": "9413450", "thresholdFt": 6.3}
+    },
+    "custom": "4614557132",
+    "lines": {
+      "WA": ["The ", {"listing": "4617391319", "text": "2027 tide rings print for Long Beach"}, " draws every predicted tide of the year at the south end of the Long Beach Peninsula, with the highest, this January's king tides among them, in an accent color."],
+      "OR": ["The ", {"listing": "4617389139", "text": "2027 tide rings print for Newport"}, " draws every predicted tide of the year at Yaquina Bay, with the highest, this January's king tides among them, in an accent color."],
+      "CA": ["The 2027 tide rings prints for ", {"listing": "4617280124", "text": "San Francisco"}, ", ", {"listing": "4617279303", "text": "Half Moon Bay"}, " and ", {"listing": "4617240419", "text": "Monterey"}, " draw every predicted tide of the year, with the highest, this January's king tides among them, in an accent color."],
+      "custom": ["A ", {"listing": "4614557132", "text": "made-to-order tide print"}, " can show the predicted tide at a place you choose on one day, a king tide day included."],
+      "hub": ["On the West Coast, the 2027 tide rings prints for ", {"listing": "4617391319", "text": "Long Beach"}, ", ", {"listing": "4617389139", "text": "Newport"}, ", ", {"listing": "4617280124", "text": "San Francisco"}, ", ", {"listing": "4617279303", "text": "Half Moon Bay"}, " and ", {"listing": "4617240419", "text": "Monterey"}, " show this January's king tides in an accent color."]
+    }
+  },
   "privacyHeading": "Shop link",
   "privacy": "The About and king tides pages link to the Tide Hours shop on Etsy, where the print is sold. This site sends nothing to Etsy. The link takes you to Etsy, where Etsy's own privacy policy applies."
 }

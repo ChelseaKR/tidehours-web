@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- The Washington, Oregon and California king-tide calendars name, in their
+  "Prints" section, the 2027 tide rings prints of their state that draw
+  this January's king tides in an accent color, each linking straight to
+  its Etsy listing, then the made-to-order print; the king-tide page names
+  all five. The build fails unless each print's station reaches the
+  threshold printed on it during its state's January king tides. Shipped
+  now rather than Dec 29, at the owner's choice (DECISIONS 0058).
 - With analytics on, a click on a link to the Tide Hours shop on Etsy is
   counted as `shop_click`, with only whether it went to the shop or to one
   listing, never the link's address. The handler is only on pages that

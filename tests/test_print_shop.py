@@ -121,7 +121,8 @@ def test_on_links_from_about_and_the_english_king_tide_pages_only(on: Path, chec
     for rel in ("about", "king-tides", "king-tides/washington", "king-tides/oregon", "king-tides/california"):
         html = read(on, rel)
         links = ETSY_A.findall(html)
-        assert links == [URL], rel
+        # The shop link, then the print sentences' listings (0058).
+        assert links == [URL, *printshop.king_print_urls(rel + "/")], rel
         tag = ETSY_A.search(html)
         assert tag is not None and 'rel="noopener"' in tag.group(0), rel
         assert "data-ga-event" not in tag.group(0), rel

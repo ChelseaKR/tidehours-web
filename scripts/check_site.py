@@ -140,6 +140,7 @@ DAY_SECTION = re.compile(r'<section class="day"[^>]*\bdata-date="(\d{4}-\d{2}-\d
 EVENT_ROW = re.compile(
     r'<tr class="ev-(high|low)"><th scope="row">(High|Low)</th><td><time datetime="([^"]*)">([^<]*)</time></td>'
 )
+FAMILIES_P = re.compile(r"<p data-families>(.*?)</p>", re.S)
 GIFT_ITEM = re.compile(r'<(li|p) data-gift="([^"]*)">(.*?)</\1>', re.S)
 H2_TEXT = re.compile(r"<h2[^>]*>(.*?)</h2>", re.S)
 BUILT = re.compile(r"page built (\d{4}-\d{2}-\d{2}) \(UTC\)")
@@ -1177,6 +1178,28 @@ def _check_gift_words(rel: str, main: str, listing: dict[str, Any]) -> list[str]
     return [] if shown == want else [f"{rel}: the gift lines read {shown}, expected {want}"]
 
 
+def _check_gift_families(rel: str, main: str, listing: dict[str, Any]) -> list[str]:
+    """The line under the second paragraph that names the land and data
+    prints (0059): there exactly when gifts.families gives one, with its
+    words, and each name linked to its own section on the page, in order."""
+    line: gifts.Families | None = listing["families"]
+    found = FAMILIES_P.findall(main)
+    if line is None:
+        return [f"{rel}: a land and data prints line with none listed"] if found else []
+    if len(found) != 1 or MAIN_P.findall(main)[2:3] != found:
+        return [f"{rel}: {len(found)} land and data prints lines, one expected, after the two paragraphs"]
+    problems: list[str] = []
+    shown = " ".join(htmllib.unescape(TAG.sub("", found[0])).split())
+    if shown != gifts.families_text(line):
+        problems.append(f"{rel}: the land and data prints line reads {shown!r}")
+    links = [(htmllib.unescape(h), htmllib.unescape(TAG.sub("", t))) for h, t in LINK_TEXT.findall(found[0])]
+    if links != [(f"#{anchor}", name) for name, anchor, _ in line.names]:
+        problems.append(f"{rel}: the land and data prints line links to {links}")
+    ids = set(re.findall(r'<h2 id="([^"]+)"', main))
+    problems += [f"{rel}: #{a} is not a section of the page" for _, a, _ in line.names if a not in ids]
+    return problems
+
+
 def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]:
     problems: list[str] = []
     main = text[text.find("<main") : text.find("</main>")]
@@ -1213,10 +1236,12 @@ def _check_gifts_page(rel: str, text: str, listing: dict[str, Any]) -> list[str]
     words = [htmllib.unescape(x) for x in (*H1.findall(main), *MAIN_P.findall(main)[:2])]
     if words != [listing["heading"], listing["intro"], listing["how"]]:
         problems.append(f"{rel}: the heading and the two paragraphs are {words}")
+    problems += _check_gift_families(rel, main, listing)
     headings = [htmllib.unescape(h) for h in H2_TEXT.findall(main)]
     if headings != [sec.heading for sec in listing["sections"]]:
         problems.append(f"{rel}: the section headings are {headings}")
-    plain = [" ".join(htmllib.unescape(TAG.sub("", p)).split()) for p in MAIN_P.findall(main)[2:]]
+    skip = 3 if listing["families"] else 2
+    plain = [" ".join(htmllib.unescape(TAG.sub("", p)).split()) for p in MAIN_P.findall(main)[skip:]]
     want_p = [
         f"{sec.text} {sec.link['text']}{sec.link['after']}" if sec.link else sec.text
         for sec in listing["sections"]

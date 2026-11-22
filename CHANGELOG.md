@@ -2,6 +2,14 @@
 
 ## 0.1.0 (unreleased)
 
+- The tide gifts page lists the eleven land and data prints that went
+  live on 2026-11-21 (Puget Sound, Above and Below, and four new kinds:
+  River in Profile, Water Line, Typical Year of Snow and Ice Edge by
+  Year), each with the opening words of its approved Etsy description,
+  after the In Profile and Above and Below prints. A line under its second
+  paragraph links to each of the six land and data sections on the page.
+  No other page, the footer and the privacy page are unchanged
+  (DECISIONS 0059).
 - The Washington, Oregon and California king-tide calendars name, in their
   "Prints" section, the 2027 tide rings prints of their state that draw
   this January's king tides in an accent color, each linking straight to

@@ -3214,3 +3214,63 @@ options and the dark pass.
 
 **For the app:** nothing changes. The app's own accessibility audit is in
 its repository.
+
+## 0057: A click on a link to the Tide Hours shop on Etsy is counted (owner, 2026-11-21)
+
+(0055 and 0056 are reserved for other branches.) This entry supersedes one
+point in 0029, 0035, 0037 and 0041: their **Analytics** lines, which said
+that the Etsy links have no event of their own and left counting to GA4's
+Enhanced measurement. Nothing else in those entries changes. 0030's line
+for the Amazon booklet links stands as it is.
+
+**Why.** GA4 had recorded no outbound click and no scroll event since
+launch. On 2026-11-21 a read-only check found why. Enhanced measurement's
+master switch on the property's web stream is off, as the owner decided,
+so the Google tag that Google serves carries no scroll or click events.
+In a headless browser with every collect request answered locally, so
+nothing was sent, the live Washington calendar sent `page_view` and
+`user_engagement` only, after a scroll to the bottom and a tap on the shop
+link. The same harness on a property with Enhanced measurement on caught
+`scroll` and `click`. So the zero was not a measurement of readers, and
+the January king-tide reads (0051) had nothing to read. The owner chose a
+count of the site's own, and approved the privacy sentence below word for
+word (2026-11-21).
+
+**What.** With GA4 on (0007), a page that links to Etsy carries one click
+handler in `_ga4.html.jinja`. It runs after the Global Privacy Control,
+Do Not Track and opt-out guards, so it sends nothing for a visitor whom
+GA4 skips. A click on a link to `www.etsy.com` sends `shop_click` with one
+parameter, `link_kind`: `listing` when the path starts with `/listing/`,
+otherwise `shop`. It never sends the link's address, slug or query.
+`page_location`, which GA4 sends with every event, says which page the
+click came from; Etsy Stats names the listing. The links themselves do
+not change: still `rel="noopener"`, still no `data-ga` attribute.
+`site.py` renders the handler only on pages whose HTML links to Etsy
+(`ETSY_LINK`), so no other page changes and their sitemap `lastmod` stays.
+
+**Privacy.** While the site links to Etsy anywhere (the condition under
+which the terms page names Etsy), the privacy page's first sentence is
+followed by the owner's sentence: "It also counts a click on a link to the
+Tide Hours shop on Etsy, noting only whether the link went to the shop or
+to one listing, not its address." The privacy page's `dateModified` and
+sitemap `lastmod` move to the build that first carries it, as 0034
+provides. The shop section's "This site sends nothing to Etsy" stays true.
+
+**GA4 property.** `link_kind` is registered as an event-scoped custom
+dimension, "Link kind" (2026-11-21), so the reads can split by it.
+Enhanced measurement's master switch stays off, as decided.
+
+**Checks.** `check_print_shop` sets the handler aside before its Etsy
+rules, because it names `www.etsy.com` in code, not as a link or in words.
+It reports a handler on a page with no Etsy link, more than one handler,
+and a handler that reads `.href` or a `data-ga` attribute.
+`tests/test_shop_click.py` holds all of this. Its controls include a
+build with the handler switched off, which is byte for byte the page
+without it.
+
+**Measured next.** `shop_click` by page and `link_kind` at the Dec 28,
+Jan 25 and Jan 28 reads (0051). A count is a floor: GA4 does not load for
+readers with GPC, DNT, an ad blocker or the opt-out.
+
+**Reversible.** Yes: drop the handler, the `ETSY_LINK` re-render, the
+privacy sentence, the check and the test.

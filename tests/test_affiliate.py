@@ -200,7 +200,10 @@ def test_tag_comes_from_config(tmp_path: Path) -> None:
 
 def test_ga4_handler(on: Path, off: Path) -> None:
     src = (Path(affiliate.__file__).parent / "templates" / "_ga4.html.jinja").read_text(encoding="utf-8")
-    assert "gear_click" in src and "href" not in src
+    # The affiliate handler never reads the link's address. (The shop_click
+    # handler after it, 0057, reads only the host and the path's first part.)
+    gear = src[src.index("{% if affiliate is defined") : src.index("{% endif %}", src.index("gear_click"))]
+    assert "gear_click" in gear and "href" not in gear
     en = read(on, "king-tides")
     script = en[en.index("<script>") : en.index("</script>")]
     assert "gear_click" in script and "href" not in script

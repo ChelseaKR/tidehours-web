@@ -46,6 +46,9 @@ from .zones import UNKNOWN as ZONE_UNKNOWN
 from .zones import label as zone_label
 
 DEFAULT_BASE_URL = "https://tidehours.com/"
+# A link to the Tide Hours shop on Etsy, as every Etsy link on the site is
+# written (printshop.URL_PATTERN, calendars, posters, gifts).
+ETSY_LINK = 'href="https://www.etsy.com/'
 # Analytics regions where analytics_storage defaults to denied (EEA, UK, CH),
 # as on the portfolio's other sites.
 GA4_DENIED_REGIONS = [
@@ -1001,6 +1004,16 @@ def selected(cat: Catalog, cfg: Config) -> list[Station]:
     return [s for s in cat.stations if cfg.states is None or (s.state or OTHER) in cfg.states]
 
 
+def render_template(template: Any, args: dict[str, Any], ga4: bool) -> str:
+    """A page's HTML. With GA4 on, a page that links to Etsy is rendered
+    again with the shop_click handler (_ga4.html.jinja, docs/DECISIONS.md
+    0057), so no other page changes."""
+    html: str = template.render(**args)
+    if ga4 and ETSY_LINK in html:
+        html = template.render(**args, shop_click=True)
+    return html
+
+
 def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     if now.tzinfo is None:
         raise ValueError("now must be timezone-aware")
@@ -1063,7 +1076,8 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         # day (docs/DECISIONS.md 0034). Other noindex pages carry none.
         ctx.setdefault("schema_nodes", [])
         dated = index or path.startswith("stations/")
-        html = e.get_template(template).render(**common, path=path, noindex=not index, dated=dated, **ctx)
+        args = {**common, "path": path, "noindex": not index, "dated": dated, **ctx}
+        html = render_template(e.get_template(template), args, bool(cfg.ga4_measurement_id))
         pages.append(Page(path, html, index))
 
     derived = derived_from(cat, by_id)

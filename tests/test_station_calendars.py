@@ -446,9 +446,12 @@ def test_one_calendar_puts_one_link_on_one_page(off: Path, on: Path, listed: Pat
     assert f'<a href="{URL}" rel="noopener">{TITLE}</a>' in blocks[0]
     for unwanted in ("?", "&", "ref=shop", "utm_", "data-ga", "sponsored", "nofollow", "<img", "$"):
         assert unwanted not in blocks[0], unwanted
-    # Take the sentence and the footer's link out and the page is the
-    # empty-list page, byte for byte.
-    assert html.replace(blocks[0], "").replace(FOOTER, "") == read(off, f"stations/{STATION}")
+    # Take the sentence, the footer's link and the shop_click handler (0057,
+    # only on a page that links to Etsy) out and the page is the empty-list
+    # page, byte for byte.
+    html_rest, handlers = re.subn(r"\n\n  // Shop link clicks:.*?\n  \}\);\n", "\n", html, flags=re.S)
+    assert handlers == 1
+    assert html_rest.replace(blocks[0], "").replace(FOOTER, "") == read(off, f"stations/{STATION}")
     # After the tide tables and the app line, before the closing notes.
     last_day = html.rindex('<section class="day"')
     assert (

@@ -19,6 +19,11 @@
   English king-tide page when the Amazon tag is set) is counted with its
   placement, link type and host only. The handler is rendered only on the
   page that has those links, so switching them on changes no other page.
+
+  A click on a link to the Tide Hours shop on Etsy is counted as shop_click
+  (docs/DECISIONS.md 0057) with link_kind "shop" or "listing" only, never
+  the link's address; page_location already says which page. site.py sets
+  shop_click only on pages that link to Etsy, so no other page changes.
 #}
 <script>
 (function () {
@@ -100,6 +105,18 @@
       placement: a.getAttribute("data-ga-placement") || "",
       link_type: a.getAttribute("data-ga-type") || "",
       link_host: a.getAttribute("data-ga-host") || ""
+    });
+  });
+{% endif %}
+{% if shop_click is defined and shop_click %}
+
+  // Shop link clicks: page_location already says which page; this adds only
+  // whether the link was the shop or one listing, never its address.
+  d.addEventListener("click", function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
+    if (!a || a.hostname !== "www.etsy.com") return;
+    gtag("event", "shop_click", {
+      link_kind: a.pathname.indexOf("/listing/") === 0 ? "listing" : "shop"
     });
   });
 {% endif %}

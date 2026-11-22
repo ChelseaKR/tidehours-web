@@ -4,7 +4,7 @@
 {% block content %}
 <h1>Privacy</h1>
 {% if ga4_measurement_id %}
-<p>This site uses Google Analytics 4 to count page views. It does not load when your browser sends Global Privacy Control or Do Not Track, or after you choose "Opt out of analytics" at the bottom of any page. In the European Economic Area, the UK and Switzerland, Google Analytics runs without cookies. Google signals and ad personalization are off. The site has no accounts, no forms and no {% if amazon_links %}display {% endif %}ads.</p>
+<p>This site uses Google Analytics 4 to count page views.{% if print_shop or shop_links %} It also counts a click on a link to the Tide Hours shop on Etsy, noting only whether the link went to the shop or to one listing, not its address.{% endif %} It does not load when your browser sends Global Privacy Control or Do Not Track, or after you choose "Opt out of analytics" at the bottom of any page. In the European Economic Area, the UK and Switzerland, Google Analytics runs without cookies. Google signals and ad personalization are off. The site has no accounts, no forms and no {% if amazon_links %}display {% endif %}ads.</p>
 {% else %}
 <p>This site collects nothing about you: no analytics, no cookies, no accounts, no forms and no {% if amazon_links %}display {% endif %}ads. The host may keep standard server logs.</p>
 {% endif %}

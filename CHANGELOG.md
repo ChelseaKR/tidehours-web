@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+- With analytics on, a click on a link to the Tide Hours shop on Etsy is
+  counted as `shop_click`, with only whether it went to the shop or to one
+  listing, never the link's address. The handler is only on pages that
+  link to Etsy, after the GPC, DNT and opt-out guards. The privacy page
+  says so in one new sentence (DECISIONS 0057).
 - An Accessibility Conformance Report, `docs/accessibility/ACR.md`, in
   the form of the VPAT 2.5 Rev WCAG edition: every WCAG 2.2 Level A and AA
   criterion, with what was measured and what still needs a screen-reader

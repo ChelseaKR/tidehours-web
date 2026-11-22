@@ -1276,7 +1276,9 @@ def check_print_shop(
     link_pages = {p + "index.html" for p in (*printshop.PAGES, *printshop.CALENDAR_PAGES)}
     for f in html:
         rel = f.relative_to(root).as_posix()
-        text, found = _check_poster(rel, f.read_text(encoding="utf-8"), want_poster.get(rel))
+        text, found = _without_shop_click(rel, f.read_text(encoding="utf-8"))
+        problems += found
+        text, found = _check_poster(rel, text, want_poster.get(rel))
         problems += found
         text, found = _check_calendar(rel, text, want.get(rel))
         problems += found
@@ -1295,6 +1297,27 @@ def check_print_shop(
             problems += _check_print_shop_page(rel, text, url, rel in link_pages)
     problems += _check_shop_notice(root, url, which, gift_etsy)
     return problems
+
+
+# The GA4 shop_click handler (_ga4.html.jinja, docs/DECISIONS.md 0057), as
+# rendered. It names www.etsy.com in code, not as a link or in words, so the
+# Etsy checks look at a page without it; it may sit only on a page that links
+# to Etsy, and it never reads a data-ga attribute.
+SHOP_CLICK = re.compile(r"\n\n  // Shop link clicks:.*?\n  \}\);\n", re.S)
+
+
+def _without_shop_click(rel: str, text: str) -> tuple[str, list[str]]:
+    blocks = SHOP_CLICK.findall(text)
+    if not blocks:
+        return text, []
+    problems: list[str] = []
+    if len(blocks) > 1:
+        problems.append(f"{rel}: {len(blocks)} shop_click handlers")
+    if not ETSY_A.search(text):
+        problems.append(f"{rel}: a shop_click handler with no Etsy link")
+    if any("data-ga" in b or ".href" in b for b in blocks):
+        problems.append(f"{rel}: the shop_click handler reads an attribute or the address")
+    return SHOP_CLICK.sub("\n", text), problems
 
 
 SHOP_NOTICE = re.compile(r'<h2 id="shop">(.*?)</h2>\s*<p>(.*?)</p>', re.S)

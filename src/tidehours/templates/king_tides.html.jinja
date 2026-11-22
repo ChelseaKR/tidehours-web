@@ -1,6 +1,6 @@
 {% extends "base.html.jinja" %}
-{% block title %}{{ king_hub_head(lang, c, king_up, king_months, king_span)[0] }}{% endblock %}
-{% block description %}{{ king_hub_head(lang, c, king_up, king_months, king_span)[1] }}{% endblock %}
+{% block title %}{{ king_hub_head(lang, c, king_up, king_months, king_hub_span)[0] }}{% endblock %}
+{% block description %}{{ king_hub_head(lang, c, king_up, king_months, king_hub_span)[1] }}{% endblock %}
 {% block alternates %}
 <link rel="alternate" hreflang="en" href="{{ base_url }}king-tides/">
 <link rel="alternate" hreflang="es" href="{{ base_url }}es/king-tides/">
@@ -15,11 +15,11 @@
 
 {% if king_up %}
 <section class="callout kt-next" aria-labelledby="kt-next">
-  <h2 id="kt-next">{{ fill(c.next.headingNow if king_span.first <= king_today else c.next.headingSoon, range=fmt_range(king_span.first, king_span.last, lang, c)) }}</h2>
+  <h2 id="kt-next">{{ fill(c.next.headingNow if king_hub_span.first <= king_today else c.next.headingSoon, range=fmt_range(king_hub_span.first, king_hub_span.last, lang, c)) }}</h2>
   <p>{{ c.next.intro }}</p>
   <ul>
-  {% for region in ["WA", "OR", "CA"] if king_states[region] %}
-    {% set k = king_states[region] %}
+  {% for region in ["WA", "OR", "CA"] if king_hub_states[region] %}
+    {% set k = king_hub_states[region] %}
     <li><a href="#kt-{{ region }}">{{ fill(c.next.state, state=c.stations.regions[region], range=fmt_range(k.first, k.last, lang, c), peaks=fmt_range(k.peak_first, k.peak_last, lang, c)) }}</a></li>
   {% endfor %}
   </ul>

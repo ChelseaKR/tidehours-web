@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+- Late in a king-tide run, the king-tide page's heading, description and
+  state lines name only the king tides under way, no longer merged with
+  the next month's run: on Nov 28, "Washington: Nov 24–Dec 1, 2026" in
+  place of "Nov 24–Dec 26". A state with none under way keeps its next
+  run's line. English and Spanish; no words change; the station rows and
+  every other page are unchanged. The owner's exception to the freeze
+  (DECISIONS 0060).
 - The tide gifts page lists the eleven land and data prints that went
   live on 2026-11-21 (Puget Sound, Above and Below, and four new kinds:
   River in Profile, Water Line, Typical Year of Snow and Ice Edge by

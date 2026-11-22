@@ -5,6 +5,8 @@
   something to list. Each town links to its station page; each gift links
   to its own listing with the station pages' plain link (0035): no slug,
   no query string, no tag, no price, no claim, no image and no click event.
+  The line under the second paragraph links to the land and data prints'
+  sections on this page (0059).
 -#}
 {% block title %}{{ gifts_page.title }} | Tide Hours{% endblock %}
 {% block description %}{{ gifts_page.description }}{% endblock %}
@@ -12,6 +14,9 @@
 <h1>{{ gifts_page.heading }}</h1>
 <p class="lead">{{ gifts_page.intro }}</p>
 <p>{{ gifts_page.how }}</p>
+{% if gifts_page.families %}
+<p data-families>{{ gifts_page.families.text }} {% for name, anchor, after in gifts_page.families.names %}<a href="#{{ anchor }}">{{ name }}</a>{{ after }}{% endfor %}</p>
+{% endif %}
 {% for sec in gifts_page.sections %}
 <section aria-labelledby="g-{{ sec.key }}">
   <h2 id="g-{{ sec.key }}">{{ sec.heading }}</h2>

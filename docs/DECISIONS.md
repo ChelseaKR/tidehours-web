@@ -3346,3 +3346,94 @@ and the five listings' Etsy views, at the Dec 2, Dec 28 and Jan 25 reads.
 include's loop, `king_prints` and the tests.
 
 **For the app:** nothing changes.
+
+## 0059: The land and data prints sit together on the tide gifts page, with a line that links to them (2026-11-22)
+
+(0055 and 0056 are reserved for other branches.) The shop's Land Prints
+on Etsy are its listings with the most views. The site already linked 13
+of them from `tide-gifts/` (0041: ten In Profile prints under "Land
+prints", three under "Above and Below prints"), near the end of a page of
+71 entries, with nothing near the top to say they are there. Eleven more
+went live on 2026-11-21, each id from its line "LISTED: ... Etsy ID" in
+the owner's product notes and the kit's `LISTED-2026-11-21.md`: Puget
+Sound, Above and Below; three River in Profile prints; two Water Line
+prints; four Typical Year of Snow prints; and one Ice Edge by Year print.
+The listings were not fetched for this change. The wording below is this
+change's, for the owner to approve before it is merged
+(`growth/tidehours-land-prints-page-2026-11-22/FOR-APPROVAL.md`).
+
+**On the gifts page, not a new page.** A page of its own would link to
+Etsy, so the privacy page's Etsy section, which names each kind of page
+that does (`gifts.shop_notice`), would need new words, and a footer link
+to it would change every English page. The gifts page is already in that
+sentence and already in every footer. So the prints get their home there.
+
+**What.** In `copy/gifts.json`, Puget Sound (4622961766) joins `depth`,
+and four new kinds, each with no town and no year (a record already
+made, as 0041's land prints), follow "Above and Below prints" in this
+order, each with a heading and a sentence on what it shows:
+
+- `riverprofile`, "River in Profile Print: River": Colorado (4622968452),
+  Mississippi (4622960293) and Snake (4622960705).
+- `waterline`, "Water Line Print: Lake": Great Salt Lake (4622968904) and
+  Lake Mead (4622970236).
+- `snow`, "Typical Year of Snow Print: Place": Aspen (4622950721),
+  Jackson (4622959306), Lake Tahoe (4622949353) and Park City
+  (4622958854).
+- `ice`, "Ice Edge by Year Print: Glacier": Grinnell Glacier
+  (4622953483).
+
+Each `about` is from the listing's own approved description, word for
+word: the first paragraph, or for the snow prints its first sentence.
+The Puget Sound paragraph names "the first peaks of the Olympic
+Mountains". `gifts.NOT_CLAIMS` now takes that phrase, and only that
+phrase, out before the claim check, as it does for "first home". The
+sentences describe what each print shows (a lake's surface elevation
+month by month, the mapped edge of the ice in each year printed on it).
+They make no claim about drought, climate or the glacier.
+
+**The line.** Right after the page's second paragraph: "Land and data
+prints on this page: In Profile, Above and Below, River in Profile, Water
+Line, Typical Year of Snow and Ice Edge by Year." Each name links to its
+own section on the page (`#g-land` ... `#g-ice`). It names only the
+sections the build lists (`gifts.FAMILIES`, `gifts.families`), and there
+is no line when the page lists none. The meta description's list of
+kinds gains the four new kinds' short names. Nothing else on the page
+changes, and no other page changes.
+
+**Links.** As 0041: exactly `https://www.etsy.com/listing/ID`,
+`rel="noopener"`, no slug, query string, attribute or click event of
+their own. The page's shop_click handler (0057) counts a click on one,
+with `link_kind` `listing`.
+
+**Privacy and terms.** Unchanged. The privacy page already names "the
+tide gifts page" among the pages that link to the Tide Hours shop on
+Etsy, and 0057's sentence already covers a click on one of its links.
+The terms page already names Etsy.
+
+**The freeze.** Nothing was to change tidehours.com before 2026-12-16
+(0051), to keep the station-page indexing read and the "More places"
+read clean. This changes `tide-gifts/` only: no station, state, region
+or home page, no footer, and no new link to a station page. The sitemap's
+`lastmod` moves for that one page. It still needs the owner's exception,
+as she gave for 0051, 0054 and 0058.
+
+**Checked.** `check_site.check_gifts` now also holds the line to
+`gifts.families` (its words, each name's anchor, in order, right after
+the two paragraphs), refuses a line on a page that lists no land or data
+print, and refuses an anchor with no section. `tests/test_gifts.py`: the
+committed list is the 71 listings marked live; the published page word for
+word, with the line and each new section's sentence and first line, and
+lines in order by place; the new kinds in the 2028 build; one of each new
+kind on the Guam list; the wording rules, with no climate or drought
+words, and a negative control; and eight new negative controls for
+`check_site`.
+
+**Measured next.** `shop_click` from `tide-gifts/` with `link_kind`
+`listing` (0057), and the Land Prints listings' Etsy views, at the Dec 28
+and Jan 25 reads.
+
+**Reversible.** Yes: drop the eleven entries, the four kinds, the
+`families` copy and line, the check and the tests.
+
+**For the app:** nothing changes.

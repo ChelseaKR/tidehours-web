@@ -46,7 +46,8 @@ DESCRIPTION = (
     "Gifts from Tide Hours, listed by kind and by town: custom tide chart prints, a winter solstice print, "
     "year-of-daylight prints, sunrise and sunset calendars, tide art prints, tide posters, 2027 tide calendars, "
     "moon phase calendars, night sky prints, a northern lights print, river year prints, sea level prints, sea "
-    "temperature prints, land prints, Above and Below prints and typical year prints."
+    "temperature prints, land prints, Above and Below prints, River in Profile prints, Water Line prints, Typical "
+    "Year of Snow prints, an Ice Edge by Year print and typical year prints."
 )
 INTRO = (
     "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, "
@@ -72,8 +73,19 @@ SECTIONS = [
     "Sea temperature prints",
     "Land prints",
     "Above and Below prints",
+    "River in Profile prints",
+    "Water Line prints",
+    "Typical Year of Snow prints",
+    "Ice Edge by Year print",
     "Typical year prints",
 ]
+# The line under the second paragraph that links to the land and data
+# prints' sections (0059).
+FAMILIES = (
+    '<p data-families>Land and data prints on this page: <a href="#g-land">In Profile</a>, <a href="#g-depth">Above '
+    'and Below</a>, <a href="#g-riverprofile">River in Profile</a>, <a href="#g-waterline">Water Line</a>, <a '
+    'href="#g-snow">Typical Year of Snow</a> and <a href="#g-ice">Ice Edge by Year</a>.</p>'
+)
 # The made-to-order prints of the list: each line's words after the link
 # are the listing's own approved description.
 YEAR_IN_TIDES = (
@@ -222,6 +234,48 @@ ABOVE_AND_BELOW = (
     "Lake, Oregon, drawn as 80 stacked profiles of the land and the lake floor: the lake&#39;s shape above and below "
     "its surface, line by line.</li>"
 )
+# The land and data prints of 2026-11-21 (0059): each section's sentence
+# and its first line.
+RIVER_PROFILE = (
+    '<h2 id="g-riverprofile">River in Profile prints</h2>\n  <p>Art made from NHDPlus river data, from the U.S. '
+    "Environmental Protection Agency and the U.S. Geological Survey. They show the height of a river along its main "
+    'stem, not the tide. Not a USGS or EPA product.</p>\n  <ul class="printables">\n    <li '
+    'data-gift="4622968452"><a href="https://www.etsy.com/listing/4622968452" rel="noopener">River in Profile '
+    "Print: Colorado River</a>. The Colorado River, from its head in the Never Summer Mountains, Colorado (40.47° "
+    "N, 105.83° W) to the Mexican border, where the data set ends, drawn as one elevation profile: the height of "
+    "the river along its main stem, 1,328 miles, from 10,128 ft down to 70 ft.</li>"
+)
+WATER_LINE = (
+    '<h2 id="g-waterline">Water Line prints</h2>\n  <p>Art made from public lake-level data from the U.S. '
+    "Geological Survey and the U.S. Bureau of Reclamation. They show a lake&#39;s surface elevation month by month, "
+    'not the tide. Not a USGS or Bureau of Reclamation product.</p>\n  <ul class="printables">\n    <li '
+    'data-gift="4622968904"><a href="https://www.etsy.com/listing/4622968904" rel="noopener">Water Line Print: '
+    "Great Salt Lake</a>. Great Salt Lake, Utah, drawn as one water line: the lake&#39;s surface elevation month by "
+    "month, Oct 1847 to Dec 2025, 1,775 months in one line.</li>"
+)
+SNOW = (
+    '<h2 id="g-snow">Typical Year of Snow prints</h2>\n  <p>Art made from USDA Natural Resources Conservation '
+    "Service SNOTEL data. They show the median snow water equivalent of each day at one measuring site over the 30 "
+    "winters 1991 to 2020, not the tide. Not a forecast and not the snow of any one year. Not an NRCS "
+    'product.</p>\n  <ul class="printables">\n    <li data-gift="4622950721"><a '
+    'href="https://www.etsy.com/listing/4622950721" rel="noopener">Typical Year of Snow Print: Aspen</a>. Aspen, '
+    "Colorado: a typical year of snow, drawn as 365 strokes, one for each day from October to September.</li>"
+)
+ICE = (
+    '<h2 id="g-ice">Ice Edge by Year print</h2>\n  <p>Art made from U.S. Geological Survey glacier outlines and '
+    "elevation data. It shows the edge of the ice as mapped in each year printed on it, not the tide. Not a USGS "
+    'product.</p>\n  <ul class="printables">\n    <li data-gift="4622953483"><a '
+    'href="https://www.etsy.com/listing/4622953483" rel="noopener">Ice Edge by Year Print: Grinnell Glacier</a>. '
+    "Grinnell Glacier, Montana, drawn as the edge of the ice in c. 1850, 1966, 1998, 2005 and 2015: five outlines "
+    "from U.S. Geological Survey mapping, one line per year, each labeled with its year, over faint land "
+    "contours.</li>"
+)
+PUGET_SOUND = (
+    '<li data-gift="4622961766"><a href="https://www.etsy.com/listing/4622961766" rel="noopener">Above and Below '
+    "Print: Puget Sound</a>. Puget Sound, Washington, drawn as 80 stacked profiles of the land and the seafloor: the "
+    "Kitsap Peninsula between Hood Canal and the main basin, Bainbridge and Vashon islands, the Tacoma Narrows and "
+    "the first peaks of the Olympic Mountains, line by line.</li>"
+)
 TYPICAL_YEAR = (
     '<h2 id="g-normals">Typical year prints</h2>\n  <p>A year of normal weather in one U.S. town, made to order '
     "from NOAA&#39;s 1991–2020 climate normals. They show the weather, not the tide. Not a forecast and not the "
@@ -257,9 +311,25 @@ DEPTHS = [
     "Above and Below Print: Crater Lake",
     "Above and Below Print: Lake Tahoe",
     "Above and Below Print: Monterey Bay",
+    "Above and Below Print: Puget Sound",
+]
+RIVER_PROFILES = [
+    "River in Profile Print: Colorado River",
+    "River in Profile Print: Mississippi River",
+    "River in Profile Print: Snake River",
+]
+WATER_LINES = ["Water Line Print: Great Salt Lake", "Water Line Print: Lake Mead"]
+SNOWS = [
+    "Typical Year of Snow Print: Aspen",
+    "Typical Year of Snow Print: Jackson",
+    "Typical Year of Snow Print: Lake Tahoe",
+    "Typical Year of Snow Print: Park City",
 ]
 # The entries with no year, which the build of January 1, 2028 still lists.
-NO_YEAR = ("custom", "river", "aurora", "sealevel", "seatemp", "land", "depth", "normals")
+NO_YEAR = (
+    "custom", "river", "aurora", "sealevel", "seatemp", "land", "depth", "riverprofile", "waterline", "snow", "ice",
+    "normals",
+)  # fmt: skip
 # The solstice print's sentence: the wording of its live Etsy listing,
 # adapted only to join its first two sentences of the second paragraph.
 SOLSTICE = (
@@ -383,6 +453,17 @@ LIVE = {
     "4618908156": ("depth", "Above and Below Print: Crater Lake", "2026-11-16"),
     "4618909654": ("depth", "Above and Below Print: Lake Tahoe", "2026-11-16"),
     "4618902435": ("depth", "Above and Below Print: Monterey Bay", "2026-11-16"),
+    "4622961766": ("depth", "Above and Below Print: Puget Sound", "2026-11-21"),
+    "4622968452": ("riverprofile", "River in Profile Print: Colorado River", "2026-11-21"),
+    "4622960293": ("riverprofile", "River in Profile Print: Mississippi River", "2026-11-21"),
+    "4622960705": ("riverprofile", "River in Profile Print: Snake River", "2026-11-21"),
+    "4622968904": ("waterline", "Water Line Print: Great Salt Lake", "2026-11-21"),
+    "4622970236": ("waterline", "Water Line Print: Lake Mead", "2026-11-21"),
+    "4622950721": ("snow", "Typical Year of Snow Print: Aspen", "2026-11-21"),
+    "4622959306": ("snow", "Typical Year of Snow Print: Jackson", "2026-11-21"),
+    "4622949353": ("snow", "Typical Year of Snow Print: Lake Tahoe", "2026-11-21"),
+    "4622958854": ("snow", "Typical Year of Snow Print: Park City", "2026-11-21"),
+    "4622953483": ("ice", "Ice Edge by Year Print: Grinnell Glacier", "2026-11-21"),
     "4618178774": ("normals", "Your Town's Typical Year", "2026-11-15"),
 }
 NEW_STATIONS = {
@@ -432,6 +513,14 @@ TEST_GIFTS: list[dict[str, Any]] = [
      "about": "A year of normal weather in your town, drawn as one picture.", "live": "2026-11-15"},
     {"kind": "depth", "listing": "1234567887", "title": "Above and Below Print: Apra Harbor",
      "about": "Apra Harbor, Guam, drawn as 80 stacked profiles of the land and the seafloor.", "live": "2026-11-16"},
+    {"kind": "riverprofile", "listing": "1234567870", "title": "River in Profile Print: Talofofo River",
+     "about": "The Talofofo River, drawn as one elevation profile.", "live": "2026-11-21"},
+    {"kind": "waterline", "listing": "1234567871", "title": "Water Line Print: Fena Lake",
+     "about": "Fena Lake, Guam, drawn as one water line, month by month.", "live": "2026-11-21"},
+    {"kind": "snow", "listing": "1234567872", "title": "Typical Year of Snow Print: Mount Lamlam",
+     "about": "Mount Lamlam, Guam: a typical year of snow, drawn as 365 strokes.", "live": "2026-11-21"},
+    {"kind": "ice", "listing": "1234567873", "title": "Ice Edge by Year Print: Apra Glacier",
+     "about": "Apra Glacier, Guam, drawn as the edge of the ice in five years.", "live": "2026-11-21"},
 ]  # fmt: skip
 ETSY_OR_AMAZON = re.compile(r'<a\b[^>]*href="(https?://[^"]*(?:etsy|amazon)\.[^"]*)"', re.I)
 H2 = re.compile(r"<h2 id=\"g-[^\"]*\">(.*?)</h2>")
@@ -542,7 +631,8 @@ def test_the_committed_list_is_exactly_the_listings_marked_live() -> None:
     # typical year print.
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind in NO_YEAR)
     assert {kind: sum(g.kind == kind for g in listed) for kind in NO_YEAR} == {
-        "custom": 6, "river": 13, "aurora": 1, "sealevel": 2, "seatemp": 5, "land": 10, "depth": 3, "normals": 1,
+        "custom": 6, "river": 13, "aurora": 1, "sealevel": 2, "seatemp": 5, "land": 10, "depth": 4,
+        "riverprofile": 3, "waterline": 2, "snow": 4, "ice": 1, "normals": 1,
     }  # fmt: skip
     assert all(g.station is None and g.about for g in listed if g.kind in ("sunrise", "sky"))
     assert all(g.year is None and g.station is None and g.about for g in listed if g.kind == "custom")
@@ -692,24 +782,27 @@ def test_the_published_page_word_for_word(published: Path, check_site: Any) -> N
     for line in (
         CUSTOM, SOLSTICE, RINGS, SAN_FRANCISCO, MOON, YEAR_IN_TIDES, WEDDING_SIGN, NEW_HOME, NEW_GRANDPARENTS,
         BEACH_VACATION, ADOPTION_DAY, ANY_CITY, OGUNQUIT_RINGS, SUNRISE, SKY, RIVER, TWO_RIVERS, AURORA, SEA_LEVEL,
-        SEA_TEMP, LAND, ABOVE_AND_BELOW, TYPICAL_YEAR,
+        SEA_TEMP, LAND, ABOVE_AND_BELOW, TYPICAL_YEAR, RIVER_PROFILE, WATER_LINE, SNOW, ICE, PUGET_SOUND,
     ):  # fmt: skip
         assert line in main
+    # The land and data prints line comes right after the second paragraph.
+    assert "<p>" + HOW.replace("'", "&#39;") + "</p>\n" + FAMILIES + "\n" in main
     # Each kind's lines in list order: the rivers', then the new kinds' by place.
     titles = re.findall(r'rel="noopener">([^<]*)</a>', main)
     for prefix, want_titles in (
         ("Water Year", RIVERS), ("Sea Level Print", SEA_LEVELS), ("2025 Sea Temperature", SEA_TEMPS),
-        ("In Profile Print", LANDS), ("Above and Below Print", DEPTHS),
+        ("In Profile Print", LANDS), ("Above and Below Print", DEPTHS), ("River in Profile", RIVER_PROFILES),
+        ("Water Line Print", WATER_LINES), ("Typical Year of Snow", SNOWS),
     ):  # fmt: skip
         assert [t for t in titles if t.startswith(prefix)] == want_titles
     custom = main[main.find('id="g-custom"') : main.find('id="g-daylight"')]
     assert re.findall(r'listing/\d+" rel="noopener">([^<]*)</a>', custom) == CUSTOMS
     # Every calendar and poster the station pages show, and every live gift,
-    # once each: 40 + 8 + 60 listings and the shop.
+    # once each: 40 + 8 + 71 listings and the shop.
     hrefs = ETSY_OR_AMAZON.findall(main)
     want = {c.url for c in calendars.load().values()} | {p.url for p in posters.load().values()}
     want |= {g.url for g in gifts.load(COMMITTED)} | {SHOP}
-    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 60 + 1
+    assert sorted(hrefs) == sorted(want) and len(hrefs) == 40 + 8 + 71 + 1
     # Within a kind, by town.
     section = main[main.find('id="g-calendars"') : main.find('id="g-moon"')]
     towns = re.findall(r'<a href="/stations/\d+/">([^<]*)</a>', section)
@@ -728,6 +821,30 @@ def test_no_page_links_to_a_paused_pattern_listing(published: Path) -> None:
     page = read(published, PAGE)
     assert 'id="g-blanket"' not in page and 'id="g-stitch"' not in page
     assert "blanket" not in page.lower() and "cross-stitch" not in page.lower()
+
+
+# The standing wording rules (as tests/test_king_prints.py, with "surface" a
+# lake's, not a sport), and, for the land
+# and data prints (0059), no claim about climate, drought or a glacier's
+# loss: the words say what each print shows.
+BANNED = re.compile(
+    r"\b(fish\w*|boat\w*|surf(?!ace)\w*|clam\w*|tide[ -]?pool\w*|swim\w*|div(e|es|ed|ing)|snorkel\w*|kayak\w*|"
+    r"hurry|now|today only|last chance|limited|soon|don't miss|act fast|sale|deals?|free|best|top|only|"
+    r"cheap\w*|rated|official|safe\w*|danger\w*|no tracking|climate|drought\w*|shrink\w*|retreat\w*|"
+    r"melt\w*|vanish\w*|disappear\w*|warming|declin\w*|crisis|record low)\b|[$%★!]",
+    re.I,
+)
+
+
+def test_the_land_and_data_prints_words_break_no_wording_rule() -> None:
+    copy = json.loads(gifts.COPY.read_text(encoding="utf-8"))
+    words = [copy["families"], *(str(v) for k in gifts.FAMILIES for v in copy["sections"][k].values())]
+    words += [f"{g.title}. {g.about}" for g in gifts.load(COMMITTED) if g.kind in gifts.FAMILIES]
+    assert len(words) == 1 + 6 * 4 + 24
+    for text in words:
+        assert BANNED.search(text) is None, (BANNED.search(text), text)
+    for bad in ("Lake Mead in a drought", "the glacier's retreat", "Buy now", "no tracking", "swimming", "surfing"):
+        assert BANNED.search(f"{copy['families']} {bad}") is not None, bad
 
 
 def test_the_page_names_no_price_sale_or_rating_and_has_no_product_markup(published: Path) -> None:
@@ -817,7 +934,8 @@ def test_a_one_town_book_and_the_guam_list(guam: Path, lists: dict[str, Path], c
         "Custom tide chart prints", "Winter solstice print", "Year-of-daylight prints", "Sunrise and sunset calendars",
         "Tide rings art prints", "Tide blanket patterns", "Cross-stitch patterns", "Printed tide tables",
         "Moon phase calendars", "Night sky prints", "Northern lights print", "River year prints", "Sea level prints",
-        "Sea temperature prints", "Land prints", "Above and Below prints", "Typical year prints",
+        "Sea temperature prints", "Land prints", "Above and Below prints", "River in Profile prints",
+        "Water Line prints", "Typical Year of Snow prints", "Ice Edge by Year print", "Typical year prints",
     ]  # fmt: skip
     assert (
         '<li data-gift="1234567898"><a href="https://www.etsy.com/listing/1234567898" rel="noopener">2027 Year of '
@@ -847,8 +965,8 @@ def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, ch
     build of January 1, 2028 lists only the entries with no year: the
     custom prints (the shop's own sentence and the six made-to-order
     listings), the thirteen river prints, the northern lights print, the
-    sea level, sea temperature, land and Above and Below prints and the
-    typical year print.
+    sea level, sea temperature, land and Above and Below prints, the land
+    and data prints of 0059 and the typical year print.
     The made-to-order year-of-daylight print, the sunrise and sunset
     calendars and the night sky prints are of 2027 and leave."""
     root = build(tmp_path / "on", "--print-shop-url", SHOP, "--gifts", str(COMMITTED),
@@ -856,11 +974,12 @@ def test_in_2028_the_page_lists_only_the_entries_with_no_year(tmp_path: Path, ch
     text = read(root, PAGE)
     assert H2.findall(text) == [
         "Custom tide chart prints", "Northern lights print", "River year prints", "Sea level prints",
-        "Sea temperature prints", "Land prints", "Above and Below prints", "Typical year prints",
+        "Sea temperature prints", "Land prints", "Above and Below prints", "River in Profile prints",
+        "Water Line prints", "Typical Year of Snow prints", "Ice Edge by Year print", "Typical year prints",
     ]  # fmt: skip
     assert re.findall(r'rel="noopener">(Water Year[^<]*)</a>', text) == RIVERS
     no_year = [f"https://www.etsy.com/listing/{ref}" for ref, (kind, _, _) in LIVE.items() if kind in NO_YEAR]
-    assert len(no_year) == 6 + 13 + 1 + 2 + 5 + 10 + 3 + 1
+    assert len(no_year) == 6 + 13 + 1 + 2 + 5 + 10 + 4 + 3 + 2 + 4 + 1 + 1
     assert sorted(ETSY_OR_AMAZON.findall(text)) == sorted([SHOP, *no_year])
     assert "amazon" not in "".join(f.read_text(encoding="utf-8").lower() for f in pages(root))
     assert problems(check_site, root, shop=SHOP) == []
@@ -1056,6 +1175,16 @@ SABOTAGE: dict[str, Callable[[Path], None]] = {
     "the typical year section's sentence": edit(PAGE, " Not a forecast and not the weather of any single year.", ""),
     "a typical year print's listing swapped for one not marked live": edit(
         PAGE, "https://www.etsy.com/listing/1234567886", NOT_LIVE
+    ),
+    "the land and data prints line dropped": edit(PAGE, "<p data-families>", "<p>"),
+    "the land and data prints line's words": edit(PAGE, "Land and data prints on this page:", "Land prints:"),
+    "a family linked to another section": edit(PAGE, '<a href="#g-ice">', '<a href="#g-normals">'),
+    "a family's section gone": edit(PAGE, '<h2 id="g-snow">', '<h2 id="g-snowy">'),
+    "the River in Profile section's sentence": edit(PAGE, " Not a USGS or EPA product.", ""),
+    "a Water Line print's words dropped": edit(PAGE, ". Fena Lake, Guam, drawn as one water line, month by month.", ""),
+    "the Typical Year of Snow section's sentence": edit(PAGE, " Not a forecast and not the snow of any one year.", ""),
+    "an Ice Edge by Year print's listing swapped for one not marked live": edit(
+        PAGE, "https://www.etsy.com/listing/1234567873", NOT_LIVE
     ),
     "no page": remove_page,
     "no footer link": edit("index.html", FOOTER, ""),

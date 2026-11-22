@@ -5,6 +5,7 @@
   "intro": "Each one is made by Tide Hours. The tide gifts are drawn from the same tide predictions as this site: art, not for navigation, and not a NOAA product.",
   "how": "They are listed by kind, and by town within each kind. A town's name links to its tide times on this site, and each gift links to where it is sold, on {stores}.",
   "footer": "Tide gifts",
+  "families": "Land and data prints on this page:",
   "sections": {
     "custom": {
       "heading": "Custom tide chart prints",
@@ -93,12 +94,38 @@
     "land": {
       "heading": "Land prints",
       "short": "land prints",
+      "family": "In Profile",
       "text": "Art made from U.S. Geological Survey elevation data. They show the shape of the land, not the tide. Not a USGS product."
     },
     "depth": {
       "heading": "Above and Below prints",
       "short": "Above and Below prints",
+      "family": "Above and Below",
       "text": "Art made from U.S. Geological Survey and NOAA elevation and survey data. They show the shape of the land above the water and below it, not the tide. Not a USGS or NOAA product."
+    },
+    "riverprofile": {
+      "heading": "River in Profile prints",
+      "short": "River in Profile prints",
+      "family": "River in Profile",
+      "text": "Art made from NHDPlus river data, from the U.S. Environmental Protection Agency and the U.S. Geological Survey. They show the height of a river along its main stem, not the tide. Not a USGS or EPA product."
+    },
+    "waterline": {
+      "heading": "Water Line prints",
+      "short": "Water Line prints",
+      "family": "Water Line",
+      "text": "Art made from public lake-level data from the U.S. Geological Survey and the U.S. Bureau of Reclamation. They show a lake's surface elevation month by month, not the tide. Not a USGS or Bureau of Reclamation product."
+    },
+    "snow": {
+      "heading": "Typical Year of Snow prints",
+      "short": "Typical Year of Snow prints",
+      "family": "Typical Year of Snow",
+      "text": "Art made from USDA Natural Resources Conservation Service SNOTEL data. They show the median snow water equivalent of each day at one measuring site over the 30 winters 1991 to 2020, not the tide. Not a forecast and not the snow of any one year. Not an NRCS product."
+    },
+    "ice": {
+      "heading": "Ice Edge by Year print",
+      "short": "an Ice Edge by Year print",
+      "family": "Ice Edge by Year",
+      "text": "Art made from U.S. Geological Survey glacier outlines and elevation data. It shows the edge of the ice as mapped in each year printed on it, not the tide. Not a USGS product."
     },
     "normals": {
       "heading": "Typical year prints",

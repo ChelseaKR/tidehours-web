@@ -12,7 +12,9 @@ prints and river year prints (no town; a river print, of a water year
 already over, has no year), the prints of a record already made, which
 have no town and no year either (the northern lights print, sea level
 prints, sea temperature prints, land prints and Above and Below prints,
-of the land and the lake floor or seafloor), the made-to-order
+of the land and the lake floor or seafloor, and the land and data prints
+of 0059: River in Profile, Water Line, Typical Year of Snow and Ice Edge
+by Year), the made-to-order
 typical year print (no town, no year) and printed tide tables on Amazon
 (one or more towns). Every entry there carries `live`, the date its
 listing was marked live; an entry without one stops the build, so a draft
@@ -33,6 +35,9 @@ over by the build's date (UTC), as the calendars leave theirs, or on its
 entry shows only when its station has a page in the build. A build in which
 no entry of copy/gifts.json shows has no page and no footer link: the
 calendars, posters and custom print are listed elsewhere already.
+
+The land and data prints' sections (FAMILIES) sit together, and a line
+under the page's second paragraph links to each of them on the page (0059).
 
 The privacy page's words about the Etsy and Amazon links are composed here
 when the page links to them (`shop_notice`, `book_notice`).
@@ -64,8 +69,13 @@ COPY = Path(__file__).parent / "copy" / "gifts_page.json"
 # The order of the sections on the page.
 ORDER = (
     "custom", "daylight", "sun", "sunrise", "rings", "posters", "calendars", "blanket", "stitch", "book", "moon",
-    "sky", "aurora", "river", "sealevel", "seatemp", "land", "depth", "normals",
+    "sky", "aurora", "river", "sealevel", "seatemp", "land", "depth", "riverprofile", "waterline", "snow", "ice",
+    "normals",
 )  # fmt: skip
+# The land and data prints (0059): the sections the line under the page's
+# second paragraph links to, in ORDER. Each one's copy carries `family`, the
+# set's own name, as that line shows it.
+FAMILIES = ("land", "depth", "riverprofile", "waterline", "snow", "ice")
 # The zone an entry's `until` date is read in: the shop's own.
 UNTIL_ZONE = ZoneInfo("America/Los_Angeles")
 # The kinds copy/gifts.json may list, with the keys an entry has and the
@@ -100,6 +110,14 @@ TITLES = {
     "seatemp": re.compile(rf"(20[0-9]{{2}}) Sea Temperature Print: {_PLACE}"),
     "land": re.compile(rf"In Profile Print: {_PLACE}"),
     "depth": re.compile(rf"Above and Below Print: {_PLACE}"),
+    # The land and data prints of 2026-11-21 (0059), each of a record
+    # already made: a river's height along its main stem, a lake's surface
+    # month by month, a site's median snow by day over 1991 to 2020, and a
+    # glacier's mapped edge in the years printed on it.
+    "riverprofile": re.compile(rf"River in Profile Print: {_PLACE}"),
+    "waterline": re.compile(rf"Water Line Print: {_PLACE}"),
+    "snow": re.compile(rf"Typical Year of Snow Print: {_PLACE}"),
+    "ice": re.compile(rf"Ice Edge by Year Print: {_PLACE}"),
     # A made-to-order year of climate normals: no year, and its title is the
     # listing's own name for it, as a custom print's.
     "normals": re.compile(r"[A-Z][A-Za-z' ]{2,48}[a-z]"),
@@ -121,6 +139,10 @@ KEYS = {
     "seatemp": {"kind", "listing", "title", "about", "live"},
     "land": {"kind", "listing", "title", "about", "live"},
     "depth": {"kind", "listing", "title", "about", "live"},
+    "riverprofile": {"kind", "listing", "title", "about", "live"},
+    "waterline": {"kind", "listing", "title", "about", "live"},
+    "snow": {"kind", "listing", "title", "about", "live"},
+    "ice": {"kind", "listing", "title", "about", "live"},
     "normals": {"kind", "listing", "title", "about", "live"},
 }
 # The kinds bound to one town's station, and the kinds whose line carries
@@ -129,13 +151,14 @@ TOWN_KINDS = ("rings", "blanket", "stitch")
 # The kinds with no town, one line each, in list order.
 NO_TOWN = (
     "moon", "daylight", "sun", "sunrise", "sky", "river", "custom", "aurora", "sealevel", "seatemp", "land", "depth",
-    "normals",
+    "riverprofile", "waterline", "snow", "ice", "normals",
 )  # fmt: skip
 ABOUT = re.compile(r"[A-Z][^<>{}$%\u2605]{19,398}[.]")
 # Phrases in a listing's own words that hold a claim word but name a thing,
-# not a claim: "first home" is the home, not the print. Only these are
-# taken out before `about` is checked for a claim.
-NOT_CLAIMS = re.compile(r"\bfirst home\b")
+# not a claim: "first home" is the home, not the print, and "the first
+# peaks of the Olympic Mountains" (Puget Sound, 0059) are the land. Only
+# these are taken out before `about` is checked for a claim.
+NOT_CLAIMS = re.compile(r"\bfirst home\b|\bthe first peaks of the Olympic Mountains\b")
 # Every kind may carry `until`: the first day, in UNTIL_ZONE, on which the
 # entry no longer shows. A made-to-order seasonal print must carry one.
 OPTIONAL = {"until"}
@@ -155,6 +178,10 @@ ART = (
     "seatemp",
     "land",
     "depth",
+    "riverprofile",
+    "waterline",
+    "snow",
+    "ice",
     "normals",
 )
 LIVE = re.compile(r"20[0-9]{2}-[0-9]{2}-[0-9]{2}")
@@ -476,7 +503,37 @@ def block(
         "description": text["description"].replace("{kinds}", _join(kinds)),
         "intro": text["intro"],
         "how": text["how"].replace("{stores}", " or ".join(stores(secs))),
+        "families": families(secs),
     }
+
+
+@dataclass(frozen=True)
+class Families:
+    """The line under the page's second paragraph that names the land and
+    data prints (0059): its words before the names, and each name with the
+    section it links to and the words after it."""
+
+    text: str
+    names: tuple[tuple[str, str, str], ...]  # (the set's name, its section's id, text after it)
+
+
+def families(secs: list[Section]) -> Families | None:
+    """The land and data prints this page lists, in ORDER, each linked to
+    its own section; None when it lists none."""
+    copy = _copy()
+    keys = [s.key for s in secs if s.key in FAMILIES]
+    if not keys:
+        return None
+    names = []
+    for n, key in enumerate(keys):
+        after = "." if n == len(keys) - 1 else " and " if n == len(keys) - 2 else ", "
+        names.append((copy["sections"][key]["family"], f"g-{key}", after))
+    return Families(copy["families"], tuple(names))
+
+
+def families_text(line: Families) -> str:
+    """The families line as plain text, as the page shows it."""
+    return f"{line.text} " + "".join(name + after for name, _, after in line.names)
 
 
 def link(listing: dict[str, Any] | None) -> dict[str, str] | None:

@@ -679,6 +679,42 @@ def king_span(runs: list[kingtides.Upcoming]) -> KingSpan | None:
     return KingSpan(min(u.first for u in runs), max(u.last for u in runs), min(peaks), max(peaks))
 
 
+def king_under_way(runs: list[kingtides.Upcoming], today: dt.date) -> list[kingtides.Upcoming]:
+    """The king tides under way on `today`: each run that has begun, and each
+    run that begins before those have ended (a run that starts a day later at
+    another station is part of the same king tides). Empty when no run has
+    begun. A station whose run has ended is coming up again with the next
+    month's run, which this leaves out (docs/DECISIONS.md 0060)."""
+    iso = today.isoformat()
+    begun = [u for u in runs if u.first <= iso]
+    if not begun:
+        return []
+    end = max(u.last for u in begun)
+    while True:
+        shown = [u for u in runs if u.first <= end]
+        last = max(u.last for u in shown)
+        if last == end:
+            return shown
+        end = last
+
+
+def king_spans(runs: list[kingtides.Upcoming], today: dt.date) -> tuple[KingSpan | None, dict[str, KingSpan | None]]:
+    """The West Coast span and each state's span that the summaries name: the
+    king-tide page's heading, description and state lines, the home page's
+    king-tide line and the WA, OR and CA state pages' (docs/DECISIONS.md
+    0060). While king tides are under way, they use only those runs; a state
+    with none under way keeps its next run's span. Otherwise every run coming
+    up, as before. The station rows are not affected: they are every run
+    coming up."""
+    now = king_under_way(runs, today)
+    states = {
+        code: king_span([u for u in now if u.season.state == code])
+        or king_span([u for u in runs if u.season.state == code])
+        for code in ("WA", "OR", "CA")
+    }
+    return king_span(now or runs), states
+
+
 @dataclass(frozen=True)
 class KingLink:
     """A station page's link to the king-tide page while a run is coming up:
@@ -1028,7 +1064,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
     kt_today = kingtides.today_on_coast(now)
     kt_up = kingtides.coming_up(kt["seasons"], kt_today)
     kt_months = kingtides.months(kt_up, kt_today)
-    kt_states = {code: king_span([u for u in kt_up if u.season.state == code]) for code in ("WA", "OR", "CA")}
+    kt_span, kt_states = king_spans(kt_up, kt_today)
     links = king_links(stations, kt["seasons"], kt_today, cat)
     booklet_of = booklets_shown(cat, stations, cfg, now)
     calendar_of = calendars_shown(cat, stations, cfg, now)
@@ -1089,7 +1125,7 @@ def render(cat: Catalog, cfg: Config, now: dt.datetime) -> list[Page]:
         "king_lead": kingtides.LEAD_DAYS,
         "king_up": kt_up,
         "king_months": kt_months,
-        "king_span": king_span(kt_up),
+        "king_span": kt_span,
         "king_states": kt_states,
         "kc": kt["copy"]["en"],
     }
